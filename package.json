@@ -1,0 +1,35 @@
+{
+  "name": "@process-engine/ci_tools",
+  "version": "1.0.0",
+  "description": "This Repository Holds Scripts That Are Used by Our CI",
+  "main": "dist/amd/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "build": "gulp build",
+    "prepare": "npm run build",
+    "lint": "gulp lint",
+    "test": "gulp test"
+  },
+  "bin": {
+    "create-github-release": "./dist/commonjs/create-github-release.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:process-engine/ci_tools.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "^15.15.1",
+    "mime-types": "^2.1.18"
+  },
+  "devDependencies": {
+    "@essential-projects/tslint-config": "1.1.2",
+    "gulp": "^3.9.1",
+    "gulptraum": "^2.3.0",
+    "gulptraum-typescript": "^1.5.0",
+    "tsconfig": "^7.0.0",
+    "tslint": "^5.10.0",
+    "typescript": "^2.8.3"
+  }
+}
