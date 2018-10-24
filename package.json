@@ -1,6 +1,6 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "This Repository Holds Scripts That Are Used by Our CI",
   "main": "dist/amd/index.js",
   "typings": "dist/index.d.ts",
