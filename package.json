@@ -11,7 +11,8 @@
     "test": "gulp test"
   },
   "bin": {
-    "create-github-release": "./dist/commonjs/create-github-release.js"
+    "create-github-release": "./dist/commonjs/create-github-release.js",
+    "is-nuget-package-published:": "./dist/commonjs/is-nuget-package-published.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,8 @@
   "license": "MIT",
   "dependencies": {
     "@octokit/rest": "^15.15.1",
-    "mime-types": "^2.1.18"
+    "mime-types": "^2.1.18",
+    "node-fetch": "^2.2.0"
   },
   "devDependencies": {
     "@essential-projects/tslint-config": "1.1.2",
