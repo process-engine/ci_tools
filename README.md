@@ -87,7 +87,7 @@ This will create a new release for the tag `v3.0.0` in the repository
 This script uses the NuGet API to check if a specified version of a given
 package is published.
 
-If will return either `true` or `false`. A non zero exit code indicates an
+It will return either `true` or `false`. A non zero exit code indicates an
 error occurred.
 
 **Synopsis**
@@ -102,8 +102,8 @@ is-nuget-package-published <NuGet V3 feed URL> <package> <version>
 NUGET_ACCESS_TOKEN="NuGetAPITokenHere" is-nuget-packet-published https://5minds.myget.org/F/process_engine_public/api/v3/index.json ProcessEngine.Runtime 3.8.2-pre1
 ```
 
-This will check if the package `ProcessEngine.Runtime` is published on the
-feed `process_engine_public` in the version `3.8.2-pre1`.
+This will check if the package `ProcessEngine.Runtime`, version `3.8.2-pre1` is
+published on the feed `process_engine_public`.
 
 ### Deployment (*)
 
