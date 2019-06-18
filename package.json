@@ -4,7 +4,7 @@
   "description": "CI tools for process-engine.io",
   "main": "dist/index.js",
   "scripts": {
-    "ci-publish-if-applicable": "node dist/ci_tools.js increment-version --dry",
+    "ci-publish-if-applicable": "node dist/ci_tools.js increment-version --dry || true",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "prepare": "npm run build",
