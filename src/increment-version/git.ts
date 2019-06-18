@@ -1,11 +1,22 @@
 import { sh } from './shell';
 
+const CURRENT_BRANCH_MARKER = /^\*\ /;
+
 export function getGitTagList(): string {
   return sh('git tag --list').trim();
 }
 
 export function getGitBranch(): string {
-  return process.env.GIT_BRANCH || sh('git rev-parse --abbrev-ref HEAD').trim();
+  return process.env.GIT_BRANCH || getGitBranchFromGit();
+}
+
+function getGitBranchFromGit(): string {
+  const outputLines = sh('git branch')
+    .trim()
+    .split('\n');
+  const branchLine = outputLines.find((name: string): boolean => !!name.match(CURRENT_BRANCH_MARKER));
+
+  return branchLine.replace(CURRENT_BRANCH_MARKER, '');
 }
 
 export function isDirty(): boolean {
