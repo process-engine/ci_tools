@@ -1,7 +1,3 @@
-#!/usr/bin/env node
-
-/* tslint:disable:no-console no-magic-numbers */
-
 import * as fetch from 'node-fetch';
 
 interface IApiIndex {
@@ -20,14 +16,15 @@ if (process.argv.length < 4) {
 
 let requestParameters: fetch.RequestInit = {};
 
-if (process.env['NUGET_ACCESS_TOKEN'] !== null
-  && process.env['NUGET_ACCESS_TOKEN'] !== undefined
-  && process.env['NUGET_ACCESS_TOKEN'] !== '') {
-
+if (
+  process.env['NUGET_ACCESS_TOKEN'] !== null &&
+  process.env['NUGET_ACCESS_TOKEN'] !== undefined &&
+  process.env['NUGET_ACCESS_TOKEN'] !== ''
+) {
   requestParameters = {
     headers: {
-      'X-NuGet-ApiKey': process.env['NUGET_ACCESS_TOKEN'],
-    },
+      'X-NuGet-ApiKey': process.env['NUGET_ACCESS_TOKEN']
+    }
   };
 }
 
@@ -75,7 +72,7 @@ async function main(): Promise<void> {
   console.log(packageIsPublished);
 }
 
-main().catch((error: Error) => {
+main().catch((error: Error): void => {
   console.error(error);
   process.exit(1);
 });

@@ -3,10 +3,6 @@ logs
 *.log
 npm-debug.log*
 
-# lock-files
-package-lock.json
-yarn.lock
-
 # build directories
 dist
 
