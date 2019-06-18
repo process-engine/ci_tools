@@ -5,6 +5,16 @@ import { sh } from './shell';
 
 const BADGE = '[increment-version]\t';
 
+/**
+ * Increments the version in `package.json` automatically, adds a suffix to the version, tags and publishes it
+ * (when on one of the applicable branches).
+ *
+ * Example:
+ *
+ *    current version:  1.2.0-beta2
+ *    new version:      1.2.0-beta3
+ *    new tag:         v1.2.0-beta3
+ */
 export async function run(...args): Promise<void> {
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = args.indexOf('--force') !== -1;
