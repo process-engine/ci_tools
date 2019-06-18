@@ -8,14 +8,13 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2018",
-    "lib": [
-      "es2018"
-    ],
+    "lib": ["es2018"],
     "declaration": true,
     "skipLibCheck": true,
     "declarationDir": "./dist",
     "sourceMap": true,
     "experimentalDecorators": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
 }

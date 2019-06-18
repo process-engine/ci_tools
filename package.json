@@ -1,18 +1,20 @@
 {
   "name": "@process-engine/ci_tools",
   "version": "1.1.0",
-  "description": "This Repository Holds Scripts That Are Used by Our CI",
+  "description": "CI tools for process-engine.io",
   "main": "dist/index.js",
   "scripts": {
+    "ci-publish-if-applicable": "node dist/ci_tools.js increment-version --dry || true",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "prepare": "npm run build",
     "lint": "eslint src/**/*.ts src/*.ts",
-    "test": ":"
+    "test": "mocha -r ts-node/register src/**/*.test.ts"
   },
   "bin": {
-    "create-github-release": "./dist/commonjs/create-github-release.js",
-    "is-nuget-package-published:": "./dist/commonjs/is-nuget-package-published.js"
+    "ci_tools": "./dist/ci_tools.js",
+    "create-github-release": "./dist/legacy/create-github-release.js",
+    "is-nuget-package-published:": "./dist/legacy/is-nuget-package-published.js"
   },
   "repository": {
     "type": "git",
@@ -23,13 +25,17 @@
   "dependencies": {
     "@octokit/rest": "15.15.1",
     "mime-types": "^2.1.18",
-    "node-fetch": "^2.2.0"
+    "node-fetch": "^2.2.0",
+    "shelljs": "^0.8.3"
   },
   "devDependencies": {
     "@essential-projects/eslint-config": "^1.0.0",
+    "@types/mocha": "^5.2.7",
     "@types/node": "^12.0.8",
     "eslint": "^5.16.0",
+    "mocha": "^6.1.4",
     "prettier": "^1.18.2",
+    "ts-node": "^8.1.0",
     "tsconfig": "^7.0.0",
     "typescript": "^3.5.2"
   }
