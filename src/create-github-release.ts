@@ -3,19 +3,23 @@
 /* tslint:disable:no-console no-magic-numbers */
 
 import * as Octokit from '@octokit/rest';
-import {readFileSync, statSync} from 'fs';
+import { readFileSync, statSync } from 'fs';
 import * as mime from 'mime-types';
 
 if (process.argv.length < 7) {
-  console.error('Please supply arguments: ' +
-    '<github namespace> <github repository> <version to release> <target commit> <is draft> <is prerelease> [files to upload...]');
+  console.error(
+    'Please supply arguments: ' +
+      '<github namespace> <github repository> <version to release> <target commit> <is draft> <is prerelease> [files to upload...]'
+  );
   process.exit(1);
 }
 
-if (!process.env['RELEASE_GH_TOKEN']
-  || process.env['RELEASE_GH_TOKEN'] === null
-  || process.env['RELEASE_GH_TOKEN'] === undefined
-  || process.env['RELEASE_GH_TOKEN'] === '') {
+if (
+  !process.env['RELEASE_GH_TOKEN'] ||
+  process.env['RELEASE_GH_TOKEN'] === null ||
+  process.env['RELEASE_GH_TOKEN'] === undefined ||
+  process.env['RELEASE_GH_TOKEN'] === ''
+) {
   console.error('Please supply github token via RELEASE_GH_TOKEN environment variable.');
   process.exit(1);
 }
@@ -36,7 +40,7 @@ const octokit: Octokit = new Octokit();
 async function authenticate(): Promise<void> {
   await octokit.authenticate({
     type: 'token',
-    token: githubAuthToken,
+    token: githubAuthToken
   });
 }
 
@@ -45,7 +49,7 @@ async function check_for_existing_release(): Promise<boolean> {
     await octokit.repos.getReleaseByTag({
       owner: githubRepoNamespace,
       repo: githubRepoName,
-      tag: versionTag,
+      tag: versionTag
     });
   } catch (error) {
     return false;
@@ -64,7 +68,7 @@ async function create_release(): Promise<Octokit.Response<Octokit.ReposCreateRel
     target_commitish: targetCommit,
     name: versionToRelease,
     draft: releaseIsDraft,
-    prerelease: releaseIsPrerelease,
+    prerelease: releaseIsPrerelease
   });
 }
 
@@ -91,7 +95,7 @@ async function upload_release_asset(uploadUrl: string, file: string): Promise<Oc
     file: buffer,
     contentType: contentType,
     contentLength: fileSize,
-    name: name,
+    name: name
   } as any);
 }
 

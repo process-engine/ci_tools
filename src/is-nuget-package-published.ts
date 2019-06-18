@@ -20,14 +20,15 @@ if (process.argv.length < 4) {
 
 let requestParameters: fetch.RequestInit = {};
 
-if (process.env['NUGET_ACCESS_TOKEN'] !== null
-  && process.env['NUGET_ACCESS_TOKEN'] !== undefined
-  && process.env['NUGET_ACCESS_TOKEN'] !== '') {
-
+if (
+  process.env['NUGET_ACCESS_TOKEN'] !== null &&
+  process.env['NUGET_ACCESS_TOKEN'] !== undefined &&
+  process.env['NUGET_ACCESS_TOKEN'] !== ''
+) {
   requestParameters = {
     headers: {
-      'X-NuGet-ApiKey': process.env['NUGET_ACCESS_TOKEN'],
-    },
+      'X-NuGet-ApiKey': process.env['NUGET_ACCESS_TOKEN']
+    }
   };
 }
 
