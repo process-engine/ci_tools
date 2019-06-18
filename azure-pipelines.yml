@@ -35,10 +35,10 @@ steps:
   displayName: 'Lint sources'
 
 - script: |
-    # git remote set-url origin https://${GH_USER}:${GH_TOKEN}@github.com/process-engine/ci_tools.git
+    git remote set-url origin https://${GH_USER}:${GH_TOKEN}@github.com/process-engine/ci_tools.git
     npm run ci-publish-if-applicable
   displayName: 'Increment version & publish (if applicable)'
   env:
+    GH_USER: $(GH_USER)
+    GH_TOKEN: $(GH_TOKEN)
     GIT_BRANCH: $(Build.SourceBranch)
-  #   GH_USER: $(GH_USER)
-  #   GH_TOKEN: $(GH_TOKEN)

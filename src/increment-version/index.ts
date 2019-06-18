@@ -79,9 +79,6 @@ function printMultiLineString(text: string): void {
 
 function commitPushAndTagNextVersion(nextVersion: string, nextTag: string, nextCommitMessage: string): void {
   sh(`npm version ${nextVersion}`);
-  gitAdd('package.json');
-  gitCommit(nextCommitMessage);
-  gitTag(nextTag);
   gitPush();
   gitPushTags();
 }
