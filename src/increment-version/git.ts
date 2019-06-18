@@ -1,13 +1,13 @@
 import { sh } from './shell';
 
-const CURRENT_BRANCH_MARKER = /^\*\ /;
+const CURRENT_BRANCH_MARKER = /^\* /;
 
 export function getGitTagList(): string {
   return sh('git tag --list').trim();
 }
 
 export function getGitBranch(): string {
-  return process.env.GIT_BRANCH || getGitBranchFromGit();
+  return process.env.GIT_BRANCH ? process.env.GIT_BRANCH.replace(/^refs\/heads\//, '') : getGitBranchFromGit();
 }
 
 function getGitBranchFromGit(): string {
