@@ -29,7 +29,7 @@ describe('incrementVersion()', (): void => {
     assert.equal(incrementVersion('3.2.1-alpha3', BRANCH_BETA, GIT_TAG_LIST), '3.2.1-beta1');
   });
   it('should return the incremented version for subsequent beta versions', (): void => {
-    // v3.2.1-beta3 not in tag list, falling back to numbering found there
+    // v2.1.0-beta3 not in tag list, falling back to numbering found there
     assert.equal(incrementVersion('2.1.0-beta3', BRANCH_BETA, GIT_TAG_LIST), '2.1.0-beta2');
   });
   it('should return the incremented version for the stable build of a alpha version', (): void => {
