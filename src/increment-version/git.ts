@@ -42,3 +42,14 @@ export function gitPush(): string {
 export function gitPushTags(): string {
   return sh('git push --tags');
 }
+
+export function getCurrentRepoNameWithOwner(): string {
+  const url = sh('git remote get-url origin');
+  const matchData = url.match(/github.com[:/](.+)$/m);
+
+  if (matchData) {
+    return matchData[1].replace(/\.git$/, '');
+  }
+
+  return null;
+}

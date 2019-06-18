@@ -11,6 +11,7 @@
     "no-console": "off",
     "no-null/no-null": "off",
     "object-curly-newline": "off",
+    "object-shorthand": "off",
     "object-curly-spacing": "off"
   }
 }

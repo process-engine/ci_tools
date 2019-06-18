@@ -1,6 +1,7 @@
+import { run as createChangelogRun } from './create-changelog/index';
 import { run as incrementVersionRun } from './increment-version/index';
 
-const HANDLERS = { 'increment-version': incrementVersionRun };
+const HANDLERS = { 'create-changelog': createChangelogRun, 'increment-version': incrementVersionRun };
 
 const [, , ...args] = process.argv;
 

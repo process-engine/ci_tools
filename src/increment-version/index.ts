@@ -6,7 +6,7 @@ import { sh } from './shell';
 const BADGE = '[increment-version]\t';
 
 /**
- * Increments the version in `package.json` automatically, adds a suffix to the version, tags and publishes it
+ * Increments the version in `package.json` automatically, adds a suffix to the version, tags and pushes it
  * (when on one of the applicable branches).
  *
  * Example:
@@ -20,14 +20,10 @@ export async function run(...args): Promise<void> {
   const isForced = args.indexOf('--force') !== -1;
   const isDirtyAndNotForced = isDirty() && !isForced;
 
-  const packageVersion = getPackageVersion();
-  const branchName = getGitBranch();
-  const gitTagList = getGitTagList();
-
-  const nextVersion = incrementVersion(packageVersion, branchName, gitTagList);
+  const nextVersion = getNextVersion();
   const notOnApplicableBranch = nextVersion == null;
 
-  printInfo(packageVersion, branchName, gitTagList, isDryRun, isForced);
+  printInfo(isDryRun, isForced);
 
   if (isDirtyAndNotForced) {
     const workdirState = sh('git status --porcelain --untracked-files=no').trim();
@@ -53,13 +49,29 @@ export async function run(...args): Promise<void> {
   commitPushAndTagNextVersion(nextVersion);
 }
 
-function printInfo(
-  packageVersion: string,
-  branchName: string,
-  gitTagList: string,
-  isDryRun: boolean,
-  isForced: boolean
-): void {
+/**
+ * Returns the "next" version according to the rules described in `run`.
+ */
+export function getNextVersion(): string {
+  const packageVersion = getPackageVersion();
+  const branchName = getGitBranch();
+  const gitTagList = getGitTagList();
+
+  return incrementVersion(packageVersion, branchName, gitTagList);
+}
+
+/**
+ * Returns the "next" version tag according to the rules described in `run`.
+ */
+export function getNextVersionTag(): string {
+  return `v${getNextVersion()}`;
+}
+
+function printInfo(isDryRun: boolean, isForced: boolean): void {
+  const packageVersion = getPackageVersion();
+  const branchName = getGitBranch();
+  const gitTagList = getGitTagList();
+
   console.log(`${BADGE}isDryRun:`, isDryRun);
   console.log(`${BADGE}isForced:`, isForced);
   console.log('');
