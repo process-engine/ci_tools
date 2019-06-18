@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as fetch from 'node-fetch';
 
 interface IApiIndex {

@@ -23,13 +23,16 @@ steps:
   displayName: 'Install Node.js'
 
 - script: npm ci
-  displayName: 'Install Dependencies'
+  displayName: 'Install dependencies'
 
 - script: npm run build
-  displayName: 'Build Sources'
+  displayName: 'Build sources'
 
 - script: npm test
-  displayName: 'Run Tests'
+  displayName: 'Run tests'
 
 - script: npm run lint
-  displayName: 'Lint Sources'
+  displayName: 'Lint sources'
+
+- script: npm run ci-publish-if-applicable
+  displayName: 'Increment version & publish (if applicable)'

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as Octokit from '@octokit/rest';
 import { readFileSync, statSync } from 'fs';
 import * as mime from 'mime-types';
