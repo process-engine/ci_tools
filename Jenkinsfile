@@ -37,12 +37,6 @@ pipeline {
         }
       }
     }
-    stage('lint') {
-      steps {
-        sh('node --version')
-        sh('npm run lint')
-      }
-    }
     stage('build') {
       steps {
         sh('node --version')
