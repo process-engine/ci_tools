@@ -1,7 +1,3 @@
-#!/usr/bin/env node
-
-/* tslint:disable:no-console no-magic-numbers */
-
 import * as fetch from 'node-fetch';
 
 interface IApiIndex {
@@ -76,7 +72,7 @@ async function main(): Promise<void> {
   console.log(packageIsPublished);
 }
 
-main().catch((error: Error) => {
+main().catch((error: Error): void => {
   console.error(error);
   process.exit(1);
 });
