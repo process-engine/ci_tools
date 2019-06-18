@@ -39,6 +39,6 @@ steps:
     npm run ci-publish-if-applicable
   displayName: 'Increment version & publish (if applicable)'
   env:
-    GIT_BRANCH: $(Source.SourceBranch)
+    GIT_BRANCH: $(Build.SourceBranch)
   #   GH_USER: $(GH_USER)
   #   GH_TOKEN: $(GH_TOKEN)
