@@ -4,11 +4,10 @@
   "description": "CI tools for process-engine.io",
   "main": "dist/index.js",
   "scripts": {
-    "ci-publish-if-applicable": "node dist/ci_tools.js increment-version --dry && npm run publish-package",
+    "ci-publish-if-applicable": "node dist/ci_tools.js increment-version && npm publish",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "prepare": "npm run build",
-    "publish-package": "npm publish --dry-run",
     "lint": "eslint src/**/*.ts src/*.ts",
     "test": "mocha -r ts-node/register src/**/*.test.ts"
   },
