@@ -82,6 +82,12 @@ export async function run(...args): Promise<void> {
   }
 
   commitPushAndTagNextVersion(nextVersion);
+
+  console.log(
+    chalk.greenBright(
+      `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
+    )
+  );
 }
 
 /**

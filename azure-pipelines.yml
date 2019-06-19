@@ -36,6 +36,8 @@ steps:
 
 - script: |
     git remote set-url origin https://${GH_USER}:${GH_TOKEN}@github.com/process-engine/ci_tools.git
+    echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
+    cat .npmrc
     npm run ci-publish-if-applicable
   displayName: 'Increment version & publish (if applicable)'
   env:
