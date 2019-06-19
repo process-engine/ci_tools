@@ -26,8 +26,6 @@ export async function run(...args): Promise<void> {
 
   const nextVersion = incrementVersion(packageVersion, branchName, gitTagList);
   const notOnApplicableBranch = nextVersion == null;
-  const nextCommitMessage = `Bump version to ${nextVersion}`;
-  const nextTag = `v${nextVersion}`;
 
   printInfo(packageVersion, branchName, gitTagList, isDryRun, isForced);
 
@@ -47,13 +45,12 @@ export async function run(...args): Promise<void> {
   }
 
   if (isDryRun) {
-    console.log(`${BADGE}I would commit version ${nextVersion} in package.json with message "${nextCommitMessage}"`);
-    console.log(`${BADGE}I would tag the last commit as "${nextTag}"`);
+    console.log(`${BADGE}I would commit version ${nextVersion} and tag that commit as "v${nextVersion}"`);
 
     return;
   }
 
-  commitPushAndTagNextVersion(nextVersion, nextTag, nextCommitMessage);
+  commitPushAndTagNextVersion(nextVersion);
 }
 
 function printInfo(
@@ -77,7 +74,7 @@ function printMultiLineString(text: string): void {
   text.split('\n').forEach((line: string): void => console.log(`${BADGE}  ${line}`));
 }
 
-function commitPushAndTagNextVersion(nextVersion: string, nextTag: string, nextCommitMessage: string): void {
+function commitPushAndTagNextVersion(nextVersion: string): void {
   sh(`npm version ${nextVersion}`);
   gitPush();
   gitPushTags();
