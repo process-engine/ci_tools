@@ -44,3 +44,4 @@ steps:
     GH_USER: $(GH_USER)
     GH_TOKEN: $(GH_TOKEN)
     GIT_BRANCH: $(Build.SourceBranch)
+    NPM_TOKEN: $(NPM_TOKEN)
