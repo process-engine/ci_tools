@@ -35,13 +35,7 @@ steps:
 - script: npm run lint
   displayName: 'Lint sources'
 
-- script: |
-    git config --global user.email "ci@process-engine.io"
-    git config --global user.name "ProcessEngine Bot"
-    git remote set-url origin https://${GH_USER}:${GH_TOKEN}@github.com/process-engine/ci_tools.git
-    echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
-
-    npm run ci-publish-if-applicable
+- script: npm run ci-publish-if-applicable
   displayName: 'Increment version & publish (if applicable)'
   env:
     GH_USER: $(GH_USER)

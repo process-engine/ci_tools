@@ -1,7 +1,12 @@
 import { run as createChangelogRun } from './commands/create-changelog';
 import { run as incrementVersionRun } from './commands/increment-version';
+import { run as setupGitAndNpmRun } from './commands/setup-git-and-npm';
 
-const COMMAND_HANDLERS = { 'create-changelog': createChangelogRun, 'increment-version': incrementVersionRun };
+const COMMAND_HANDLERS = {
+  'create-changelog': createChangelogRun,
+  'increment-version': incrementVersionRun,
+  'setup-git-and-npm': setupGitAndNpmRun
+};
 
 const [, , ...args] = process.argv;
 

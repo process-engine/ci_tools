@@ -94,3 +94,10 @@ export function getCurrentApiBaseUrlWithAuth(route: string): string {
 
   return `https://${authPart}api.github.com/repos/${gitHubRepo}${route}`;
 }
+
+export function isGitHubRemote(): boolean {
+  const url = sh('git remote get-url origin');
+  const matchData = url.match(/github.com[:/](.+)$/m);
+
+  return matchData != null;
+}
