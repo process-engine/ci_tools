@@ -4,15 +4,15 @@ import { getPackageVersion, getPackageVersionTag } from './package_version';
 import {
   getGitBranch,
   getGitTagList,
+  getGitTagsFromCommit,
   gitAdd,
   gitCommit,
   gitPush,
   gitPushTags,
   gitTag,
-  isDirty,
-  isExistingTag,
   isCurrentTag,
-  getGitTagsFromCommit
+  isDirty,
+  isExistingTag
 } from './git';
 import { APPLICABLE_BRANCHES, incrementVersion } from './increment_version';
 import { sh } from './shell';
