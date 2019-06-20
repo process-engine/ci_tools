@@ -48,7 +48,8 @@ export function gitAdd(...files): string {
 }
 
 export function gitCommit(commitMessage): string {
-  return sh(`git commit -m "${commitMessage}"`);
+  const escapedCommitMessage = commitMessage.replace('\n', '\\n').replace('"', '\\"');
+  return sh(`git commit -m "${escapedCommitMessage}"`);
 }
 
 export function gitTag(newTag): string {
