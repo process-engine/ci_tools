@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import fetch from 'node-fetch';
+import * as moment from 'moment';
 
 import { PullRequest, getMergedPullRequests } from '../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner } from '../git/git';
@@ -71,7 +72,8 @@ export async function getChangelogText(startRef: string): Promise<string> {
 
   const closedPRsText = mergedPullRequests
     .map((pr: PullRequest): string => {
-      return `- #${pr.number} ${pr.title}`;
+      const mergedAt = moment(pr.mergedAt).format('YYYY-MM-DD');
+      return `- #${pr.number} ${pr.title} (merged ${mergedAt})`;
     })
     .join('\n');
   const closedIssuesText = closedIssues
@@ -80,14 +82,15 @@ export async function getChangelogText(startRef: string): Promise<string> {
     })
     .join('\n');
 
+  const now = moment();
   const changelogText = `
-# Changelog ${nextVersionTag}
+# Changelog ${nextVersionTag} (${now.format('YYYY-MM-DD')})
 
 This changelog covers the changes between [${startRef} and ${nextVersionTag}](https://github.com/${GITHUB_REPO}/compare/${startRef}...${nextVersionTag}).
 
 For further reference, please refer to the changelog of the previous version, [${startRef}](https://github.com/${GITHUB_REPO}/releases/tag/${startRef}).
 
-## Merged PullRequests
+## Merged Pull Requests
 
 ${closedPRsText || '- none'}
 

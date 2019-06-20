@@ -14,7 +14,9 @@ export type PullRequest = {
 const PULL_REQUEST_INDEX_API_URI = getCurrentApiBaseUrlWithAuth('/pulls?state=closed');
 
 export async function getMergedPullRequests(since: string): Promise<PullRequest[]> {
-  return fetchPullRequests(since);
+  const list = await fetchPullRequests(since);
+
+  return list.filter((pr: PullRequest): boolean => !!pr.mergedAt);
 }
 
 async function fetchPullRequests(since: string): Promise<PullRequest[]> {
