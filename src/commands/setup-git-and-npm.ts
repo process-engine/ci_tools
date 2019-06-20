@@ -2,7 +2,7 @@ import { existsSync, writeFileSync } from 'fs';
 import { getCurrentRepoNameWithOwner, isGitHubRemote } from '../git/git';
 import { sh } from '../git/shell';
 
-const BADGE = '[create-changelog]\t';
+const BADGE = '[setup-git-and-npm]\t';
 const NPMRC_FILE = '.npmrc';
 const NPMRC_REGISTRY = '//registry.npmjs.org/';
 
