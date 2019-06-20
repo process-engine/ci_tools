@@ -158,6 +158,10 @@ function commitPushAndTagNextVersion(nextVersion: string, changelogText: string)
   gitCommit(`Release ${nextVersionTag}\n\n${changelogText}\n\n[skip ci]`);
   gitTag(nextVersionTag);
 
-  gitPush('origin', branchName);
+  sh('git log');
+
+  sh('git push');
+
+  // gitPush('origin', branchName);
   gitPushTags();
 }
