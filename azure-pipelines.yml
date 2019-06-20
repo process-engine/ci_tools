@@ -36,7 +36,7 @@ steps:
   displayName: 'Lint sources'
 
 - script: npm run ci-publish-if-applicable
-  displayName: 'Increment version & publish (if applicable)'
+  displayName: 'Auto-Publish (if applicable)'
   env:
     GH_USER: $(GH_USER)
     GH_TOKEN: $(GH_TOKEN)
