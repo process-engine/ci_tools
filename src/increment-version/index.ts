@@ -74,7 +74,7 @@ export async function run(...args): Promise<void> {
     );
     console.error(chalk.yellow(`${BADGE}Nothing to do here!`));
 
-    return;
+    process.exit(1);
   }
 
   if (isDirtyAndNotForced) {
@@ -103,7 +103,7 @@ export async function run(...args): Promise<void> {
     console.log(chalk.yellow(`${BADGE}I would commit version ${nextVersion} and tag that commit as "v${nextVersion}"`));
     console.log(chalk.yellow(`${BADGE}Aborting due to --dry.`));
 
-    return;
+    process.exit(1);
   }
 
   const changelogText = await getChangelogText(getPrevVersionTag());
