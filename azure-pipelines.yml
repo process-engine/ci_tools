@@ -37,7 +37,7 @@ steps:
 - script: |
     git remote set-url origin https://${GH_USER}:${GH_TOKEN}@github.com/process-engine/ci_tools.git
     git remote set-url --push origin https://${GH_USER}:${GH_TOKEN}@github.com/process-engine/ci_tools.git
-    git config --global user.email "hello@process-engine.io"
+    git config --global user.email "ci@process-engine.io"
     git config --global user.name "ProcessEngine Bot"
     echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
 
