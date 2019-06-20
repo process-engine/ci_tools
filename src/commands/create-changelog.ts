@@ -1,9 +1,9 @@
 import chalk from 'chalk';
 import fetch from 'node-fetch';
 
-import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../increment-version';
-import { PullRequest, getMergedPullRequests } from './pull_requests';
-import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner } from '../increment-version/git';
+import { PullRequest, getMergedPullRequests } from '../github/pull_requests';
+import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner } from '../git/git';
+import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../versions/git_helpers';
 
 type CommitFromApi = any;
 type IssueFromApi = any;

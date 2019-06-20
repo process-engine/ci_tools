@@ -1,7 +1,7 @@
-import { run as createChangelogRun } from './create-changelog/index';
-import { run as incrementVersionRun } from './increment-version/index';
+import { run as createChangelogRun } from './commands/create-changelog';
+import { run as incrementVersionRun } from './commands/increment-version';
 
-const HANDLERS = { 'create-changelog': createChangelogRun, 'increment-version': incrementVersionRun };
+const COMMAND_HANDLERS = { 'create-changelog': createChangelogRun, 'increment-version': incrementVersionRun };
 
 const [, , ...args] = process.argv;
 
@@ -11,9 +11,9 @@ if (args.length === 0) {
 }
 const [commandName, ...restArgs] = args;
 
-if (!HANDLERS[commandName]) {
+if (!COMMAND_HANDLERS[commandName]) {
   console.log(`No handler found for command: ${commandName}`);
   process.exit(1);
 }
 
-HANDLERS[commandName](...restArgs);
+COMMAND_HANDLERS[commandName](...restArgs);

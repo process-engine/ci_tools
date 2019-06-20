@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import fetch from 'node-fetch';
 
-import { getCurrentApiBaseUrlWithAuth } from '../increment-version/git';
+import { getCurrentApiBaseUrlWithAuth } from '../git/git';
 
 type PullRequestFromApi = any;
 export type PullRequest = {

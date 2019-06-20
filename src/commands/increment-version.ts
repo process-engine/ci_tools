@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 
-import { getPackageVersion, getPackageVersionTag } from './package_version';
 import {
   getGitBranch,
   getGitTagList,
@@ -13,11 +12,12 @@ import {
   isCurrentTag,
   isDirty,
   isExistingTag
-} from './git';
-import { APPLICABLE_BRANCHES, incrementVersion } from './increment_version';
-import { sh } from './shell';
-import { previousStableVersion } from './previous_stable_version';
-import { getChangelogText } from '../create-changelog';
+} from '../git/git';
+import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
+import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../versions/git_helpers';
+import { sh } from '../git/shell';
+import { APPLICABLE_BRANCHES } from '../versions/increment_version';
+import { getChangelogText } from './create-changelog';
 
 const BADGE = '[increment-version]\t';
 
@@ -114,41 +114,6 @@ export async function run(...args): Promise<void> {
       `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
     )
   );
-}
-
-/**
- * Returns the "next" version according to the rules described in `run`.
- */
-export function getNextVersion(): string {
-  const packageVersion = getPackageVersion();
-  const branchName = getGitBranch();
-  const gitTagList = getGitTagList();
-
-  return incrementVersion(packageVersion, branchName, gitTagList);
-}
-
-/**
- * Returns the "next" version tag according to the rules described in `run`.
- */
-export function getNextVersionTag(): string {
-  return `v${getNextVersion()}`;
-}
-
-/**
- * Returns the "prev" version according to the rules described in `run`.
- */
-export function getPrevVersion(): string {
-  const packageVersion = getPackageVersion();
-  const gitTagList = getGitTagList();
-
-  return previousStableVersion(packageVersion, gitTagList);
-}
-
-/**
- * Returns the "previous" version tag according to the rules described in `run`.
- */
-export function getPrevVersionTag(): string {
-  return `v${getPrevVersion()}`;
 }
 
 function printInfo(isDryRun: boolean, isForced: boolean): void {

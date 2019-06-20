@@ -19,8 +19,6 @@ export async function getLatestReleases(): Promise<ReleaseData[]> {
 
   const releaseData = releases.map(
     (release: any): ReleaseData => {
-      console.log(release);
-
       return {
         name: release.name
       };
