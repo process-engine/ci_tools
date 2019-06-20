@@ -57,8 +57,8 @@ export function gitTag(newTag): string {
   return sh(`git tag ${newTag}`);
 }
 
-export function gitPush(): string {
-  return sh('git push');
+export function gitPush(remoteName: string, branchName: string): string {
+  return sh(`git push ${remoteName} ${branchName}`);
 }
 
 export function gitPushTags(): string {

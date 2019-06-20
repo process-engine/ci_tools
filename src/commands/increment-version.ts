@@ -143,7 +143,9 @@ function printMultiLineString(text: string | string[]): void {
 }
 
 function commitPushAndTagNextVersion(nextVersion: string, changelogText: string): void {
+  const branchName = getGitBranch();
   const nextVersionTag = `v${nextVersion}`;
+
   sh(`npm version ${nextVersion} --no-git-tag-version`);
 
   gitAdd('package.json');
@@ -154,6 +156,6 @@ function commitPushAndTagNextVersion(nextVersion: string, changelogText: string)
   gitCommit(`Release ${nextVersionTag}\n\n${changelogText}\n\n[skip ci]`);
   gitTag(nextVersionTag);
 
-  gitPush();
+  gitPush('origin', branchName);
   gitPushTags();
 }
