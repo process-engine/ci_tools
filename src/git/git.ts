@@ -48,7 +48,7 @@ export function gitAdd(...files): string {
 }
 
 export function gitCommit(commitMessage): string {
-  const escapedCommitMessage = commitMessage.replace(/\n/g, '\\n').replace(/"/g, '\\"');
+  const escapedCommitMessage = commitMessage.replace(/"/g, '\\"');
 
   return sh(`git commit -m "${escapedCommitMessage}"`);
 }
