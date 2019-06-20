@@ -1,10 +1,10 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "2.0.0-beta1",
+  "version": "2.0.0-alpha28",
   "description": "CI tools for process-engine.io",
   "main": "dist/index.js",
   "scripts": {
-    "auto-publish-if-applicable": "node dist/ci_tools.js auto-publish-if-applicable && npm publish",
+    "auto-publish-if-applicable": "node dist/ci_tools.js auto-publish-if-applicable && npm publish || true",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "prepare": "npm run build",
