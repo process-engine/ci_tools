@@ -22,7 +22,7 @@ steps:
 - script: npm run lint
   displayName: 'Lint sources'
 
-- script: npm run auto-publish-if-applicable ${AUTO_PUBLISH_OPTIONS}
+- script: CI_TOOLS_FORCE=${CI_TOOLS_FORCE} npm run auto-publish-if-applicable
   displayName: 'Auto-Publish (if applicable)'
   env:
     # User has to have 'admin' privileges on the repo (to be able to push to protected branches).
