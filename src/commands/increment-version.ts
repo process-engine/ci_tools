@@ -146,6 +146,8 @@ function commitPushAndTagNextVersion(nextVersion: string, changelogText: string)
   const branchName = getGitBranch();
   const nextVersionTag = `v${nextVersion}`;
 
+  sh(`git checkout ${branchName}`);
+
   sh(`npm version ${nextVersion} --no-git-tag-version`);
 
   gitAdd('package.json');
