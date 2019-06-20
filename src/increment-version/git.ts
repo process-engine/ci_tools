@@ -31,6 +31,18 @@ export function isExistingTag(name: string): boolean {
   return foundTag != null;
 }
 
+export function isCurrentTag(tagName: string): boolean {
+  const tags = getGitTagsFromCommit('HEAD');
+
+  return tags.includes(tagName);
+}
+
+export function getGitTagsFromCommit(ref: string): string[] {
+  const tags = sh(`git tag -l --points-at ${ref}`).trim();
+
+  return tags.split('\n');
+}
+
 export function gitAdd(...files): string {
   return sh(`git add ${files.join(' ')}`);
 }

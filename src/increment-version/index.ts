@@ -1,10 +1,23 @@
 import chalk from 'chalk';
 
-import { getPackageVersion } from './package_version';
-import { getGitBranch, getGitTagList, gitPush, gitPushTags, isDirty, isExistingTag } from './git';
+import { getPackageVersion, getPackageVersionTag } from './package_version';
+import {
+  getGitBranch,
+  getGitTagList,
+  gitAdd,
+  gitCommit,
+  gitPush,
+  gitPushTags,
+  gitTag,
+  isDirty,
+  isExistingTag,
+  isCurrentTag,
+  getGitTagsFromCommit
+} from './git';
 import { APPLICABLE_BRANCHES, incrementVersion } from './increment_version';
 import { sh } from './shell';
 import { previousStableVersion } from './previous_stable_version';
+import { getChangelogText } from '../create-changelog';
 
 const BADGE = '[increment-version]\t';
 
@@ -46,11 +59,23 @@ export async function run(...args): Promise<void> {
   const isForced = args.indexOf('--force') !== -1;
   const isDirtyAndNotForced = isDirty() && !isForced;
 
+  const currentVersionTag = getPackageVersionTag();
   const nextVersion = getNextVersion();
   const nextVersionTag = getNextVersionTag();
   const notOnApplicableBranch = nextVersion == null;
 
   printInfo(isDryRun, isForced);
+
+  if (isCurrentTag(currentVersionTag)) {
+    console.error(
+      chalk.yellow(
+        `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
+      )
+    );
+    console.error(chalk.yellow(`${BADGE}Nothing to do here!`));
+
+    return;
+  }
 
   if (isDirtyAndNotForced) {
     const workdirState = sh('git status --porcelain --untracked-files=no').trim();
@@ -81,7 +106,8 @@ export async function run(...args): Promise<void> {
     return;
   }
 
-  commitPushAndTagNextVersion(nextVersion);
+  const changelogText = await getChangelogText(getPrevVersionTag());
+  commitPushAndTagNextVersion(nextVersion, changelogText);
 
   console.log(
     chalk.greenBright(
@@ -127,6 +153,7 @@ export function getPrevVersionTag(): string {
 
 function printInfo(isDryRun: boolean, isForced: boolean): void {
   const packageVersion = getPackageVersion();
+  const packageVersionTag = getPackageVersionTag();
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();
 
@@ -134,19 +161,30 @@ function printInfo(isDryRun: boolean, isForced: boolean): void {
   console.log(`${BADGE}isForced:`, isForced);
   console.log('');
   console.log(`${BADGE}packageVersion:`, packageVersion);
+  console.log(`${BADGE}packageVersionTag:`, packageVersionTag);
   console.log(`${BADGE}branchName:`, branchName);
   console.log(`${BADGE}gitTagList:`);
   printMultiLineString(gitTagList);
+  console.log(`${BADGE}tagsForHEAD:`);
+  printMultiLineString(getGitTagsFromCommit('HEAD'));
   console.log(`${BADGE}nextVersionTag:`, getNextVersionTag());
   console.log('');
 }
 
-function printMultiLineString(text: string): void {
-  text.split('\n').forEach((line: string): void => console.log(`${BADGE}  ${line}`));
+function printMultiLineString(text: string | string[]): void {
+  const lines = Array.isArray(text) ? text : text.split('\n');
+
+  lines.forEach((line: string): void => console.log(`${BADGE}  ${line}`));
 }
 
-function commitPushAndTagNextVersion(nextVersion: string): void {
-  sh(`npm version ${nextVersion}`);
+function commitPushAndTagNextVersion(nextVersion: string, changelogText: string): void {
+  const nextVersionTag = `v${nextVersion}`;
+  sh(`npm version ${nextVersion} --no-git-tag-version`);
+
+  gitAdd('package.json');
+  gitAdd('package-lock.json');
+  gitCommit(`Release ${nextVersionTag}\n\n${changelogText}`);
+  gitTag(nextVersionTag);
   gitPush();
   gitPushTags();
 }

@@ -6,3 +6,7 @@ export function getPackageVersion(): string {
 
   return packageJson.version;
 }
+
+export function getPackageVersionTag(): string {
+  return `v${getPackageVersion()}`;
+}
