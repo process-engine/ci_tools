@@ -56,8 +56,7 @@ const BADGE = '[increment-version]\t';
  */
 export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
-  const isForced = args.indexOf('--force') !== -1;
-  const isDirtyAndNotForced = isDirty() && !isForced;
+  const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
 
   const currentVersionTag = getPackageVersionTag();
   const nextVersion = getNextVersion();
@@ -72,22 +71,35 @@ export async function run(...args): Promise<boolean> {
         `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
       )
     );
-    console.error(chalk.yellow(`${BADGE}Nothing to do here!`));
 
-    process.exit(1);
+    if (isForced) {
+      console.error(chalk.yellowBright(`${BADGE}Resuming since --force was provided.`));
+      console.log('');
+    } else {
+      console.error(chalk.yellow(`${BADGE}Nothing to do here!`));
+
+      process.exit(1);
+    }
   }
 
-  if (isDirtyAndNotForced) {
+  if (isDirty()) {
     const workdirState = sh('git status --porcelain --untracked-files=no').trim();
 
-    console.error(chalk.red(`${BADGE}Can not proceed due to dirty git workdir:`));
-    printMultiLineString(workdirState);
+    if (isForced) {
+      console.error(chalk.yellow(`${BADGE}Git workdir is dirty:`));
+      printMultiLineString(workdirState);
+      console.error(chalk.yellowBright(`${BADGE}Resuming since --force was provided.`));
+      console.log('');
+    } else {
+      console.error(chalk.red(`${BADGE}Can not proceed due to dirty git workdir:`));
+      printMultiLineString(workdirState);
 
-    process.exit(1);
+      process.exit(1);
+    }
   }
 
   if (notOnApplicableBranch) {
-    console.error(chalk.red(`${BADGE}Aborting since we are not on one of these branches:`));
+    console.error(chalk.red(`${BADGE}We are not on one of these branches:`));
     console.error(chalk.red(`${BADGE}  ${APPLICABLE_BRANCHES.join(', ')}`));
     process.exit(1);
   }
@@ -96,12 +108,23 @@ export async function run(...args): Promise<boolean> {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Tag "${nextVersionTag}" already exists!`));
 
-    process.exit(1);
+    if (isForced) {
+      console.error(chalk.yellowBright(`${BADGE}Resuming since --force was provided.`));
+      console.log('');
+    } else {
+      console.error(chalk.yellow(`${BADGE}Aborting!`));
+
+      process.exit(1);
+    }
   }
 
   if (isDryRun) {
     console.log(chalk.yellow(`${BADGE}I would commit version ${nextVersion} and tag that commit as "v${nextVersion}"`));
     console.log(chalk.yellow(`${BADGE}Aborting due to --dry.`));
+
+    if (isForced) {
+      console.error(chalk.yellow(`${BADGE}Even though --force was provided, --dry takes precedence.`));
+    }
 
     process.exit(1);
   }
