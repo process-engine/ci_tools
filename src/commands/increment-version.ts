@@ -56,7 +56,7 @@ const BADGE = '[increment-version]\t';
  */
 export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
-  const isForced = process.env.CI_TOOLS_FORCE === 'true' || args.indexOf('--force') !== -1;
+  const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
 
   const currentVersionTag = getPackageVersionTag();
   const nextVersion = getNextVersion();
