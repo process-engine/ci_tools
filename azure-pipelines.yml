@@ -36,8 +36,10 @@ steps:
 
 - script: |
     git remote set-url origin https://${GH_USER}:${GH_TOKEN}@github.com/process-engine/ci_tools.git
+    git config --global user.email "hello@process-engine.io"
+    git config --global user.name "ProcessEngine Bot"
     echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
-    cat .npmrc
+
     npm run ci-publish-if-applicable
   displayName: 'Increment version & publish (if applicable)'
   env:
