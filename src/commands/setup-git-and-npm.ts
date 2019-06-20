@@ -15,9 +15,11 @@ const TOKEN_MASK = '*****';
 /**
  * Sets up Git remotes, Npm registry and access tokens based on environement variables.
  */
-export async function run(...args): Promise<void> {
+export async function run(...args): Promise<boolean> {
   setupNpm();
   setupGit();
+
+  return true;
 }
 
 function setupGit(): void {

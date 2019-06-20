@@ -23,7 +23,7 @@ const CLOSED_ISSUE_LENGTH_THRESHOLD = 50;
  * - Git: latest tags and commits
  * - GitHub: PRs and Issues
  */
-export async function run(...args): Promise<void> {
+export async function run(...args): Promise<boolean> {
   let startRef = args[0];
   if (!startRef) {
     startRef = getPrevVersionTag();
@@ -32,6 +32,7 @@ export async function run(...args): Promise<void> {
   const changelogText = await getChangelogText(startRef);
 
   console.log(changelogText);
+  return true;
 }
 
 export async function getChangelogText(startRef: string): Promise<string> {

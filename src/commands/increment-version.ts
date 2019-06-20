@@ -54,7 +54,7 @@ const BADGE = '[increment-version]\t';
  * (when on one of the applicable branches).
  *
  */
-export async function run(...args): Promise<void> {
+export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = args.indexOf('--force') !== -1;
   const isDirtyAndNotForced = isDirty() && !isForced;
@@ -114,6 +114,8 @@ export async function run(...args): Promise<void> {
       `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
     )
   );
+
+  return true;
 }
 
 function printInfo(isDryRun: boolean, isForced: boolean): void {
