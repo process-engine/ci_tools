@@ -149,14 +149,10 @@ function commitPushAndTagNextVersion(nextVersion: string, changelogText: string)
   gitAdd('package.json');
   gitAdd('package-lock.json');
 
-  const statusOutput = sh('git status');
-  console.log(statusOutput);
+  sh('git status');
 
-  const commitOutput = gitCommit(`Release ${nextVersionTag}\n\n${changelogText}`);
-  console.log(commitOutput);
-
-  const tagOutput = gitTag(nextVersionTag);
-  console.log(tagOutput);
+  gitCommit(`Release ${nextVersionTag}\n\n${changelogText}\n\n[skip ci]`);
+  gitTag(nextVersionTag);
 
   gitPush();
   gitPushTags();

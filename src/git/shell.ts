@@ -1,5 +1,11 @@
 import * as shell from 'shelljs';
 
 export function sh(command: string): string {
-  return shell.exec(command, { silent: true }).toString();
+  console.log(`exec: ${command}`);
+  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+  const result = shell.exec(command, { silent: true });
+  console.log(result.toString());
+  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+
+  return result.toString();
 }
