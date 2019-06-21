@@ -30,7 +30,7 @@ export async function run(...args): Promise<boolean> {
     startRef = getPrevVersionTag();
     console.log(`${BADGE}No start ref given, using: "${startRef}"`);
   }
-  const changelogText = await getChangelogText(startRef);
+  const changelogText = await getChangelogText(octokit, startRef);
 
   console.log(changelogText);
   return true;

@@ -7,13 +7,16 @@ const COMMAND_HANDLERS = {
   'auto-publish-if-applicable': autoPublishIfApplicableRun,
   'create-changelog': createChangelogRun,
   'increment-version': incrementVersionRun,
-  'setup-git-and-npm': setupGitAndNpmRun
+  'setup-git-and-npm': setupGitAndNpmRun,
+  test: async (...args: string[]): Promise<boolean> => {
+    return true;
+  }
 };
 
 const [, , ...args] = process.argv;
 
 if (args.length === 0) {
-  console.log('Usage: TODO');
+  console.log('Usage: ci_tools.js <command>');
   process.exit(1);
 }
 const [commandName, ...restArgs] = args;
