@@ -18,6 +18,7 @@ import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../version
 import { sh } from '../git/shell';
 import { APPLICABLE_BRANCHES } from '../versions/increment_version';
 import { getChangelogText } from './create-changelog';
+import { updateGitHubRelease } from './update-github-release';
 
 const BADGE = '[increment-version]\t';
 
@@ -130,13 +131,17 @@ export async function run(...args): Promise<boolean> {
   }
 
   const changelogText = await getChangelogText(getPrevVersionTag());
-  commitPushAndTagNextVersion(nextVersion, changelogText);
+  const commitSuccessful = commitPushAndTagNextVersion(nextVersion, changelogText);
 
-  console.log(
-    chalk.greenBright(
-      `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
-    )
-  );
+  if (commitSuccessful) {
+    console.log(
+      chalk.greenBright(
+        `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
+      )
+    );
+
+    await updateGitHubRelease(nextVersionTag, nextVersion, changelogText);
+  }
 
   return true;
 }
@@ -167,7 +172,7 @@ function printMultiLineString(text: string | string[]): void {
   lines.forEach((line: string): void => console.log(`${BADGE}  ${line}`));
 }
 
-function commitPushAndTagNextVersion(nextVersion: string, changelogText: string): void {
+function commitPushAndTagNextVersion(nextVersion: string, changelogText: string): boolean {
   const branchName = getGitBranch();
   const nextVersionTag = `v${nextVersion}`;
 
@@ -182,7 +187,9 @@ function commitPushAndTagNextVersion(nextVersion: string, changelogText: string)
 
   gitCommit(`Release ${nextVersionTag}\n\n${changelogText}\n\n[skip ci]`);
   gitTag(nextVersionTag);
-
   gitPush('origin', branchName);
   gitPushTags();
+
+  // TODO: we should check if these were successful!
+  return true;
 }
