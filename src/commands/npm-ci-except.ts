@@ -11,6 +11,7 @@ export async function run(...args): Promise<boolean> {
   const allPackageNames = getAllPackageNames();
   const patternList = args.filter((arg: string): boolean => !arg.startsWith('-'));
   const foundPatternMatchingPackages = getPackageNamesMatchingPattern(allPackageNames, patternList);
+  const foundPackageNames = foundPatternMatchingPackages.join(' ');
 
   console.log(`${BADGE}`);
   console.log(`${BADGE}allPackageNames:`, allPackageNames);
@@ -21,9 +22,7 @@ export async function run(...args): Promise<boolean> {
 
   annotatedSh('npm ci', isDryRun);
 
-  foundPatternMatchingPackages.forEach((packageName: string): void => {
-    annotatedSh(`npm install ${packageName}`, isDryRun);
-  });
+  annotatedSh(`npm install ${foundPackageNames}`, isDryRun);
 
   return true;
 }
