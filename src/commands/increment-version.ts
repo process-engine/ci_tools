@@ -18,11 +18,12 @@ import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../version
 import { sh } from '../git/shell';
 import { APPLICABLE_BRANCHES } from '../versions/increment_version';
 import { getChangelogText } from './create-changelog';
+import { updateGitHubRelease } from './update-github-release';
 
 const BADGE = '[increment-version]\t';
 
 /**
- * Increments the pre-version in `package.json` automatically, leave the "base"-version alone.
+ * Increments the pre-version in `package.json` automatically.
  *
  * Example:
  *
@@ -40,7 +41,7 @@ const BADGE = '[increment-version]\t';
  *    1.2.0-beta2
  *    1.2.0-beta3
  *
- * IMPORTANT: This script always keeps the "base"-version and never changes that!
+ * IMPORTANT: This script always keeps the "base" of the version and never changes that!
  *
  *    1.2.0-alpha14
  *    1.2.0-beta2
@@ -130,13 +131,17 @@ export async function run(...args): Promise<boolean> {
   }
 
   const changelogText = await getChangelogText(getPrevVersionTag());
-  commitPushAndTagNextVersion(nextVersion, changelogText);
+  const commitSuccessful = commitPushAndTagNextVersion(nextVersion, changelogText);
 
-  console.log(
-    chalk.greenBright(
-      `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
-    )
-  );
+  if (commitSuccessful) {
+    console.log(
+      chalk.greenBright(
+        `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
+      )
+    );
+
+    await updateGitHubRelease(nextVersionTag, nextVersion, changelogText);
+  }
 
   return true;
 }
@@ -167,7 +172,7 @@ function printMultiLineString(text: string | string[]): void {
   lines.forEach((line: string): void => console.log(`${BADGE}  ${line}`));
 }
 
-function commitPushAndTagNextVersion(nextVersion: string, changelogText: string): void {
+function commitPushAndTagNextVersion(nextVersion: string, changelogText: string): boolean {
   const branchName = getGitBranch();
   const nextVersionTag = `v${nextVersion}`;
 
@@ -182,7 +187,9 @@ function commitPushAndTagNextVersion(nextVersion: string, changelogText: string)
 
   gitCommit(`Release ${nextVersionTag}\n\n${changelogText}\n\n[skip ci]`);
   gitTag(nextVersionTag);
-
   gitPush('origin', branchName);
   gitPushTags();
+
+  // TODO: we should check if these were successful!
+  return true;
 }
