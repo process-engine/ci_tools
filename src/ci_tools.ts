@@ -1,15 +1,15 @@
-import { run as autoPublishIfApplicableRun } from './commands/auto-publish-if-applicable';
-import { run as npmCiExcept } from './commands/npm-ci-except';
-import { run as createChangelogRun } from './commands/create-changelog';
-import { run as incrementVersionRun } from './commands/increment-version';
-import { run as setupGitAndNpmRun } from './commands/setup-git-and-npm';
+import { run as runAutoPublishIfApplicable } from './commands/auto-publish-if-applicable';
+import { run as runNpmInstallOnly } from './commands/npm-install-only';
+import { run as runCreateChangelog } from './commands/create-changelog';
+import { run as runIncrementVersion } from './commands/increment-version';
+import { run as runSetupGitAndNpm } from './commands/setup-git-and-npm';
 
 const COMMAND_HANDLERS = {
-  'auto-publish-if-applicable': autoPublishIfApplicableRun,
-  'npm-ci-except': npmCiExcept,
-  'create-changelog': createChangelogRun,
-  'increment-version': incrementVersionRun,
-  'setup-git-and-npm': setupGitAndNpmRun
+  'auto-publish-if-applicable': runAutoPublishIfApplicable,
+  'create-changelog': runCreateChangelog,
+  'increment-version': runIncrementVersion,
+  'npm-install-only': runNpmInstallOnly,
+  'setup-git-and-npm': runSetupGitAndNpm
 };
 
 const [, , ...args] = process.argv;
