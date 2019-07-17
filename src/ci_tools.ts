@@ -1,5 +1,5 @@
 import { run as runAutoPublishIfApplicable } from './commands/auto-publish-if-applicable';
-import { run as runNpmCiExcept } from './commands/npm-ci-except';
+import { run as runNpmInstallOnly } from './commands/npm-install-only';
 import { run as runCreateChangelog } from './commands/create-changelog';
 import { run as runUpdateGithubRelease } from './commands/update-github-release';
 import { run as runIncrementVersion } from './commands/increment-version';
@@ -9,8 +9,8 @@ const COMMAND_HANDLERS = {
   'auto-publish-if-applicable': runAutoPublishIfApplicable,
   'create-changelog': runCreateChangelog,
   'increment-version': runIncrementVersion,
+  'npm-install-only': runNpmInstallOnly,
   'update-github-release': runUpdateGithubRelease,
-  'npm-ci-except': runNpmCiExcept,
   'setup-git-and-npm': runSetupGitAndNpm
 };
 
