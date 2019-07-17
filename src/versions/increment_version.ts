@@ -29,7 +29,7 @@ export function findNextSuffixNumber(baseVersion: string, branchName: string, ta
   });
   const sortedNumbersDesc = existingNumbers.sort((a: number, b: number): number => b - a);
 
-  return sortedNumbersDesc[0] + 1; // TODO: implement me
+  return sortedNumbersDesc[0] + 1;
 }
 
 export function incrementVersion(packageVersion: string, branchName: string, gitTagList: string): string | null {
