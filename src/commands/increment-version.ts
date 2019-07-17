@@ -22,7 +22,7 @@ import { getChangelogText } from './create-changelog';
 const BADGE = '[increment-version]\t';
 
 /**
- * Increments the pre-version in `package.json` automatically, leaving the "base" of the version alone.
+ * Increments the pre-version in `package.json` automatically.
  *
  * Example:
  *
