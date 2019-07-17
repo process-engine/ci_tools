@@ -23,7 +23,7 @@ import { updateGitHubRelease } from './update-github-release';
 const BADGE = '[increment-version]\t';
 
 /**
- * Increments the pre-version in `package.json` automatically, leave the "base"-version alone.
+ * Increments the pre-version in `package.json` automatically.
  *
  * Example:
  *
@@ -41,7 +41,7 @@ const BADGE = '[increment-version]\t';
  *    1.2.0-beta2
  *    1.2.0-beta3
  *
- * IMPORTANT: This script always keeps the "base"-version and never changes that!
+ * IMPORTANT: This script always keeps the "base" of the version and never changes that!
  *
  *    1.2.0-alpha14
  *    1.2.0-beta2

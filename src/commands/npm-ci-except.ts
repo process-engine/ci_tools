@@ -5,6 +5,17 @@ import { sh } from '../git/shell';
 
 const BADGE = '[npm-ci-except]\t';
 
+/**
+ * Runs `npm ci` and then runs `npm install <PACKAGE_NAME>` for the packages with a
+ * name starting with one of the given args.
+ *
+ * Example:
+ *
+ *    ci_tools npm-ci-except @process-engine/
+ *
+ * installs all deps using `npm ci`, but all deps starting with `@process-engine/`
+ * will be installed using `npm install`.
+ */
 export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
 

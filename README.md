@@ -72,7 +72,7 @@ repository page.
 create-github-release <github namespace> <github repository> <version to release> <target commit> <is draft> <is prerelease> [files to upload...]
 ```
 
-**Exmaple usage:**
+**Example usage:**
 
 ```bash
 RELEASE_GH_TOKEN="InsertGitHubTokenHere" create-github-release process-engine bpmn-studio 3.0.0 master false true dist/bpmn-studio.dmg CHANGELOG.md
@@ -96,7 +96,7 @@ error occurred.
 is-nuget-package-published <NuGet V3 feed URL> <package> <version>
 ```
 
-**Exmaple usage:**
+**Example usage:**
 
 ```bash
 NUGET_ACCESS_TOKEN="NuGetAPITokenHere" is-nuget-packet-published https://5minds.myget.org/F/process_engine_public/api/v3/index.json ProcessEngine.Runtime 3.8.2-pre1
