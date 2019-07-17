@@ -19,9 +19,9 @@ const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 50;
 const CLOSED_ISSUE_LENGTH_THRESHOLD = 50;
 
 /**
- * Single source of truth is shared between Git and GitHub:
+ * Creates a changelog based on data available in Git and GitHub:
  *
- * - Git: latest tags and commits
+ * - Git: latest commits and tags
  * - GitHub: PRs and Issues
  */
 export async function run(...args): Promise<boolean> {

@@ -1,6 +1,7 @@
 import { run as runAutoPublishIfApplicable } from './commands/auto-publish-if-applicable';
 import { run as runNpmInstallOnly } from './commands/npm-install-only';
 import { run as runCreateChangelog } from './commands/create-changelog';
+import { run as runUpdateGithubRelease } from './commands/update-github-release';
 import { run as runIncrementVersion } from './commands/increment-version';
 import { run as runSetupGitAndNpm } from './commands/setup-git-and-npm';
 
@@ -9,6 +10,7 @@ const COMMAND_HANDLERS = {
   'create-changelog': runCreateChangelog,
   'increment-version': runIncrementVersion,
   'npm-install-only': runNpmInstallOnly,
+  'update-github-release': runUpdateGithubRelease,
   'setup-git-and-npm': runSetupGitAndNpm
 };
 
