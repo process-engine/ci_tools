@@ -15,7 +15,7 @@ export async function run(...args): Promise<boolean> {
 
   console.log(`${BADGE}`, argv);
 
-  const success = await updateGitHubRelease(argv.versionTag, argv.title, argv.text, !!argv.dry);
+  const success = await updateGitHubRelease(argv.versionTag, argv.title, argv.text, argv.dry);
 
   if (success) {
     console.log(`${BADGE}Success.`);
@@ -86,7 +86,7 @@ async function createNewRelease(
   title: string,
   text: string
 ): Promise<boolean> {
-  const isPrerelease = !!versionTag.match(/-/);
+  const isPrerelease = versionTag.match(/-/) != null;
 
   const response = await octokit.repos.createRelease({
     owner: repo.owner,
