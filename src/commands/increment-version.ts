@@ -17,7 +17,7 @@ import { getPackageVersion, getPackageVersionTag } from '../versions/package_ver
 import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../versions/git_helpers';
 import { sh } from '../git/shell';
 import { APPLICABLE_BRANCHES } from '../versions/increment_version';
-import { getChangelogText } from './create-changelog';
+import { getChangelogText } from './internal/create-changelog';
 
 const BADGE = '[increment-version]\t';
 
