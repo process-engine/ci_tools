@@ -18,7 +18,6 @@ import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../version
 import { sh } from '../git/shell';
 import { APPLICABLE_BRANCHES } from '../versions/increment_version';
 import { getChangelogText } from './create-changelog';
-import { updateGitHubRelease } from './update-github-release';
 
 const BADGE = '[increment-version]\t';
 
@@ -139,8 +138,6 @@ export async function run(...args): Promise<boolean> {
         `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
       )
     );
-
-    await updateGitHubRelease(nextVersionTag, nextVersion, changelogText);
   }
 
   return true;

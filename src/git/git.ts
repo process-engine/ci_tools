@@ -2,6 +2,11 @@ import { sh } from './shell';
 
 const CURRENT_BRANCH_MARKER = /^\* /;
 
+type GitCommitMessage = {
+  subject: string;
+  body: string | null;
+};
+
 export function getGitTagList(): string {
   return sh('git tag --sort=-creatordate').trim();
 }
@@ -63,6 +68,18 @@ export function gitPush(remoteName: string, branchName: string): string {
 
 export function gitPushTags(): string {
   return sh('git push --tags');
+}
+
+export function getFullCommitMessageFromRef(tagOrCommit: string): GitCommitMessage | null {
+  const output = sh(`git show -s --format=%B ${tagOrCommit}`);
+  const lines = output.split('\n');
+  const subject = lines[0];
+  const body = lines
+    .slice(1, lines.length - 2)
+    .join('\n')
+    .trim();
+
+  return { subject, body };
 }
 
 export function getCurrentRepoNameWithOwner(): string {
