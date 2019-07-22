@@ -1,8 +1,11 @@
 import * as Octokit from '@octokit/rest';
 import * as yargsParser from 'yargs-parser';
-import { getCurrentRepoNameWithOwner } from '../git/git';
+
+import { getCurrentRepoNameWithOwner, getFullCommitMessageFromRef, isExistingTag } from '../git/git';
+import { getPackageVersionTag } from '../versions/package_version';
 
 const BADGE = '[update-github-release]\t';
+const SKIP_CI_MESSAGE = '[skip ci]';
 
 type GitTag = string;
 type GitHubRepo = {
@@ -12,10 +15,36 @@ type GitHubRepo = {
 
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args);
+  const isDryRun = argv.dry;
+  let versionTag = argv.versionTag;
+  let title = argv.title;
+  let text = argv.text;
 
-  console.log(`${BADGE}`, argv);
+  if (versionTag == null) {
+    versionTag = getPackageVersionTag();
 
-  const success = await updateGitHubRelease(argv.versionTag, argv.title, argv.text, argv.dry);
+    console.log(`${BADGE}No --version-tag given, versionTag set to:`, versionTag);
+  }
+
+  if (argv.useTitleAndTextFromGitTag) {
+    if (!isExistingTag(versionTag)) {
+      console.error(`${BADGE}Tag does not exists: ${versionTag}`);
+      console.error(`${BADGE}Aborting.`);
+      return false;
+    }
+
+    const { subject, body } = getFullCommitMessageFromRef(versionTag);
+
+    title = subject;
+    text = body.replace(SKIP_CI_MESSAGE, '').trim();
+
+    console.log(`${BADGE}`);
+    console.log(`${BADGE}Option --use-title-and-text-from-git-tag was given.`);
+    console.log(`${BADGE}title set to:`, title);
+    console.log(`${BADGE}text set to:`, text);
+  }
+
+  const success = await updateGitHubRelease(versionTag, title, text, isDryRun);
 
   if (success) {
     console.log(`${BADGE}Success.`);
