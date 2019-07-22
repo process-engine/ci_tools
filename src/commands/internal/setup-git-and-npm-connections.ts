@@ -1,6 +1,6 @@
 import { existsSync, writeFileSync } from 'fs';
-import { getCurrentRepoNameWithOwner, isGitHubRemote } from '../git/git';
-import { sh } from '../git/shell';
+import { getCurrentRepoNameWithOwner, isGitHubRemote } from '../../git/git';
+import { sh } from '../../git/shell';
 
 const BADGE = '[setup-git-and-npm]\t';
 const NPMRC_FILE = '.npmrc';
