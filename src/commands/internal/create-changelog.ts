@@ -4,7 +4,7 @@ import * as moment from 'moment';
 
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner } from '../../git/git';
-import { getNextVersion, getVersionTag, getPrevVersionTag } from '../../versions/git_helpers';
+import { getNextVersion, getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
 
 type CommitFromApi = any;
 type IssueFromApi = any;
