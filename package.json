@@ -1,10 +1,10 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "2.0.0-alpha41",
+  "version": "2.0.0-feature-cb9341-jydxr8bt",
   "description": "CI tools for process-engine.io",
   "main": "dist/index.js",
   "scripts": {
-    "auto-publish-if-applicable": "node dist/ci_tools.js auto-publish-if-applicable && npm publish || true",
+    "auto-publish-if-applicable": "node dist/ci_tools.js setup-git-and-npm-connections && node dist/ci_tools.js prepare-version && node dist/ci_tools.js commit-and-tag-version && node dist/ci_tools.js update-github-release --use-title-and-text-from-git-tag && npm publish || true",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "prepare": "npm run build",
