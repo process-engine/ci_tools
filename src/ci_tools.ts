@@ -1,12 +1,14 @@
 import { run as runAutoPublishIfApplicable } from './commands/internal/auto-publish-if-applicable';
-import { run as runNpmInstallOnly } from './commands/npm-install-only';
+import { run as runCommitAndTagVersion } from './commands/commit-and-tag-version';
 import { run as runCreateChangelog } from './commands/internal/create-changelog';
-import { run as runUpdateGithubRelease } from './commands/update-github-release';
-import { run as runIncrementVersion } from './commands/increment-version';
+import { run as runNpmInstallOnly } from './commands/npm-install-only';
+import { run as runPrepareVersion } from './commands/prepare-version';
 import { run as runSetupGitAndNpm } from './commands/internal/setup-git-and-npm';
+import { run as runUpdateGithubRelease } from './commands/update-github-release';
 
 const COMMAND_HANDLERS = {
-  'increment-version': runIncrementVersion,
+  'commit-and-tag-version': runCommitAndTagVersion,
+  'prepare-version': runPrepareVersion,
   'npm-install-only': runNpmInstallOnly,
   'update-github-release': runUpdateGithubRelease
 };

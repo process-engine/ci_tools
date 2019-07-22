@@ -6,68 +6,24 @@ type GitCommitMessage = {
   subject: string;
   body: string | null;
 };
+type GitOperationResult = string;
 
 export function getGitTagList(): string {
   return sh('git tag --sort=-creatordate').trim();
+}
+
+export function getGitCommitSha1(): string {
+  return sh('git rev-parse HEAD').trim();
 }
 
 export function getGitBranch(): string {
   return process.env.GIT_BRANCH ? process.env.GIT_BRANCH.replace(/^refs\/heads\//, '') : getGitBranchFromGit();
 }
 
-function getGitBranchFromGit(): string {
-  const outputLines = sh('git branch')
-    .trim()
-    .split('\n');
-  const branchLine = outputLines.find((name: string): boolean => !!name.match(CURRENT_BRANCH_MARKER));
-
-  return branchLine.replace(CURRENT_BRANCH_MARKER, '');
-}
-
-export function isDirty(): boolean {
-  return sh('git status --porcelain --untracked-files=no').trim() !== '';
-}
-
-export function isExistingTag(name: string): boolean {
-  const foundTag = getGitTagList()
-    .split('\n')
-    .find((line: string): boolean => line === name);
-
-  return foundTag != null;
-}
-
-export function isCurrentTag(tagName: string): boolean {
-  const tags = getGitTagsFromCommit('HEAD');
-
-  return tags.includes(tagName);
-}
-
 export function getGitTagsFromCommit(ref: string): string[] {
   const tags = sh(`git tag -l --points-at ${ref}`).trim();
 
   return tags.split('\n');
-}
-
-export function gitAdd(...files): string {
-  return sh(`git add ${files.join(' ')}`);
-}
-
-export function gitCommit(commitMessage): string {
-  const escapedCommitMessage = commitMessage.replace(/"/g, '\\"');
-
-  return sh(`git commit -m "${escapedCommitMessage}"`);
-}
-
-export function gitTag(newTag): string {
-  return sh(`git tag ${newTag}`);
-}
-
-export function gitPush(remoteName: string, branchName: string): string {
-  return sh(`git push ${remoteName} ${branchName}`);
-}
-
-export function gitPushTags(): string {
-  return sh('git push --tags');
 }
 
 export function getFullCommitMessageFromRef(tagOrCommit: string): GitCommitMessage | null {
@@ -112,9 +68,58 @@ export function getCurrentApiBaseUrlWithAuth(route: string): string {
   return `https://${authPart}api.github.com/repos/${gitHubRepo}${route}`;
 }
 
+export function gitAdd(...files: string[]): GitOperationResult {
+  return sh(`git add ${files.join(' ')}`);
+}
+
+export function gitCommit(commitMessage: string): GitOperationResult {
+  const escapedCommitMessage = commitMessage.replace(/"/g, '\\"');
+
+  return sh(`git commit -m "${escapedCommitMessage}"`);
+}
+
+export function gitTag(newTag: string): GitOperationResult {
+  return sh(`git tag ${newTag}`);
+}
+
+export function gitPush(remoteName: string, branchName: string): GitOperationResult {
+  return sh(`git push ${remoteName} ${branchName}`);
+}
+
+export function gitPushTags(): GitOperationResult {
+  return sh('git push --tags');
+}
+
+export function isCurrentTag(tagName: string): boolean {
+  const tags = getGitTagsFromCommit('HEAD');
+
+  return tags.includes(tagName);
+}
+
+export function isDirty(): boolean {
+  return sh('git status --porcelain --untracked-files=no').trim() !== '';
+}
+
+export function isExistingTag(name: string): boolean {
+  const foundTag = getGitTagList()
+    .split('\n')
+    .find((line: string): boolean => line === name);
+
+  return foundTag != null;
+}
+
 export function isGitHubRemote(): boolean {
   const url = sh('git remote get-url origin');
   const matchData = url.match(/github.com[:/](.+)$/m);
 
   return matchData != null;
+}
+
+function getGitBranchFromGit(): string {
+  const outputLines = sh('git branch')
+    .trim()
+    .split('\n');
+  const branchLine = outputLines.find((name: string): boolean => !!name.match(CURRENT_BRANCH_MARKER));
+
+  return branchLine.replace(CURRENT_BRANCH_MARKER, '');
 }
