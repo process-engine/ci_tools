@@ -1,6 +1,6 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "2.0.0-feature-cb9341-jydxr8bt",
+  "version": "2.0.0-refs-696fa2-jydxss90",
   "description": "CI tools for process-engine.io",
   "main": "dist/index.js",
   "scripts": {
