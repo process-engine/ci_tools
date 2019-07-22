@@ -1,5 +1,9 @@
+import * as glob from 'glob';
+import * as mime from 'mime-types';
 import * as Octokit from '@octokit/rest';
+import * as Path from 'path';
 import * as yargsParser from 'yargs-parser';
+import { readFileSync, statSync } from 'fs';
 
 import { getCurrentRepoNameWithOwner, getFullCommitMessageFromRef, isExistingTag } from '../git/git';
 import { getPackageVersionTag } from '../versions/package_version';
@@ -44,7 +48,16 @@ export async function run(...args): Promise<boolean> {
     console.log(`${BADGE}text set to:`, text);
   }
 
-  const success = await updateGitHubRelease(versionTag, title, text, isDryRun);
+  let assets = [];
+  if (argv.assets) {
+    const list = Array.isArray(argv.assets) ? argv.assets : [argv.assets];
+    list.forEach((pattern: string): void => {
+      const files = glob.sync(pattern);
+      assets = assets.concat(files);
+    });
+  }
+
+  const success = await updateGitHubRelease(versionTag, title, text, assets, isDryRun);
 
   if (success) {
     console.log(`${BADGE}Success.`);
@@ -60,6 +73,7 @@ export async function updateGitHubRelease(
   versionTag: GitTag,
   title: string,
   text: string,
+  assets: string[],
   dryRun: boolean = false
 ): Promise<boolean> {
   const repo = getCurrentRepoNameWithOwnerAsObject(getCurrentRepoNameWithOwner());
@@ -76,7 +90,7 @@ export async function updateGitHubRelease(
 
     console.log(`${BADGE}Updating existing release for ${versionTag} ...`);
 
-    return updateExistingRelease(octokit, repo, releaseId, title, text);
+    return updateExistingRelease(octokit, repo, releaseId, title, text, assets);
   }
 
   if (dryRun) {
@@ -87,7 +101,7 @@ export async function updateGitHubRelease(
 
   console.log(`${BADGE}Creating new release for ${versionTag} ...`);
 
-  return createNewRelease(octokit, repo, versionTag, title, text);
+  return createNewRelease(octokit, repo, versionTag, title, text, assets);
 }
 
 async function updateExistingRelease(
@@ -95,7 +109,8 @@ async function updateExistingRelease(
   repo: GitHubRepo,
   releaseId: number,
   title: string,
-  text: string
+  text: string,
+  assets: string[]
 ): Promise<boolean> {
   const response = await octokit.repos.editRelease({
     owner: repo.owner,
@@ -105,7 +120,48 @@ async function updateExistingRelease(
     body: text
   });
 
-  return response.status === 200;
+  let success = response.status === 200;
+  if (success) {
+    const uploadUrl = response.data.upload_url;
+
+    for (const filename of assets) {
+      console.log(`${BADGE}- Uploading '${filename}' ...`);
+
+      try {
+        const uploadSuccess = await uploadAsset(octokit, uploadUrl, filename);
+        success = success && uploadSuccess;
+      } catch (e) {
+        const data = JSON.parse(e.message);
+        const alreadyExists = data.errors.length === 1 && data.errors[0].code === 'already_exists';
+
+        if (alreadyExists) {
+          console.log(`${BADGE}  INFO: Asset '${filename}' already exists.`);
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
+  return success;
+}
+
+async function uploadAsset(octokit: Octokit, uploadUrl: string, filename: string): Promise<boolean> {
+  const buffer: Buffer = readFileSync(filename);
+  const name: string = Path.basename(filename).replace(' ', '_');
+  const contentLength: number = statSync(filename).size;
+  const contentType: string = mime.lookup(filename) || 'text/plain';
+  const options: any = {
+    url: uploadUrl,
+    file: buffer,
+    contentType: contentType,
+    contentLength: contentLength,
+    name: name
+  };
+
+  const uploadResponse = await octokit.repos.uploadAsset(options);
+
+  return uploadResponse.status === 200;
 }
 
 async function createNewRelease(
@@ -113,7 +169,8 @@ async function createNewRelease(
   repo: GitHubRepo,
   versionTag: GitTag,
   title: string,
-  text: string
+  text: string,
+  assets: string[]
 ): Promise<boolean> {
   const isPrerelease = versionTag.match(/-/) != null;
 
@@ -126,7 +183,14 @@ async function createNewRelease(
     prerelease: isPrerelease
   });
 
-  return response.status === 200;
+  const success = response.status === 200;
+  if (success) {
+    const releaseId = response.data.id;
+
+    await updateExistingRelease(octokit, repo, releaseId, null, null, assets);
+  }
+
+  return success;
 }
 
 async function createOctokit(githubAuthToken: string): Promise<Octokit> {
