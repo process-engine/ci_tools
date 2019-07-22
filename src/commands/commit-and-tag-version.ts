@@ -21,7 +21,7 @@ export async function run(...args): Promise<boolean> {
 
   const packageVersion = getPackageVersion();
   const changelogText = await getChangelogText(getPrevVersionTag());
-  const commitSuccessful = commitPushAndTagCurrentVersion(packageVersion, changelogText);
+  const commitSuccessful = pushCommitAndTagCurrentVersion(packageVersion, changelogText);
 
   if (commitSuccessful) {
     console.log(
