@@ -4,7 +4,7 @@ import { getChangelogText } from './internal/create-changelog';
 import { getGitBranch, gitAdd, gitCommit, gitPush, gitPushTags, gitTag } from '../git/git';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
 import { getPrevVersionTag } from '../versions/git_helpers';
-import { sh } from '../git/shell';
+import { sh } from '../cli/shell';
 
 const BADGE = '[commit-and-tag-version]\t';
 

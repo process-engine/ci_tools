@@ -11,9 +11,12 @@ import { run as runUpdateGithubRelease } from './commands/update-github-release'
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
 
+import { run as runPublishNpmPackage } from './commands/publish-npm-package';
+
 const COMMAND_HANDLERS = {
   'commit-and-tag-version': runCommitAndTagVersion,
   'prepare-version': runPrepareVersion,
+  'publish-npm-package': runPublishNpmPackage,
   'npm-install-only': runNpmInstallOnly,
   'update-github-release': runUpdateGithubRelease
 };
@@ -22,6 +25,8 @@ const COMMAND_HANDLERS = {
 const INTERNAL_COMMAND_HANDLERS = {
   'auto-publish-if-applicable': runAutoPublishIfApplicable,
   'create-changelog': runCreateChangelog,
+  'npm-install-only': runNpmInstallOnly,
+  'update-github-release': runUpdateGithubRelease,
   'setup-git-and-npm-connections': runSetupGitAndNpmConnections
 };
 

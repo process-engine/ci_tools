@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { readFileSync } from 'fs';
 
-import { sh } from '../git/shell';
+import { sh } from '../cli/shell';
 
 const BADGE = '[npm-ci-except]\t';
 
