@@ -4,7 +4,7 @@ import { getNpmTag } from './tag';
 describe('tag.ts', (): void => {
   describe('getNpmTag()', (): void => {
     it('should return the right tags for primary branches', (): void => {
-      assert.strictEqual(getNpmTag('master'), 'stable');
+      assert.strictEqual(getNpmTag('master'), null);
       assert.strictEqual(getNpmTag('beta'), 'beta');
       assert.strictEqual(getNpmTag('develop'), 'alpha');
     });

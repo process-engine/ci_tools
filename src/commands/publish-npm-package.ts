@@ -44,7 +44,8 @@ export async function run(...args): Promise<boolean> {
 
 function getNpmPublishShellCommand(useBranchForTag: boolean, isDryRun: boolean): string {
   const dryRun = isDryRun ? '--dry-run ' : '';
-  const tag = useBranchForTag ? `--tag ${getNpmTag(getGitBranch())} ` : '';
+  const npmTag = getNpmTag(getGitBranch());
+  const tag = useBranchForTag && npmTag ? `--tag ${npmTag} ` : '';
 
   return `npm publish ${dryRun}${tag}`.trim();
 }
