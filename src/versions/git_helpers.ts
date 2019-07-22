@@ -1,4 +1,4 @@
-import { getGitBranch, getGitTagList, getGitCommitSha1 } from '../git/git';
+import { getGitBranch, getGitCommitSha1, getGitTagList } from '../git/git';
 import { getPackageVersion } from './package_version';
 import { incrementVersion } from './increment_version';
 import { previousStableVersion } from './previous_stable_version';

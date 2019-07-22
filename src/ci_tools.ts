@@ -3,7 +3,7 @@ import { run as runCommitAndTagVersion } from './commands/commit-and-tag-version
 import { run as runCreateChangelog } from './commands/internal/create-changelog';
 import { run as runNpmInstallOnly } from './commands/npm-install-only';
 import { run as runPrepareVersion } from './commands/prepare-version';
-import { run as runSetupGitAndNpm } from './commands/internal/setup-git-and-npm';
+import { run as runSetupGitAndNpmConnections } from './commands/internal/setup-git-and-npm-connections';
 import { run as runUpdateGithubRelease } from './commands/update-github-release';
 
 const COMMAND_HANDLERS = {
@@ -17,7 +17,7 @@ const COMMAND_HANDLERS = {
 const INTERNAL_COMMAND_HANDLERS = {
   'auto-publish-if-applicable': runAutoPublishIfApplicable,
   'create-changelog': runCreateChangelog,
-  'setup-git-and-npm': runSetupGitAndNpm
+  'setup-git-and-npm-connections': runSetupGitAndNpmConnections
 };
 
 const [, , ...args] = process.argv;

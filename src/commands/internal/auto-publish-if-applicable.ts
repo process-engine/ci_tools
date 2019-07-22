@@ -1,9 +1,9 @@
-import { run as incrementVersionRun } from '../prepare-version';
-import { run as setupGitAndNpmRun } from './setup-git-and-npm';
+import { run as prepareVersionRun } from '../prepare-version';
+import { run as setupGitAndNpmConnectionsRun } from './setup-git-and-npm-connections';
 
 const BADGE = '[auto-publish-if-applicable]\t';
 
 export async function run(...args): Promise<boolean> {
   console.log(`${BADGE}`);
-  return setupGitAndNpmRun(...args) && incrementVersionRun(...args);
+  return setupGitAndNpmConnectionsRun(...args) && prepareVersionRun(...args);
 }
