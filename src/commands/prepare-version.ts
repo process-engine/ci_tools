@@ -1,8 +1,7 @@
 import chalk from 'chalk';
 
-import { APPLICABLE_BRANCHES } from '../versions/increment_version';
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, isCurrentTag, isDirty, isExistingTag } from '../git/git';
-import { getNextVersion, getNextVersionTag } from '../versions/git_helpers';
+import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
 import { sh } from '../git/shell';
 
@@ -47,9 +46,9 @@ export async function run(...args): Promise<boolean> {
 
   const currentVersionTag = getPackageVersionTag();
   const nextVersion = getNextVersion();
-  const nextVersionTag = getNextVersionTag();
+  const nextVersionTag = getVersionTag(nextVersion);
 
-  printInfo(isDryRun, isForced);
+  printInfo(nextVersion, isDryRun, isForced);
 
   if (isCurrentTag(currentVersionTag)) {
     console.error(
@@ -114,9 +113,9 @@ export async function run(...args): Promise<boolean> {
   return true;
 }
 
-function printInfo(isDryRun: boolean, isForced: boolean): void {
+function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
   const packageVersion = getPackageVersion();
-  const packageVersionTag = getPackageVersionTag();
+  const packageVersionTag = getVersionTag(packageVersion);
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();
 
@@ -130,7 +129,7 @@ function printInfo(isDryRun: boolean, isForced: boolean): void {
   printMultiLineString(gitTagList);
   console.log(`${BADGE}tagsForHEAD:`);
   printMultiLineString(getGitTagsFromCommit('HEAD'));
-  console.log(`${BADGE}nextVersionTag:`, getNextVersionTag());
+  console.log(`${BADGE}nextVersionTag:`, getVersionTag(nextVersion));
   console.log('');
 }
 

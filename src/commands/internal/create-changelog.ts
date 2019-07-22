@@ -4,7 +4,7 @@ import * as moment from 'moment';
 
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner } from '../../git/git';
-import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../../versions/git_helpers';
+import { getNextVersion, getVersionTag, getPrevVersionTag } from '../../versions/git_helpers';
 
 type CommitFromApi = any;
 type IssueFromApi = any;
@@ -48,7 +48,7 @@ export async function getChangelogText(startRef: string): Promise<string> {
     process.exit(3);
   }
 
-  const nextVersionTag = getNextVersionTag();
+  const nextVersionTag = getVersionTag(nextVersion);
 
   printInfo(startRef, startDate, endRef, nextVersion, nextVersionTag);
 

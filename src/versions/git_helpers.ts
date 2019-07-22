@@ -25,10 +25,10 @@ export function getPreVersionForGitCommit(packageVersion: string, branchName: st
 }
 
 /**
- * Returns the "next" version tag according to the rules described in `run`.
+ * Returns the version tag fora given `version`.
  */
-export function getNextVersionTag(): string {
-  return `v${getNextVersion()}`;
+export function getVersionTag(version: string): string {
+  return `v${version}`;
 }
 
 /**
