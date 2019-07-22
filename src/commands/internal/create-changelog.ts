@@ -2,9 +2,9 @@ import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
 
-import { PullRequest, getMergedPullRequests } from '../github/pull_requests';
-import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner } from '../git/git';
-import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../versions/git_helpers';
+import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
+import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner } from '../../git/git';
+import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../../versions/git_helpers';
 
 type CommitFromApi = any;
 type IssueFromApi = any;
