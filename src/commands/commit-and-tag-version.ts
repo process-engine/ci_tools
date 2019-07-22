@@ -48,7 +48,7 @@ function printInfo(isDryRun: boolean, isForced: boolean): void {
   console.log('');
 }
 
-function commitPushAndTagCurrentVersion(currentVersion: string, changelogText: string): boolean {
+function pushCommitAndTagCurrentVersion(currentVersion: string, changelogText: string): boolean {
   const branchName = getGitBranch();
   const currentVersionTag = `v${currentVersion}`;
 
