@@ -1,17 +1,23 @@
-import { run as runAutoPublishIfApplicable } from './commands/auto-publish-if-applicable';
+import { run as runAutoPublishIfApplicable } from './commands/internal/auto-publish-if-applicable';
+import { run as runCommitAndTagVersion } from './commands/commit-and-tag-version';
+import { run as runCreateChangelog } from './commands/internal/create-changelog';
 import { run as runNpmInstallOnly } from './commands/npm-install-only';
-import { run as runCreateChangelog } from './commands/create-changelog';
+import { run as runPrepareVersion } from './commands/prepare-version';
+import { run as runSetupGitAndNpmConnections } from './commands/internal/setup-git-and-npm-connections';
 import { run as runUpdateGithubRelease } from './commands/update-github-release';
-import { run as runIncrementVersion } from './commands/increment-version';
-import { run as runSetupGitAndNpm } from './commands/setup-git-and-npm';
 
 const COMMAND_HANDLERS = {
+  'commit-and-tag-version': runCommitAndTagVersion,
+  'prepare-version': runPrepareVersion,
+  'npm-install-only': runNpmInstallOnly,
+  'update-github-release': runUpdateGithubRelease
+};
+
+// Internal commands are only used to develop ci_tools and are not intended for public consumption.
+const INTERNAL_COMMAND_HANDLERS = {
   'auto-publish-if-applicable': runAutoPublishIfApplicable,
   'create-changelog': runCreateChangelog,
-  'increment-version': runIncrementVersion,
-  'npm-install-only': runNpmInstallOnly,
-  'update-github-release': runUpdateGithubRelease,
-  'setup-git-and-npm': runSetupGitAndNpm
+  'setup-git-and-npm-connections': runSetupGitAndNpmConnections
 };
 
 const [, , ...args] = process.argv;
@@ -25,9 +31,11 @@ if (args.length === 0) {
 }
 const [commandName, ...restArgs] = args;
 
-if (!COMMAND_HANDLERS[commandName]) {
+const foundCommand = COMMAND_HANDLERS[commandName] || INTERNAL_COMMAND_HANDLERS[commandName];
+
+if (foundCommand == null) {
   console.log(`No handler found for command: ${commandName}`);
   process.exit(1);
 }
 
-COMMAND_HANDLERS[commandName](...restArgs);
+foundCommand(...restArgs);
