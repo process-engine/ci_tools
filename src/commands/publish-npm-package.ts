@@ -6,6 +6,7 @@ import { getGitBranch } from '../git/git';
 import { getNpmTag } from '../npm/tag';
 import { getPackageVersion } from '../versions/package_version';
 import { printMultiLineString } from '../cli/printMultiLineString';
+import { setupNpm } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
 
 const BADGE = '[publish-npm-package]\t';
@@ -19,6 +20,9 @@ export async function run(...args): Promise<boolean> {
   const packageVersion = getPackageVersion();
 
   const npmPublishShellCommand = getNpmPublishShellCommand(createTagFromBranchName, isDryRun);
+
+  setupNpm();
+
   const output = annotatedSh(npmPublishShellCommand);
 
   const lines = output.trim().split('\n');

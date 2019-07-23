@@ -7,6 +7,7 @@ import { readFileSync, statSync } from 'fs';
 
 import { getCurrentRepoNameWithOwner, getFullCommitMessageFromRef, isExistingTag } from '../git/git';
 import { getPackageVersionTag } from '../versions/package_version';
+import { setupGit } from './internal/setup-git-and-npm-connections';
 
 const BADGE = '[update-github-release]\t';
 const SKIP_CI_MESSAGE = '[skip ci]';
@@ -23,6 +24,8 @@ export async function run(...args): Promise<boolean> {
   let versionTag = argv.versionTag;
   let title = argv.title;
   let text = argv.text;
+
+  setupGit();
 
   if (versionTag == null) {
     versionTag = getPackageVersionTag();
