@@ -13,12 +13,12 @@ const BADGE = '[publish-npm-package]\t';
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args);
   const isDryRun = argv.dry === true;
-  const useBranchForTag = argv.useBranchForTag === true;
+  const createTagFromBranchName = argv.createTagFromBranchName === true;
 
   const packageName = getPackageName();
   const packageVersion = getPackageVersion();
 
-  const npmPublishShellCommand = getNpmPublishShellCommand(useBranchForTag, isDryRun);
+  const npmPublishShellCommand = getNpmPublishShellCommand(createTagFromBranchName, isDryRun);
   const output = annotatedSh(npmPublishShellCommand);
 
   const lines = output.trim().split('\n');
