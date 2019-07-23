@@ -1,26 +1,12 @@
 import chalk from 'chalk';
 
-import {
-  getGitBranch,
-  getGitTagList,
-  getGitTagsFromCommit,
-  gitAdd,
-  gitCommit,
-  gitPush,
-  gitPushTags,
-  gitTag,
-  isCurrentTag,
-  isDirty,
-  isExistingTag
-} from '../git/git';
+import { getGitBranch, getGitTagList, getGitTagsFromCommit, isCurrentTag, isDirty, isExistingTag } from '../git/git';
+import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
-import { getNextVersion, getNextVersionTag, getPrevVersionTag } from '../versions/git_helpers';
-import { sh } from '../git/shell';
-import { APPLICABLE_BRANCHES } from '../versions/increment_version';
-import { getChangelogText } from './create-changelog';
-import { updateGitHubRelease } from './update-github-release';
+import { printMultiLineString } from '../cli/printMultiLineString';
+import { sh } from '../cli/shell';
 
-const BADGE = '[increment-version]\t';
+const BADGE = '[prepare-version]\t';
 
 /**
  * Increments the pre-version in `package.json` automatically.
@@ -61,10 +47,9 @@ export async function run(...args): Promise<boolean> {
 
   const currentVersionTag = getPackageVersionTag();
   const nextVersion = getNextVersion();
-  const nextVersionTag = getNextVersionTag();
-  const notOnApplicableBranch = nextVersion == null;
+  const nextVersionTag = getVersionTag(nextVersion);
 
-  printInfo(isDryRun, isForced);
+  printInfo(nextVersion, isDryRun, isForced);
 
   if (isCurrentTag(currentVersionTag)) {
     console.error(
@@ -99,12 +84,6 @@ export async function run(...args): Promise<boolean> {
     }
   }
 
-  if (notOnApplicableBranch) {
-    console.error(chalk.red(`${BADGE}We are not on one of these branches:`));
-    console.error(chalk.red(`${BADGE}  ${APPLICABLE_BRANCHES.join(', ')}`));
-    process.exit(1);
-  }
-
   if (isExistingTag(nextVersionTag)) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Tag "${nextVersionTag}" already exists!`));
@@ -120,7 +99,7 @@ export async function run(...args): Promise<boolean> {
   }
 
   if (isDryRun) {
-    console.log(chalk.yellow(`${BADGE}I would commit version ${nextVersion} and tag that commit as "v${nextVersion}"`));
+    console.log(chalk.yellow(`${BADGE}I would write version ${nextVersion} to package.json.`));
     console.log(chalk.yellow(`${BADGE}Aborting due to --dry.`));
 
     if (isForced) {
@@ -130,25 +109,14 @@ export async function run(...args): Promise<boolean> {
     process.exit(1);
   }
 
-  const changelogText = await getChangelogText(getPrevVersionTag());
-  const commitSuccessful = commitPushAndTagNextVersion(nextVersion, changelogText);
-
-  if (commitSuccessful) {
-    console.log(
-      chalk.greenBright(
-        `${BADGE}Commited package.json with version ${nextVersion} and tagged that commit as "v${nextVersion}"`
-      )
-    );
-
-    await updateGitHubRelease(nextVersionTag, nextVersion, changelogText);
-  }
+  sh(`npm version ${nextVersion} --no-git-tag-version`);
 
   return true;
 }
 
-function printInfo(isDryRun: boolean, isForced: boolean): void {
+function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
   const packageVersion = getPackageVersion();
-  const packageVersionTag = getPackageVersionTag();
+  const packageVersionTag = getVersionTag(packageVersion);
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();
 
@@ -162,34 +130,6 @@ function printInfo(isDryRun: boolean, isForced: boolean): void {
   printMultiLineString(gitTagList);
   console.log(`${BADGE}tagsForHEAD:`);
   printMultiLineString(getGitTagsFromCommit('HEAD'));
-  console.log(`${BADGE}nextVersionTag:`, getNextVersionTag());
+  console.log(`${BADGE}nextVersionTag:`, getVersionTag(nextVersion));
   console.log('');
-}
-
-function printMultiLineString(text: string | string[]): void {
-  const lines = Array.isArray(text) ? text : text.split('\n');
-
-  lines.forEach((line: string): void => console.log(`${BADGE}  ${line}`));
-}
-
-function commitPushAndTagNextVersion(nextVersion: string, changelogText: string): boolean {
-  const branchName = getGitBranch();
-  const nextVersionTag = `v${nextVersion}`;
-
-  sh(`git checkout ${branchName}`);
-
-  sh(`npm version ${nextVersion} --no-git-tag-version`);
-
-  gitAdd('package.json');
-  gitAdd('package-lock.json');
-
-  sh('git status');
-
-  gitCommit(`Release ${nextVersionTag}\n\n${changelogText}\n\n[skip ci]`);
-  gitTag(nextVersionTag);
-  gitPush('origin', branchName);
-  gitPushTags();
-
-  // TODO: we should check if these were successful!
-  return true;
 }

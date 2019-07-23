@@ -5,7 +5,10 @@ const PRE_VERSION_SUFFIX_MAP = {
   master: NO_PRE_VERSION
 };
 
-export const APPLICABLE_BRANCHES = Object.keys(PRE_VERSION_SUFFIX_MAP);
+/**
+ * Primary branches are those branches where numbered pre-versions like `1.2.6-alpha5` should be published.
+ */
+export const PRIMARY_BRANCHES = Object.keys(PRE_VERSION_SUFFIX_MAP);
 
 export function findNextSuffixNumber(baseVersion: string, branchName: string, tagList: string): number | null {
   const targetVersion = getTargetVersion(baseVersion);
