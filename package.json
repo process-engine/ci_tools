@@ -36,7 +36,7 @@
   "devDependencies": {
     "@essential-projects/eslint-config": "^1.0.4",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.6.2",
+    "@types/node": "^12.6.8",
     "eslint": "^5.16.0",
     "mocha": "^6.1.4",
     "prettier": "^1.18.2",
