@@ -1,4 +1,4 @@
-import { sh } from './shell';
+import { sh } from '../cli/shell';
 
 const CURRENT_BRANCH_MARKER = /^\* /;
 

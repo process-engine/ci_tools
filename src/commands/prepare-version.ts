@@ -3,7 +3,8 @@ import chalk from 'chalk';
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, isCurrentTag, isDirty, isExistingTag } from '../git/git';
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
-import { sh } from '../git/shell';
+import { printMultiLineString } from '../cli/printMultiLineString';
+import { sh } from '../cli/shell';
 
 const BADGE = '[prepare-version]\t';
 
@@ -131,10 +132,4 @@ function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): v
   printMultiLineString(getGitTagsFromCommit('HEAD'));
   console.log(`${BADGE}nextVersionTag:`, getVersionTag(nextVersion));
   console.log('');
-}
-
-function printMultiLineString(text: string | string[]): void {
-  const lines = Array.isArray(text) ? text : text.split('\n');
-
-  lines.forEach((line: string): void => console.log(`${BADGE}  ${line}`));
 }

@@ -3,9 +3,6 @@ import { getPackageVersion } from './package_version';
 import { incrementVersion } from './increment_version';
 import { previousStableVersion } from './previous_stable_version';
 
-/**
- * Returns the "next" version according to the rules described in `run`.
- */
 export function getNextVersion(): string | null {
   const packageVersion = getPackageVersion();
   const branchName = getGitBranch();
