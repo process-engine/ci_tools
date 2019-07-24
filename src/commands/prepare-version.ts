@@ -42,6 +42,7 @@ const BADGE = '[prepare-version]\t';
  *
  */
 export async function run(...args): Promise<boolean> {
+  const allowDirtyWorkdir = args.indexOf('--allow-dirty-workdir') !== -1;
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
 
@@ -68,7 +69,7 @@ export async function run(...args): Promise<boolean> {
     }
   }
 
-  if (isDirty()) {
+  if (isDirty() && !allowDirtyWorkdir) {
     const workdirState = sh('git status --porcelain --untracked-files=no').trim();
 
     if (isForced) {

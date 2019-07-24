@@ -23,7 +23,7 @@ export async function run(...args): Promise<boolean> {
   return true;
 }
 
-function setupGit(): void {
+export function setupGit(): void {
   if (!isGitHubRemote()) {
     console.log(`${BADGE}Not a GitHub remote, leaving Git config as is.`);
     return;
@@ -58,7 +58,7 @@ function setupGit(): void {
   }
 }
 
-function setupNpm(): void {
+export function setupNpm(): void {
   if (existsSync(NPMRC_FILE)) {
     console.log(`${BADGE}${NPMRC_FILE} exists, leaving npm config as is.`);
     return;

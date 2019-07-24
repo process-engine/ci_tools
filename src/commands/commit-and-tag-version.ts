@@ -4,6 +4,7 @@ import { getChangelogText } from './internal/create-changelog';
 import { getGitBranch, gitAdd, gitCommit, gitPush, gitPushTags, gitTag } from '../git/git';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
 import { getPrevVersionTag } from '../versions/git_helpers';
+import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
 
 const BADGE = '[commit-and-tag-version]\t';
@@ -16,6 +17,8 @@ const BADGE = '[commit-and-tag-version]\t';
 export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
+
+  setupGit();
 
   printInfo(isDryRun, isForced);
 
