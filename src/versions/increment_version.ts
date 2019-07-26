@@ -18,7 +18,7 @@ export function findNextSuffixNumber(baseVersion: string, branchName: string, ta
     return null;
   }
 
-  const versionPrefix = `v${targetVersion}-${preVersionSuffix}`;
+  const versionPrefix = `v${targetVersion}-${preVersionSuffix}.`;
   const existingTags = tagList.split('\n').filter((tag: string): boolean => tag.trim().indexOf(versionPrefix) === 0);
 
   if (existingTags.length === 0) {
@@ -48,7 +48,7 @@ export function incrementVersion(packageVersion: string, branchName: string, git
 
   const nextSuffixNumber = findNextSuffixNumber(packageVersion, branchName, gitTagList);
 
-  return `${targetVersion}-${preVersionSuffix}${nextSuffixNumber}`;
+  return `${targetVersion}-${preVersionSuffix}.${nextSuffixNumber}`;
 }
 
 function getTargetVersion(baseVersion: string): string {
