@@ -2,7 +2,7 @@
   "name": "@process-engine/ci_tools",
   "version": "2.0.0-alpha44",
   "description": "CI tools for process-engine.io",
-  "main": "dist/index.js",
+  "main": "dist/ci_tools.js",
   "scripts": {
     "auto-publish-if-applicable": "node dist/ci_tools.js setup-git-and-npm-connections && node dist/ci_tools.js prepare-version && node dist/ci_tools.js commit-and-tag-version --only-on-primary-branches && node dist/ci_tools.js update-github-release --only-on-primary-branches --use-title-and-text-from-git-tag && node dist/ci_tools.js publish-npm-package --create-tag-from-branch-name",
     "clean": "rm -rf dist",

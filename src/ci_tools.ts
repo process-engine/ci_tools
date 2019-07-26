@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import chalk from 'chalk';
 
 import { run as runAutoPublishIfApplicable } from './commands/internal/auto-publish-if-applicable';
