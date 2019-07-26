@@ -14,7 +14,7 @@
   "bin": {
     "ci_tools": "./dist/ci_tools.js",
     "create-github-release": "./dist/legacy/create-github-release.js",
-    "is-nuget-package-published:": "./dist/legacy/is-nuget-package-published.js"
+    "is-nuget-package-published": "./dist/legacy/is-nuget-package-published.js"
   },
   "repository": {
     "type": "git",
