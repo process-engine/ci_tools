@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import chalk from 'chalk';
+import * as yargsParser from 'yargs-parser';
 
 import { run as runAutoPublishIfApplicable } from './commands/internal/auto-publish-if-applicable';
 import { run as runCommitAndTagVersion } from './commands/commit-and-tag-version';
@@ -51,24 +52,47 @@ function run(argv: string[]): void {
     process.exit(1);
   }
 
-  enforceBranchGuard(commandName, args);
+  enforceUniversalCommandLineSwitches(commandName, args);
 
   foundCommand(...restArgs);
 }
 
-function enforceBranchGuard(commandName: string, args: string[]): void {
-  const runOnlyOnPrimaryBranches = args.includes('--only-on-primary-branches');
-
-  if (!runOnlyOnPrimaryBranches) {
-    return;
-  }
-
+function enforceUniversalCommandLineSwitches(commandName: string, args: string[]): void {
   const badge = `[${commandName}]\t`;
+  const argv = yargsParser(args);
+
+  if (argv.onlyOnPrimaryBranches && argv.exceptOnPrimaryBranches) {
+    console.error(chalk.red(`${badge}Both --only-on-primary-branches and --except-on-primary-branches given.`));
+    console.error(chalk.red(`${badge}This can not work! Aborting.`));
+    process.exit(1);
+  } else if (argv.onlyOnPrimaryBranches) {
+    ensureOnPrimaryBranchOrExit(badge);
+  } else if (argv.exceptOnPrimaryBranches) {
+    ensureNotOnPrimaryBranchOrExit(badge);
+  }
+}
+
+function ensureOnPrimaryBranchOrExit(badge: string): void {
   const branchName = getGitBranch();
   const currentlyOnPrimaryBranch = PRIMARY_BRANCHES.includes(branchName);
 
   if (!currentlyOnPrimaryBranch) {
     console.log(chalk.yellow(`${badge}--only-on-primary-branches given.`));
+    console.log(
+      chalk.yellow(`${badge}Current branch is '${branchName}' (primary branches are ${PRIMARY_BRANCHES.join(', ')}).`)
+    );
+    console.log(chalk.yellow(`${badge}Nothing to do here. Exiting.`));
+
+    process.exit(0);
+  }
+}
+
+function ensureNotOnPrimaryBranchOrExit(badge: string): void {
+  const branchName = getGitBranch();
+  const currentlyOnPrimaryBranch = PRIMARY_BRANCHES.includes(branchName);
+
+  if (currentlyOnPrimaryBranch) {
+    console.log(chalk.yellow(`${badge}--except-on-primary-branches given.`));
     console.log(
       chalk.yellow(`${badge}Current branch is '${branchName}' (primary branches are ${PRIMARY_BRANCHES.join(', ')}).`)
     );
