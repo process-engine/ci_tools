@@ -51,12 +51,17 @@ function run(argv: string[]): void {
     process.exit(1);
   }
 
-  enforceBranchGuard(commandName, args);
+  enforceUniversalCommandLineSwitches(commandName, args);
 
   foundCommand(...restArgs);
 }
 
-function enforceBranchGuard(commandName: string, args: string[]): void {
+function enforceUniversalCommandLineSwitches(commandName: string, args: string[]): void {
+  enforceOnlyOnPrimaryBranches(commandName, args);
+  enforceExceptOnPrimaryBranches(commandName, args);
+}
+
+function enforceOnlyOnPrimaryBranches(commandName: string, args: string[]): void {
   const runOnlyOnPrimaryBranches = args.includes('--only-on-primary-branches');
 
   if (!runOnlyOnPrimaryBranches) {
@@ -69,6 +74,24 @@ function enforceBranchGuard(commandName: string, args: string[]): void {
 
   if (!currentlyOnPrimaryBranch) {
     console.log(chalk.yellow(`${badge}--only-on-primary-branches given.`));
+    console.log(
+      chalk.yellow(`${badge}Current branch is '${branchName}' (primary branches are ${PRIMARY_BRANCHES.join(', ')}).`)
+    );
+    console.log(chalk.yellow(`${badge}Nothing to do here. Exiting.`));
+
+    process.exit(0);
+  }
+}
+
+function enforceExceptOnPrimaryBranches(commandName: string, args: string[]): void {
+  const runExceptOnPrimaryBranches = args.includes('--except-on-primary-branches');
+
+  const badge = `[${commandName}]\t`;
+  const branchName = getGitBranch();
+  const currentlyOnPrimaryBranch = PRIMARY_BRANCHES.includes(branchName);
+
+  if (runExceptOnPrimaryBranches && currentlyOnPrimaryBranch) {
+    console.log(chalk.yellow(`${badge}--except-on-primary-branches given.`));
     console.log(
       chalk.yellow(`${badge}Current branch is '${branchName}' (primary branches are ${PRIMARY_BRANCHES.join(', ')}).`)
     );
