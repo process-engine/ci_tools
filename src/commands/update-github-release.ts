@@ -58,6 +58,9 @@ export async function run(...args): Promise<boolean> {
       const files = glob.sync(pattern);
       assets = assets.concat(files);
     });
+
+    console.log(`${BADGE}`);
+    console.log(`${BADGE}Option --assets was given:`, assets);
   }
 
   const success = await updateGitHubRelease(versionTag, title, text, assets, isDryRun);
