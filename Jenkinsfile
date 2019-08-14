@@ -54,42 +54,42 @@ pipeline {
         sh('npm run lint')
       }
     }
-    stage('Commit & tag version') {
-      when {
-        anyOf {
-          branch "master"
-          branch "beta"
-          branch "develop"
-        }
-      }
-      steps {
-        unstash('npm_package_node_modules')
-        unstash('package_json')
+    // stage('Commit & tag version') {
+    //   when {
+    //     anyOf {
+    //       branch "master"
+    //       branch "beta"
+    //       branch "develop"
+    //     }
+    //   }
+    //   steps {
+    //     unstash('npm_package_node_modules')
+    //     unstash('package_json')
 
-        withCredentials([
-          usernamePassword(credentialsId: 'process-engine-ci_github-token', passwordVariable: 'GH_TOKEN', usernameVariable: 'GH_USER')
-        ]) {
-          // does not change the version, but commit and tag it
-          sh('node dist/ci_tools.js commit-and-tag-version --only-on-primary-branches')
+    //     withCredentials([
+    //       usernamePassword(credentialsId: 'process-engine-ci_github-token', passwordVariable: 'GH_TOKEN', usernameVariable: 'GH_USER')
+    //     ]) {
+    //       // does not change the version, but commit and tag it
+    //       sh('node dist/ci_tools.js commit-and-tag-version --only-on-primary-branches')
 
-          sh('node dist/ci_tools.js update-github-release --only-on-primary-branches --use-title-and-text-from-git-tag');
-        }
+    //       sh('node dist/ci_tools.js update-github-release --only-on-primary-branches --use-title-and-text-from-git-tag');
+    //     }
 
-        stash(includes: 'package.json', name: 'package_json')
-      }
-    }
-    stage('Publish') {
-      steps {
-        script {
-          unstash('npm_package_node_modules')
-          unstash('package_json')
+    //     stash(includes: 'package.json', name: 'package_json')
+    //   }
+    // }
+    // stage('Publish') {
+    //   steps {
+    //     script {
+    //       unstash('npm_package_node_modules')
+    //       unstash('package_json')
 
-          nodejs(configId: env.NPM_RC_FILE, nodeJSInstallationName: env.NODE_JS_VERSION) {
-            sh('node dist/ci_tools.js publish-npm-package --create-tag-from-branch-name')
-          }
-        }
-      }
-    }
+    //       nodejs(configId: env.NPM_RC_FILE, nodeJSInstallationName: env.NODE_JS_VERSION) {
+    //         sh('node dist/ci_tools.js publish-npm-package --create-tag-from-branch-name')
+    //       }
+    //     }
+    //   }
+    // }
     stage('cleanup') {
       steps {
         script {
