@@ -33,6 +33,7 @@ jobs:
 
     - name: 'Commit & tag version'
       env:
+        GH_USER: "process-engine-ci"
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
           node dist/ci_tools.js commit-and-tag-version --only-on-primary-branches
