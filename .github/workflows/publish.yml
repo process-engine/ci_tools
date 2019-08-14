@@ -37,7 +37,7 @@ jobs:
       run: |
           node dist/ci_tools.js commit-and-tag-version --only-on-primary-branches
 
-          node dist/ci_tools.js update-github-release --only-on-primary-branches --use-title-and-text-from-git-tag'
+          node dist/ci_tools.js update-github-release --only-on-primary-branches --use-title-and-text-from-git-tag
 
     - name: 'Publish version'
       env:
