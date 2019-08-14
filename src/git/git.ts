@@ -17,7 +17,12 @@ export function getGitCommitSha1(): string {
 }
 
 export function getGitBranch(): string {
-  return process.env.GIT_BRANCH ? process.env.GIT_BRANCH.replace(/^refs\/heads\//, '') : getGitBranchFromGit();
+  const gitRef = process.env.GIT_BRANCH || process.env.GITHUB_REF;
+  if (gitRef != null) {
+    return gitRef.replace(/^refs\/heads\//, '');
+  }
+
+  return getGitBranchFromGit();
 }
 
 export function getGitTagsFromCommit(ref: string): string[] {
