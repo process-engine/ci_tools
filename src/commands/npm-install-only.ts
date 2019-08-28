@@ -8,7 +8,7 @@ const BADGE = '[npm-install-only]\t';
 export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
 
-  const allPackageNames = getAllPackageNames();
+  const allPackageNames = getAllPackageNamesWithVersion();
   const patternList = args.filter((arg: string): boolean => !arg.startsWith('-'));
   const foundPatternMatchingPackages = getPackageNamesMatchingPattern(allPackageNames, patternList);
   const npmInstallArguments = foundPatternMatchingPackages.join(' ');
@@ -52,12 +52,16 @@ function getPackageNamesMatchingPattern(allPackageNames: string[], patternList: 
   return foundPatternMatchingPackages;
 }
 
-function getAllPackageNames(): string[] {
+function getAllPackageNamesWithVersion(): string[] {
   const content = readFileSync('package.json').toString();
   const json = JSON.parse(content);
 
-  const dependencies: string[] = Object.keys(json.dependencies);
-  const devDependencies: string[] = Object.keys(json.devDependencies);
+  const dependencies: string[] = Object.keys(json.dependencies).map((dependency: string): string => {
+    return `${dependency}@${json.dependencies[dependency]}`;
+  });
+  const devDependencies: string[] = Object.keys(json.devDependencies).map((devDependency: string): string => {
+    return `${devDependency}@${json.devDependencies[devDependency]}`;
+  });
   const allPackageNames: string[] = [...dependencies].concat(devDependencies).sort();
 
   return allPackageNames;
