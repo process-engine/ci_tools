@@ -20,7 +20,7 @@ export async function run(...args): Promise<boolean> {
 
   console.log(`${BADGE}`);
 
-  annotatedSh(`npm install --save-exact ${npmInstallArguments}`, isDryRun);
+  annotatedSh(`npm install ${npmInstallArguments}`, isDryRun);
 
   return true;
 }
