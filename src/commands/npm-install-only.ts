@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { readFileSync } from 'fs';
 
-import { sh } from '../cli/shell';
+import { asyncSh } from '../cli/shell';
 
 const BADGE = '[npm-install-only]\t';
 
@@ -34,13 +34,13 @@ export async function run(...args): Promise<boolean> {
 
   console.log(`${BADGE}`);
 
-  annotatedSh(`npm install ${npmInstallArguments}`, isDryRun);
-  annotatedSh(`npm install --save-exact ${npmInstallSaveExactArguments}`, isDryRun);
+  await annotatedSh(`npm install ${npmInstallArguments}`, isDryRun);
+  await annotatedSh(`npm install --save-exact ${npmInstallSaveExactArguments}`, isDryRun);
 
   return true;
 }
 
-function annotatedSh(command: string, isDryRun: boolean): void {
+async function annotatedSh(command: string, isDryRun: boolean): Promise<void> {
   console.log(`${BADGE}`);
   console.log(`${BADGE}Running: ${chalk.cyan(command)}`);
 
@@ -49,7 +49,7 @@ function annotatedSh(command: string, isDryRun: boolean): void {
     return;
   }
 
-  const output = sh(command);
+  const output = await asyncSh(command);
   console.log(output);
 }
 
