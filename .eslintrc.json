@@ -14,6 +14,6 @@
     "no-null/no-null": "off",
     "object-curly-newline": "off",
     "object-curly-spacing": "off",
-    "object-shorthand": "off",
+    "object-shorthand": "off"
   }
 }
