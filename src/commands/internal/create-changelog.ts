@@ -11,12 +11,12 @@ type IssueFromApi = any;
 
 const GITHUB_REPO = getCurrentRepoNameWithOwner();
 const COMMIT_API_URI = getCurrentApiBaseUrlWithAuth('/commits/:commit_sha');
-const ISSUES_API_URI = getCurrentApiBaseUrlWithAuth('/issues?state=closed&since=:since');
+const ISSUES_API_URI = getCurrentApiBaseUrlWithAuth('/issues?state=closed&since=:since&page=:page');
 
 const BADGE = '[create-changelog]\t';
 
-const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 50;
-const CLOSED_ISSUE_LENGTH_THRESHOLD = 50;
+const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 100;
+const CLOSED_ISSUE_LENGTH_THRESHOLD = 100;
 
 /**
  * Creates a changelog based on data available in Git and GitHub:
@@ -73,12 +73,16 @@ export async function getChangelogText(startRef: string): Promise<string> {
   const closedPRsText = mergedPullRequests
     .map((pr: PullRequest): string => {
       const mergedAt = moment(pr.mergedAt).format('YYYY-MM-DD');
-      return `- #${pr.number} ${pr.title} (merged ${mergedAt})`;
+      const title = ensureSpaceAfterLeadingEmoji(pr.title);
+
+      return `- #${pr.number} ${title} (merged ${mergedAt})`;
     })
     .join('\n');
   const closedIssuesText = closedIssues
     .map((issue: IssueFromApi): string => {
-      return `- #${issue.number} ${issue.title}`;
+      const title = ensureSpaceAfterLeadingEmoji(issue.title);
+
+      return `- #${issue.number} ${title}`;
     })
     .join('\n');
 
@@ -109,11 +113,19 @@ async function getCommitFromApi(ref: string): Promise<CommitFromApi> {
   return response.json();
 }
 
-async function getClosedIssuesFromApi(since: string): Promise<IssueFromApi[]> {
-  const url = ISSUES_API_URI.replace(':since', since);
+async function getClosedIssuesFromApi(since: string, page: number = 1): Promise<IssueFromApi[]> {
+  const url = ISSUES_API_URI.replace(':since', since).replace(':page', page.toString());
   const response = await fetch(url);
   const issues = await response.json();
-  return issues.filter((issue: IssueFromApi): boolean => !issue.pull_request);
+  const relevantIssues = issues.filter((issue: IssueFromApi): boolean => !issue.pull_request);
+
+  if (relevantIssues.length > 0) {
+    const nextPageIssues = await getClosedIssuesFromApi(since, page + 1);
+
+    return [...relevantIssues].concat(nextPageIssues);
+  }
+
+  return relevantIssues;
 }
 
 function printInfo(
@@ -129,4 +141,15 @@ function printInfo(
   console.log(`${BADGE}nextVersion:`, nextVersion);
   console.log(`${BADGE}nextVersionTag:`, nextVersionTag);
   console.log('');
+}
+
+function ensureSpaceAfterLeadingEmoji(text: string): string {
+  const emojiWithoutTrailingSpaceRegex = /([\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u{1f680}-\u{1f6ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f1e6}-\u{1f1ff}\u{1f191}-\u{1f251}\u{1f004}\u{1f0cf}\u{1f170}-\u{1f171}\u{1f17e}-\u{1f17f}\u{1f18e}\u{3030}\u{2b50}\u{2b55}\u{2934}-\u{2935}\u{2b05}-\u{2b07}\u{2b1b}-\u{2b1c}\u{3297}\u{3299}\u{303d}\u{00a9}\u{00ae}\u{2122}\u{23f3}\u{24c2}\u{23e9}-\u{23ef}\u{25b6}\u{23f8}-\u{23fa}])(\S)/gu;
+
+  return text.replace(
+    emojiWithoutTrailingSpaceRegex,
+    (substring: string, emojiMatch: string, characterAfterEmojiMatch: string): string => {
+      return `${emojiMatch} ${characterAfterEmojiMatch}`;
+    }
+  );
 }

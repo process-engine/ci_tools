@@ -1,8 +1,8 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "2.0.0-beta5",
+  "version": "2.0.0-beta.5",
   "description": "CI tools for process-engine.io",
-  "main": "dist/index.js",
+  "main": "dist/ci_tools.js",
   "scripts": {
     "auto-publish-if-applicable": "node dist/ci_tools.js setup-git-and-npm-connections && node dist/ci_tools.js prepare-version && node dist/ci_tools.js commit-and-tag-version --only-on-primary-branches && node dist/ci_tools.js update-github-release --only-on-primary-branches --use-title-and-text-from-git-tag && node dist/ci_tools.js publish-npm-package --create-tag-from-branch-name",
     "clean": "rm -rf dist",
@@ -14,7 +14,7 @@
   "bin": {
     "ci_tools": "./dist/ci_tools.js",
     "create-github-release": "./dist/legacy/create-github-release.js",
-    "is-nuget-package-published:": "./dist/legacy/is-nuget-package-published.js"
+    "is-nuget-package-published": "./dist/legacy/is-nuget-package-published.js"
   },
   "repository": {
     "type": "git",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@essential-projects/eslint-config": "^1.0.4",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.6.8",
+    "@types/node": "^12.6.9",
     "eslint": "^5.16.0",
     "mocha": "^6.1.4",
     "prettier": "^1.18.2",

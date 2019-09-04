@@ -20,13 +20,24 @@ export async function getMergedPullRequests(since: string): Promise<PullRequest[
 }
 
 async function fetchPullRequests(since: string): Promise<PullRequest[]> {
-  const response = await fetch(PULL_REQUEST_INDEX_API_URI);
-  const results = await response.json();
-  const pullRequestsSince = results.filter((pr: PullRequestFromApi): boolean => moment(pr.merged_at).isAfter(since));
+  const pullRequestsSince = await fetchPullRequestsFromApi(since);
 
   return pullRequestsSince.map(
     (pr: PullRequestFromApi): PullRequest => {
       return { hash: pr.merge_commit_sha, mergedAt: pr.merged_at, number: pr.number, title: pr.title };
     }
   );
+}
+
+async function fetchPullRequestsFromApi(since: string, page: number = 1): Promise<PullRequestFromApi[]> {
+  const response = await fetch(`${PULL_REQUEST_INDEX_API_URI}&page=${page}`);
+  const results = await response.json();
+  const pullRequestsSince = results.filter((pr: PullRequestFromApi): boolean => moment(pr.merged_at).isAfter(since));
+
+  if (pullRequestsSince.length > 0) {
+    const nextPagePullRequests = await fetchPullRequestsFromApi(since, page + 1);
+    return [...pullRequestsSince].concat(nextPagePullRequests);
+  }
+
+  return pullRequestsSince;
 }
