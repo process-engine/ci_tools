@@ -12,6 +12,10 @@ export function getGitTagList(): string {
   return sh('git tag --sort=-creatordate').trim();
 }
 
+export function getGitCommitListSince(ref: string, since: string): string {
+  return sh(`git log --format="%H" --since ${since} ${ref}`).trim();
+}
+
 export function getGitCommitSha1(): string {
   return sh('git rev-parse HEAD').trim();
 }
