@@ -50,9 +50,13 @@ export async function run(...args): Promise<boolean> {
   const nextVersion = getNextVersion();
   const nextVersionTag = getVersionTag(nextVersion);
 
+  const currentVersionReleaseChannel = getReleaseChannelFromTag(currentVersionTag);
+  const nextVersionReleaseChannel = getReleaseChannelFromTag(nextVersionTag);
+  const isSameReleaseChannel = currentVersionReleaseChannel === nextVersionReleaseChannel;
+
   printInfo(nextVersion, isDryRun, isForced);
 
-  if (isCurrentTag(currentVersionTag)) {
+  if (isSameReleaseChannel && isCurrentTag(currentVersionTag)) {
     console.error(
       chalk.yellow(
         `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
@@ -133,4 +137,10 @@ function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): v
   printMultiLineString(getGitTagsFromCommit('HEAD'));
   console.log(`${BADGE}nextVersionTag:`, getVersionTag(nextVersion));
   console.log('');
+}
+
+function getReleaseChannelFromTag(tagName: string): string {
+  const matched = tagName.match(/^v\d+\.\d+\.\d+-([^.]+)/);
+
+  return matched == null ? null : matched[0];
 }
