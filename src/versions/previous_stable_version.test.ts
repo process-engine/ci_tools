@@ -15,6 +15,12 @@ v3.2.0`;
 
 describe('previous_stable_version.ts', (): void => {
   describe('previousVersion()', (): void => {
+    it('should return the previous version for the initial stable build', (): void => {
+      assert.equal(previousStableVersion('0.1.0', GIT_TAG_LIST), null);
+    });
+    it('should return the previous version for a stable build', (): void => {
+      assert.equal(previousStableVersion('2.0.0', GIT_TAG_LIST), '1.2.0');
+    });
     it('should return the previous version for the first alpha build of a new version', (): void => {
       assert.equal(previousStableVersion('3.2.1', GIT_TAG_LIST), '3.2.0');
     });

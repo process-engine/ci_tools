@@ -5,18 +5,20 @@ import { getCurrentApiBaseUrlWithAuth } from '../git/git';
 
 type PullRequestFromApi = any;
 export type PullRequest = {
-  hash: string;
-  mergedAt: string;
   number: number;
   title: string;
+  headSha: string;
+  mergeCommitSha: string;
+  mergedAt: string;
 };
 
 const PULL_REQUEST_INDEX_API_URI = getCurrentApiBaseUrlWithAuth('/pulls?state=closed');
 
 export async function getMergedPullRequests(since: string): Promise<PullRequest[]> {
   const list = await fetchPullRequests(since);
+  const listMergedBefore = list.filter((pr: PullRequest): boolean => !!pr.mergedAt);
 
-  return list.filter((pr: PullRequest): boolean => !!pr.mergedAt);
+  return listMergedBefore;
 }
 
 async function fetchPullRequests(since: string): Promise<PullRequest[]> {
@@ -24,7 +26,13 @@ async function fetchPullRequests(since: string): Promise<PullRequest[]> {
 
   return pullRequestsSince.map(
     (pr: PullRequestFromApi): PullRequest => {
-      return { hash: pr.merge_commit_sha, mergedAt: pr.merged_at, number: pr.number, title: pr.title };
+      return {
+        number: pr.number,
+        title: pr.title,
+        mergeCommitSha: pr.merge_commit_sha,
+        headSha: pr.head.sha,
+        mergedAt: pr.merged_at
+      };
     }
   );
 }
