@@ -70,6 +70,23 @@ function enforceUniversalCommandLineSwitches(commandName: string, args: string[]
   } else if (argv.exceptOnPrimaryBranches) {
     ensureNotOnPrimaryBranchOrExit(badge);
   }
+
+  if (argv.onlyOnBranch) {
+    ensureOnBranchOrExit(badge, argv.onlyOnBranch);
+  }
+}
+
+function ensureOnBranchOrExit(badge: string, requestedBranchName: string): void {
+  const branchName = getGitBranch();
+  const currentlyOnBranch = requestedBranchName === branchName;
+
+  if (!currentlyOnBranch) {
+    console.log(chalk.yellow(`${badge}--only-on-branch given: ${requestedBranchName}`));
+    console.log(chalk.yellow(`${badge}Current branch is '${branchName}'.`));
+    console.log(chalk.yellow(`${badge}Nothing to do here. Exiting.`));
+
+    process.exit(0);
+  }
 }
 
 function ensureOnPrimaryBranchOrExit(badge: string): void {
