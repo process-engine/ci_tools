@@ -3,7 +3,12 @@ import fetch from 'node-fetch';
 import * as moment from 'moment';
 
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
-import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner } from '../../git/git';
+import {
+  getCurrentApiBaseUrlWithAuth,
+  getCurrentRepoNameWithOwner,
+  getGitBranch,
+  getGitCommitListSince
+} from '../../git/git';
 import { getNextVersion, getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
 
 type CommitFromApi = any;
@@ -38,7 +43,10 @@ export async function run(...args): Promise<boolean> {
 
 export async function getChangelogText(startRef: string): Promise<string> {
   const startCommit = await getCommitFromApi(startRef);
-  const startDate = startCommit.commit.committer.date;
+  const startCommitDate = startCommit.commit.committer.date;
+  const startDate = moment(startCommitDate)
+    .subtract(3, 'weeks')
+    .toISOString();
 
   const endRef = 'HEAD';
 
@@ -52,7 +60,9 @@ export async function getChangelogText(startRef: string): Promise<string> {
 
   printInfo(startRef, startDate, endRef, nextVersion, nextVersionTag);
 
-  const mergedPullRequests = await getMergedPullRequests(startDate);
+  const mergedPullRequestsSince = await getMergedPullRequests(startDate);
+  const mergedPullRequests = filterPrs(mergedPullRequestsSince, getGitBranch(), startRef, startDate);
+
   if (mergedPullRequests.length >= MERGED_PULL_REQUEST_LENGTH_THRESHOLD) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Found an unexpectedly high number of merged pull requests:`));
@@ -152,4 +162,18 @@ function ensureSpaceAfterLeadingEmoji(text: string): string {
       return `${emojiMatch} ${characterAfterEmojiMatch}`;
     }
   );
+}
+
+function filterPrs(prs: PullRequest[], branchName: string, startRef: string, since: string): PullRequest[] {
+  const allShaInCurrentBranch = getGitCommitListSince(branchName, since).split('\n');
+  const allShaInStartRef = getGitCommitListSince(startRef, since).split('\n');
+  const newShaInCurrentBranch = allShaInCurrentBranch.filter(
+    (currentSha: string): boolean => allShaInStartRef.indexOf(currentSha) === -1
+  );
+  const filteredPrs = prs.filter(
+    (pr: PullRequest): boolean =>
+      newShaInCurrentBranch.indexOf(pr.headSha) !== -1 || newShaInCurrentBranch.indexOf(pr.mergeCommitSha) !== -1
+  );
+
+  return filteredPrs;
 }
