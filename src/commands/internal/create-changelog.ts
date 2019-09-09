@@ -23,6 +23,9 @@ const BADGE = '[create-changelog]\t';
 const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 100;
 const CLOSED_ISSUE_LENGTH_THRESHOLD = 100;
 
+// two weeks for feature-freeze period plus one week buffer for late releases
+const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
+
 /**
  * Creates a changelog based on data available in Git and GitHub:
  *
@@ -45,7 +48,7 @@ export async function getChangelogText(startRef: string): Promise<string> {
   const startCommit = await getCommitFromApi(startRef);
   const startCommitDate = startCommit.commit.committer.date;
   const startDate = moment(startCommitDate)
-    .subtract(3, 'weeks')
+    .subtract(CONSIDER_PULL_REQUESTS_WEEKS_BACK, 'weeks')
     .toISOString();
 
   const endRef = 'HEAD';
@@ -61,7 +64,7 @@ export async function getChangelogText(startRef: string): Promise<string> {
   printInfo(startRef, startDate, endRef, nextVersion, nextVersionTag);
 
   const mergedPullRequestsSince = await getMergedPullRequests(startDate);
-  const mergedPullRequests = filterPrs(mergedPullRequestsSince, getGitBranch(), startRef, startDate);
+  const mergedPullRequests = filterPullRequestsForBranch(mergedPullRequestsSince, getGitBranch(), startRef, startDate);
 
   if (mergedPullRequests.length >= MERGED_PULL_REQUEST_LENGTH_THRESHOLD) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
@@ -164,7 +167,12 @@ function ensureSpaceAfterLeadingEmoji(text: string): string {
   );
 }
 
-function filterPrs(prs: PullRequest[], branchName: string, startRef: string, since: string): PullRequest[] {
+function filterPullRequestsForBranch(
+  prs: PullRequest[],
+  branchName: string,
+  startRef: string,
+  since: string
+): PullRequest[] {
   const allShaInCurrentBranch = getGitCommitListSince(branchName, since).split('\n');
   const allShaInStartRef = getGitCommitListSince(startRef, since).split('\n');
   const newShaInCurrentBranch = allShaInCurrentBranch.filter(
