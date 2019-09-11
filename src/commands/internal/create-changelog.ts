@@ -75,15 +75,23 @@ export async function getChangelogText(startRef: string): Promise<string> {
     process.exit(2);
   }
 
-  const closedIssues = await getClosedIssuesFromApi(startDate);
-  if (closedIssues.length >= CLOSED_ISSUE_LENGTH_THRESHOLD) {
+  const closedIssuesSince = await getClosedIssuesFromApi(startDate);
+  const issuesClosedByPullRequest = closedIssuesSince.filter((issue: any): boolean => {
+    const pullRequestClosingThisIssue = mergedPullRequests.find(
+      (pr: PullRequest): boolean => pr.closedIssueNumbers.indexOf(issue.number) !== -1
+    );
+    return pullRequestClosingThisIssue != null;
+  });
+  if (issuesClosedByPullRequest.length >= CLOSED_ISSUE_LENGTH_THRESHOLD) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Found an unexpectedly high number of closed issues:`));
-    console.error(chalk.red(`${BADGE}  ${closedIssues.length} (threshold is ${CLOSED_ISSUE_LENGTH_THRESHOLD})`));
+    console.error(
+      chalk.red(`${BADGE}  ${issuesClosedByPullRequest.length} (threshold is ${CLOSED_ISSUE_LENGTH_THRESHOLD})`)
+    );
     process.exit(2);
   }
 
-  const closedPRsText = mergedPullRequests
+  const mergedPullRequestsText = mergedPullRequests
     .map((pr: PullRequest): string => {
       const mergedAt = moment(pr.mergedAt).format('YYYY-MM-DD');
       const title = ensureSpaceAfterLeadingEmoji(pr.title);
@@ -91,7 +99,7 @@ export async function getChangelogText(startRef: string): Promise<string> {
       return `- #${pr.number} ${title} (merged ${mergedAt})`;
     })
     .join('\n');
-  const closedIssuesText = closedIssues
+  const issuesClosedByPullRequestText = issuesClosedByPullRequest
     .map((issue: IssueFromApi): string => {
       const title = ensureSpaceAfterLeadingEmoji(issue.title);
 
@@ -109,11 +117,11 @@ For further reference, please refer to the changelog of the previous version, [$
 
 ## Merged Pull Requests
 
-${closedPRsText || '- none'}
+${mergedPullRequestsText || '- none'}
 
-## Closed Issues
+## Corresponding Issues
 
-${closedIssuesText || '- none'}
+${issuesClosedByPullRequestText || '- none'}
 
   `.trim();
 
