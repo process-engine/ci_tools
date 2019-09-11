@@ -9,6 +9,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
+
     - name: Use Node.js 10.x
       uses: actions/setup-node@v1
       with:
@@ -16,6 +17,7 @@ jobs:
 
     - name: 'Install dependencies'
       run: |
+        git log --format="%H" --since 2019-08-19T13:04:41.000Z
         npm ci
         node dist/ci_tools.js npm-install-only @process-engine/ @essential-projects/
 
