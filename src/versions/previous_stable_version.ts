@@ -19,7 +19,19 @@ export function previousStableVersion(currentVersionTag: string, gitTagList: str
 }
 
 export function getSortedListOfAllVersions(gitTagList: string): string[] {
-  const versions = gitTagList.split('\n').map((version: string): string => version.replace(/^v/, ''));
+  const versions = gitTagList
+    .split('\n')
+    .map((versionTag: string): string => {
+      const version = versionTag.replace(/^v/, '');
+
+      try {
+        compareVersions(version, '1.0.0');
+        return version;
+      } catch (e) {
+        return null;
+      }
+    })
+    .filter((version: string | null): boolean => version != null);
 
   return versions.sort(compareVersions);
 }
