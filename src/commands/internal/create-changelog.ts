@@ -64,7 +64,7 @@ export async function getChangelogText(startRef: string): Promise<string> {
   printInfo(startRef, startDate, endRef, nextVersion, nextVersionTag);
 
   const mergedPullRequestsSince = await getMergedPullRequests(startDate);
-  const mergedPullRequests = filterPullRequestsForBranch(mergedPullRequestsSince, getGitBranch(), startRef, startDate);
+  const mergedPullRequests = filterPullRequestsForBranch(mergedPullRequestsSince, '', startRef, startDate);
 
   if (mergedPullRequests.length >= MERGED_PULL_REQUEST_LENGTH_THRESHOLD) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
