@@ -1,6 +1,6 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "2.1.0-pre",
+  "version": "2.1.0-alpha.2",
   "description": "CI tools for process-engine.io",
   "main": "dist/ci_tools.js",
   "scripts": {
@@ -34,7 +34,7 @@
     "yargs-parser": "^13.1.1"
   },
   "devDependencies": {
-    "@essential-projects/eslint-config": "^1.0.4",
+    "@essential-projects/eslint-config": "^1.0.5",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.9",
     "eslint": "^5.16.0",
