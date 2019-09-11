@@ -15,9 +15,9 @@ export async function run(...args): Promise<boolean> {
 
   const dependenciesWithPreVersions = Object.keys(dependencies).filter((packageName: string): boolean => {
     const version = dependencies[packageName];
-    const isPreVersion = version.indexOf('-') !== -1;
+    const isPreVersionOrDistTag = version.indexOf('-') !== -1 || version.indexOf('~') > 0;
 
-    return isPreVersion;
+    return isPreVersionOrDistTag;
   });
 
   if (dependenciesWithPreVersions.length > 0) {
