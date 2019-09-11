@@ -7,6 +7,7 @@ type PullRequestFromApi = any;
 export type PullRequest = {
   number: number;
   title: string;
+  closedIssueNumbers: number[];
   headSha: string;
   mergeCommitSha: string;
   mergedAt: string;
@@ -29,6 +30,7 @@ async function fetchPullRequests(since: string): Promise<PullRequest[]> {
       return {
         number: pr.number,
         title: pr.title,
+        closedIssueNumbers: findIssueNumbers(pr.body),
         mergeCommitSha: pr.merge_commit_sha,
         headSha: pr.head.sha,
         mergedAt: pr.merged_at
@@ -48,4 +50,24 @@ async function fetchPullRequestsFromApi(since: string, page: number = 1): Promis
   }
 
   return pullRequestsSince;
+}
+
+function findIssueNumbers(body: string): number[] {
+  const lines = body.split('\n').filter((line: string): boolean => line.match(/^(closes|fixes)/i) != null);
+  const matchedNumbers = [];
+
+  lines.forEach((line: string): void => {
+    const matched = line.match(/(#(\d+))/gi);
+    if (matched == null) {
+      return;
+    }
+
+    for (const matchedString of matched) {
+      const numberAsString = matchedString.replace('#', '');
+
+      matchedNumbers.push(parseInt(numberAsString));
+    }
+  });
+
+  return matchedNumbers;
 }
