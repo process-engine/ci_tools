@@ -33,7 +33,7 @@ const INTERNAL_COMMAND_HANDLERS = {
   'setup-git-and-npm-connections': runSetupGitAndNpmConnections
 };
 
-function run(argv: string[]): void {
+async function run(argv: string[]): Promise<void> {
   const [, , ...args] = argv;
 
   if (args.length === 0) {
@@ -54,13 +54,11 @@ function run(argv: string[]): void {
 
   enforceUniversalCommandLineSwitches(commandName, args);
 
-  const result = foundCommand(...restArgs);
-
-  if (typeof result.catch === 'function') {
-    result.catch((error: any): void => {
-      console.error(error);
-      process.exit(1);
-    });
+  try {
+    await foundCommand(...restArgs);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
   }
 }
 
