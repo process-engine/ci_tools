@@ -54,7 +54,14 @@ function run(argv: string[]): void {
 
   enforceUniversalCommandLineSwitches(commandName, args);
 
-  foundCommand(...restArgs);
+  const result = foundCommand(...restArgs);
+
+  if (typeof result.catch === 'function') {
+    result.catch((error: any): void => {
+      console.error(error);
+      process.exit(1);
+    });
+  }
 }
 
 function enforceUniversalCommandLineSwitches(commandName: string, args: string[]): void {
