@@ -6,18 +6,19 @@ import * as yargsParser from 'yargs-parser';
 import { run as runAutoPublishIfApplicable } from './commands/internal/auto-publish-if-applicable';
 import { run as runCommitAndTagVersion } from './commands/commit-and-tag-version';
 import { run as runCreateChangelog } from './commands/internal/create-changelog';
+import { run as runFailOnPreVersionDependencies } from './commands/fail-on-pre-version-dependencies';
 import { run as runNpmInstallOnly } from './commands/npm-install-only';
 import { run as runPrepareVersion } from './commands/prepare-version';
+import { run as runPublishNpmPackage } from './commands/publish-npm-package';
 import { run as runSetupGitAndNpmConnections } from './commands/internal/setup-git-and-npm-connections';
 import { run as runUpdateGithubRelease } from './commands/update-github-release';
 
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
 
-import { run as runPublishNpmPackage } from './commands/publish-npm-package';
-
 const COMMAND_HANDLERS = {
   'commit-and-tag-version': runCommitAndTagVersion,
+  'fail-on-pre-version-dependencies': runFailOnPreVersionDependencies,
   'prepare-version': runPrepareVersion,
   'publish-npm-package': runPublishNpmPackage,
   'npm-install-only': runNpmInstallOnly,
@@ -28,12 +29,11 @@ const COMMAND_HANDLERS = {
 const INTERNAL_COMMAND_HANDLERS = {
   'auto-publish-if-applicable': runAutoPublishIfApplicable,
   'create-changelog': runCreateChangelog,
-  'npm-install-only': runNpmInstallOnly,
   'update-github-release': runUpdateGithubRelease,
   'setup-git-and-npm-connections': runSetupGitAndNpmConnections
 };
 
-function run(argv: string[]): void {
+async function run(argv: string[]): Promise<void> {
   const [, , ...args] = argv;
 
   if (args.length === 0) {
@@ -54,7 +54,12 @@ function run(argv: string[]): void {
 
   enforceUniversalCommandLineSwitches(commandName, args);
 
-  foundCommand(...restArgs);
+  try {
+    await foundCommand(...restArgs);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
 }
 
 function enforceUniversalCommandLineSwitches(commandName: string, args: string[]): void {
@@ -69,6 +74,23 @@ function enforceUniversalCommandLineSwitches(commandName: string, args: string[]
     ensureOnPrimaryBranchOrExit(badge);
   } else if (argv.exceptOnPrimaryBranches) {
     ensureNotOnPrimaryBranchOrExit(badge);
+  }
+
+  if (argv.onlyOnBranch) {
+    ensureOnBranchOrExit(badge, argv.onlyOnBranch);
+  }
+}
+
+function ensureOnBranchOrExit(badge: string, requestedBranchName: string): void {
+  const branchName = getGitBranch();
+  const currentlyOnBranch = requestedBranchName === branchName;
+
+  if (!currentlyOnBranch) {
+    console.log(chalk.yellow(`${badge}--only-on-branch given: ${requestedBranchName}`));
+    console.log(chalk.yellow(`${badge}Current branch is '${branchName}'.`));
+    console.log(chalk.yellow(`${badge}Nothing to do here. Exiting.`));
+
+    process.exit(0);
   }
 }
 

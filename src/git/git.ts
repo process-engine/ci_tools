@@ -13,7 +13,10 @@ export function getGitTagList(): string {
 }
 
 export function getGitCommitListSince(ref: string, since: string): string {
-  return sh(`git log --format="%H" --since ${since} ${ref}`).trim();
+  console.log(`>> git log --format="%H" --since ${since} ${ref}`);
+  const out = sh(`git log --format="%H" --since ${since} ${ref}`).trim();
+  console.log(out);
+  return out;
 }
 
 export function getGitCommitSha1(): string {
