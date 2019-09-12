@@ -3,12 +3,7 @@ import fetch from 'node-fetch';
 import * as moment from 'moment';
 
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
-import {
-  getCurrentApiBaseUrlWithAuth,
-  getCurrentRepoNameWithOwner,
-  getGitBranch,
-  getGitCommitListSince
-} from '../../git/git';
+import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
 import { getNextVersion, getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
 
 type CommitFromApi = any;
