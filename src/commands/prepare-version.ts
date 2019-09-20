@@ -1,8 +1,9 @@
 import chalk from 'chalk';
 
-import { getGitBranch, getGitTagList, getGitTagsFromCommit, isCurrentTag, isDirty, isExistingTag } from '../git/git';
+import { getGitBranch, getGitTagList, getGitTagsFromCommit, isDirty, isExistingTag } from '../git/git';
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
+import { isRetryRun } from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
 
@@ -50,27 +51,18 @@ export async function run(...args): Promise<boolean> {
   const nextVersion = getNextVersion();
   const nextVersionTag = getVersionTag(nextVersion);
 
-  const currentVersionReleaseChannel = getReleaseChannelFromTag(currentVersionTag);
-  const nextVersionReleaseChannel = getReleaseChannelFromTag(nextVersionTag);
-  const isSameReleaseChannel = currentVersionReleaseChannel === nextVersionReleaseChannel;
-
   printInfo(nextVersion, isDryRun, isForced);
 
-  if (isSameReleaseChannel && isCurrentTag(currentVersionTag)) {
+  if (isRetryRun()) {
     console.error(
       chalk.yellow(
         `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
       )
     );
 
-    if (isForced) {
-      console.error(chalk.yellowBright(`${BADGE}Resuming since --force was provided.`));
-      console.log('');
-    } else {
-      console.error(chalk.yellow(`${BADGE}Nothing to do here!`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
-      process.exit(1);
-    }
+    process.exit(0);
   }
 
   if (isDirty() && !allowDirtyWorkdir) {
@@ -137,10 +129,4 @@ function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): v
   printMultiLineString(getGitTagsFromCommit('HEAD'));
   console.log(`${BADGE}nextVersionTag:`, getVersionTag(nextVersion));
   console.log('');
-}
-
-function getReleaseChannelFromTag(tagName: string): string {
-  const matched = tagName.match(/^v\d+\.\d+\.\d+-([^.]+)/);
-
-  return matched == null ? null : matched[0];
 }
