@@ -8,6 +8,7 @@ import { getPackageVersion } from '../versions/package_version';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { setupNpm } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
+import { isRetryRun } from '../versions/retry_run';
 
 const BADGE = '[publish-npm-package]\t';
 
@@ -23,9 +24,9 @@ export async function run(...args): Promise<boolean> {
 
   setupNpm();
 
-  const output = annotatedSh(npmPublishShellCommand);
+  const npmPublishShellCommandOutput = annotatedSh(npmPublishShellCommand);
 
-  const lines = output.trim().split('\n');
+  const lines = npmPublishShellCommandOutput.trim().split('\n');
   const expectedMessage = `+ ${packageName}@${packageVersion}`;
   const publishCommandSuccessful = lines[lines.length - 1] === expectedMessage;
 
@@ -40,6 +41,18 @@ export async function run(...args): Promise<boolean> {
       console.error(chalk.red(`${BADGE}Version '${packageVersion}' is not reported by '${viewCommand}'.`));
 
       process.exit(1);
+    }
+  } else {
+    const isAlreadyPublished =
+      npmPublishShellCommandOutput.match(/You cannot publish over the previously published versions/gi) != null;
+
+    if (isAlreadyPublished) {
+      console.log(chalk.yellow(`${BADGE}This package version was already published: '${packageVersion}'.`));
+    }
+    if (isRetryRun()) {
+      console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
+
+      process.exit(0);
     }
   }
 
