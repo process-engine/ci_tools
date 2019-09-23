@@ -6,6 +6,7 @@ import { getPackageVersion, getPackageVersionTag } from '../versions/package_ver
 import { getPrevVersionTag } from '../versions/git_helpers';
 import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
+import { isRetryRun } from '../versions/retry_run';
 
 const BADGE = '[commit-and-tag-version]\t';
 
@@ -21,6 +22,20 @@ export async function run(...args): Promise<boolean> {
   setupGit();
 
   printInfo(isDryRun, isForced);
+
+  if (isRetryRun()) {
+    const currentVersionTag = getPackageVersionTag();
+
+    console.error(
+      chalk.yellow(
+        `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
+      )
+    );
+
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
+
+    process.exit(0);
+  }
 
   const packageVersion = getPackageVersion();
   const changelogText = await getChangelogText(getPrevVersionTag());
