@@ -95,11 +95,21 @@ export function gitTag(newTag: string): GitOperationResult {
 }
 
 export function gitPush(remoteName: string, branchName: string): GitOperationResult {
-  return sh(`git push ${remoteName} ${branchName}`);
+  const cmd = `git push ${remoteName} ${branchName}`;
+  console.log(`>> ${cmd}`);
+  const output = sh(cmd);
+  console.log(output);
+
+  return output;
 }
 
 export function gitPushTags(): GitOperationResult {
-  return sh('git push --tags');
+  const cmd = 'git push --tags';
+  console.log(`>> ${cmd}`);
+  const output = sh(cmd);
+  console.log(output);
+
+  return output;
 }
 
 export function isCurrentTag(tagName: string): boolean {
