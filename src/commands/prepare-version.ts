@@ -51,18 +51,10 @@ export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
 
-  const currentVersionTag = getPackageVersionTag();
   let nextVersion = getNextVersion();
   let nextVersionTag = getVersionTag(nextVersion);
 
   printInfo(nextVersion, isDryRun, isForced);
-
-  if (isRetryRun()) {
-    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
-    console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
-
-    process.exit(0);
-  }
 
   if (isRetryRunForPartiallySuccessfulBuild()) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
@@ -74,6 +66,27 @@ export async function run(...args): Promise<boolean> {
     console.log(`${BADGE}resetting nextVersionTag:`, nextVersionTag);
   }
 
+  abortIfRetryRun();
+  abortIfDirtyWorkdir(allowDirtyWorkdir, isForced);
+  abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag, isForced);
+  abortIfDryRun(nextVersion, isDryRun, isForced);
+
+  sh(`npm version ${nextVersion} --no-git-tag-version`);
+
+  return true;
+}
+
+function abortIfRetryRun(): void {
+  if (isRetryRun()) {
+    const currentVersionTag = getPackageVersionTag();
+    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
+
+    process.exit(0);
+  }
+}
+
+function abortIfDirtyWorkdir(allowDirtyWorkdir: boolean, isForced: boolean): void {
   if (isDirty() && !allowDirtyWorkdir) {
     const workdirState = sh('git status --porcelain --untracked-files=no').trim();
 
@@ -89,7 +102,9 @@ export async function run(...args): Promise<boolean> {
       process.exit(1);
     }
   }
+}
 
+function abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag: string, isForced: boolean): void {
   if (isExistingTag(nextVersionTag) && !isRetryRunForPartiallySuccessfulBuild()) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Tag "${nextVersionTag}" already exists!`));
@@ -103,7 +118,9 @@ export async function run(...args): Promise<boolean> {
       process.exit(1);
     }
   }
+}
 
+function abortIfDryRun(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
   if (isDryRun) {
     console.log(chalk.yellow(`${BADGE}I would write version ${nextVersion} to package.json.`));
     console.log(chalk.yellow(`${BADGE}Aborting due to --dry.`));
@@ -114,10 +131,6 @@ export async function run(...args): Promise<boolean> {
 
     process.exit(1);
   }
-
-  sh(`npm version ${nextVersion} --no-git-tag-version`);
-
-  return true;
 }
 
 function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
