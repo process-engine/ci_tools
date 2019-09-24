@@ -4,9 +4,9 @@ import { getGitBranch, getGitTagList, getGitTagsFromCommit, isDirty, isExistingT
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
 import {
+  getPartiallySuccessfulBuildVersion,
   isRetryRun,
-  isRetryRunForPartiallySuccessfulBuild,
-  getPartiallySuccessfulBuildVersion
+  isRetryRunForPartiallySuccessfulBuild
 } from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
