@@ -19,8 +19,8 @@ export function getGitCommitListSince(ref: string, since: string): string {
   return out;
 }
 
-export function getGitCommitSha1(): string {
-  return sh('git rev-parse HEAD').trim();
+export function getGitCommitSha1(ref: string = 'HEAD'): string {
+  return sh(`git rev-parse ${ref}`).trim();
 }
 
 export function getGitBranch(): string {

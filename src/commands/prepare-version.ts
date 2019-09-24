@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, isDirty, isExistingTag } from '../git/git';
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
-import { isRetryRun } from '../versions/retry_run';
+import { isRetryRun, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
 
@@ -54,12 +54,13 @@ export async function run(...args): Promise<boolean> {
   printInfo(nextVersion, isDryRun, isForced);
 
   if (isRetryRun()) {
-    console.error(
-      chalk.yellow(
-        `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
-      )
-    );
+    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 
+    process.exit(0);
+  }
+  if (isRetryRunForPartiallySuccessfulBuild()) {
+    console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
     process.exit(0);

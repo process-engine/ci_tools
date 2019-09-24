@@ -6,7 +6,7 @@ import { getPackageVersion, getPackageVersionTag } from '../versions/package_ver
 import { getPrevVersionTag } from '../versions/git_helpers';
 import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
-import { isRetryRun } from '../versions/retry_run';
+import { isRetryRun, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
 
 const BADGE = '[commit-and-tag-version]\t';
 
@@ -25,13 +25,13 @@ export async function run(...args): Promise<boolean> {
 
   if (isRetryRun()) {
     const currentVersionTag = getPackageVersionTag();
+    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 
-    console.error(
-      chalk.yellow(
-        `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
-      )
-    );
-
+    process.exit(0);
+  }
+  if (isRetryRunForPartiallySuccessfulBuild()) {
+    console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
     process.exit(0);
