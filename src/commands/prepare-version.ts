@@ -3,7 +3,11 @@ import chalk from 'chalk';
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, isDirty, isExistingTag } from '../git/git';
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
-import { isRetryRun, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
+import {
+  isRetryRun,
+  isRetryRunForPartiallySuccessfulBuild,
+  getPartiallySuccessfulBuildVersion
+} from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
 
@@ -48,8 +52,8 @@ export async function run(...args): Promise<boolean> {
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
 
   const currentVersionTag = getPackageVersionTag();
-  const nextVersion = getNextVersion();
-  const nextVersionTag = getVersionTag(nextVersion);
+  let nextVersion = getNextVersion();
+  let nextVersionTag = getVersionTag(nextVersion);
 
   printInfo(nextVersion, isDryRun, isForced);
 
@@ -59,11 +63,15 @@ export async function run(...args): Promise<boolean> {
 
     process.exit(0);
   }
+
   if (isRetryRunForPartiallySuccessfulBuild()) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
-    console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
-    process.exit(0);
+    nextVersion = getPartiallySuccessfulBuildVersion();
+    nextVersionTag = getVersionTag(nextVersion);
+
+    console.log('');
+    console.log(`${BADGE}resetting nextVersionTag:`, nextVersionTag);
   }
 
   if (isDirty() && !allowDirtyWorkdir) {
@@ -82,7 +90,7 @@ export async function run(...args): Promise<boolean> {
     }
   }
 
-  if (isExistingTag(nextVersionTag)) {
+  if (isExistingTag(nextVersionTag) && !isRetryRunForPartiallySuccessfulBuild()) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Tag "${nextVersionTag}" already exists!`));
 

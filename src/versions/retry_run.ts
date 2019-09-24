@@ -3,12 +3,12 @@ import { getNextVersion, getVersionTag } from './git_helpers';
 import { getGitBranch, getGitCommitSha1, getGitTagList, isCurrentTag, isExistingTag } from '../git/git';
 import { getExpectedLatestVersion } from './increment_version';
 
-export function isRetryRunForPartiallySuccessfulBuild(): boolean {
-  const packageVersion = getPackageVersion();
-  const branchName = getGitBranch();
-  const gitTagList = getGitTagList();
+export function getPartiallySuccessfulBuildVersion(): string {
+  return getSuspectedPartiallySuccessfulBuildVersion();
+}
 
-  const latestVersion = getExpectedLatestVersion(packageVersion, branchName, gitTagList);
+export function isRetryRunForPartiallySuccessfulBuild(): boolean {
+  const latestVersion = getSuspectedPartiallySuccessfulBuildVersion();
   const latestVersionTag = getVersionTag(latestVersion);
   const latestVersionTagAlreadyExists = isExistingTag(latestVersionTag);
 
@@ -26,6 +26,15 @@ export function isRetryRun(): boolean {
   const result = isSameReleaseChannel && isCurrentTag(currentVersionTag);
 
   return result;
+}
+
+function getSuspectedPartiallySuccessfulBuildVersion(): string {
+  const packageVersion = getPackageVersion();
+  const branchName = getGitBranch();
+  const gitTagList = getGitTagList();
+  const latestVersion = getExpectedLatestVersion(packageVersion, branchName, gitTagList);
+
+  return latestVersion;
 }
 
 function currentCommitIsCommitBeforeTag(tag: string): boolean {
