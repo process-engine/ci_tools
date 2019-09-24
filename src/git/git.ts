@@ -13,10 +13,7 @@ export function getGitTagList(): string {
 }
 
 export function getGitCommitListSince(ref: string, since: string): string {
-  console.log(`>> git log --format="%H" --since ${since} ${ref}`);
-  const out = sh(`git log --format="%H" --since ${since} ${ref}`).trim();
-  console.log(out);
-  return out;
+  return sh(`git log --format="%H" --since ${since} ${ref}`).trim();
 }
 
 export function getGitCommitSha1(ref: string = 'HEAD'): string {
@@ -97,7 +94,7 @@ export function gitTag(newTag: string): GitOperationResult {
 export function gitPush(remoteName: string, branchName: string): GitOperationResult {
   const cmd = `git push ${remoteName} ${branchName}`;
   console.log(`>> ${cmd}`);
-  const output = sh(cmd);
+  const output = sh(cmd).trim();
   console.log(output);
 
   return output;
@@ -106,7 +103,7 @@ export function gitPush(remoteName: string, branchName: string): GitOperationRes
 export function gitPushTags(): GitOperationResult {
   const cmd = 'git push --tags';
   console.log(`>> ${cmd}`);
-  const output = sh(cmd);
+  const output = sh(cmd).trim();
   console.log(output);
 
   return output;
