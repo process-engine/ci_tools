@@ -109,12 +109,6 @@ export function gitPushTags(): GitOperationResult {
   return output;
 }
 
-export function isCurrentTag(tagName: string): boolean {
-  const tags = getGitTagsFromCommit('HEAD');
-
-  return tags.includes(tagName);
-}
-
 export function isDirty(): boolean {
   return sh('git status --porcelain --untracked-files=no').trim() !== '';
 }

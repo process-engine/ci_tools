@@ -5,7 +5,7 @@ import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
 import {
   getPartiallySuccessfulBuildVersion,
-  isRetryRun,
+  isRedundantRunTriggeredBySystemUserPush,
   isRetryRunForPartiallySuccessfulBuild
 } from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
@@ -77,7 +77,7 @@ export async function run(...args): Promise<boolean> {
 }
 
 function abortIfRetryRun(): void {
-  if (isRetryRun()) {
+  if (isRedundantRunTriggeredBySystemUserPush()) {
     const currentVersionTag = getPackageVersionTag();
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));

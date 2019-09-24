@@ -8,7 +8,7 @@ import { getPackageVersion } from '../versions/package_version';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { setupNpm } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
-import { isRetryRun } from '../versions/retry_run';
+import { isRedundantRunTriggeredBySystemUserPush } from '../versions/retry_run';
 
 const BADGE = '[publish-npm-package]\t';
 
@@ -49,7 +49,7 @@ export async function run(...args): Promise<boolean> {
     if (isAlreadyPublished) {
       console.log(chalk.yellow(`${BADGE}This package version was already published: '${packageVersion}'.`));
     }
-    if (isRetryRun()) {
+    if (isRedundantRunTriggeredBySystemUserPush()) {
       console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
       process.exit(0);
