@@ -32,7 +32,7 @@ function findLatestSuffixNumber(baseVersion: string, branchName: string, tagList
   const existingTags = tagList.split('\n').filter((tag: string): boolean => tag.trim().indexOf(versionPrefix) === 0);
 
   if (existingTags.length === 0) {
-    return 1;
+    return 0;
   }
 
   const existingNumbers = existingTags.map((tag: string): number => {
