@@ -37,13 +37,13 @@ export function setupGit(): void {
   const noGitUserEmail = sh('git config user.email').trim() === '';
   if (noGitUserEmail) {
     console.log(`${BADGE}No Git user email found, setting it to '${GIT_USER_EMAIL}'.`);
-    sh(`git config user.email ${GIT_USER_EMAIL}`);
+    sh(`git config user.email "${GIT_USER_EMAIL}"`);
   }
 
   const noGitUserName = sh('git config user.name').trim() === '';
   if (noGitUserName) {
     console.log(`${BADGE}No Git user name found, setting it to '${GIT_USER_NAME}'.`);
-    sh(`git config user.name ${GIT_USER_NAME}`);
+    sh(`git config user.name "${GIT_USER_NAME}"`);
   }
 
   if (process.env.GH_USER != null && process.env.GH_TOKEN != null) {
