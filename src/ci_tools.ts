@@ -12,6 +12,7 @@ import { run as runPrepareVersion } from './commands/prepare-version';
 import { run as runPublishNpmPackage } from './commands/publish-npm-package';
 import { run as runSetupGitAndNpmConnections } from './commands/internal/setup-git-and-npm-connections';
 import { run as runUpdateGithubRelease } from './commands/update-github-release';
+import { run as runUpgradeDependenciesWithPreVersions } from './commands/upgrade-dependencies-with-pre-versions';
 
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
@@ -22,7 +23,8 @@ const COMMAND_HANDLERS = {
   'prepare-version': runPrepareVersion,
   'publish-npm-package': runPublishNpmPackage,
   'npm-install-only': runNpmInstallOnly,
-  'update-github-release': runUpdateGithubRelease
+  'update-github-release': runUpdateGithubRelease,
+  'upgrade-dependencies-with-pre-versions': runUpgradeDependenciesWithPreVersions
 };
 
 // Internal commands are only used to develop ci_tools and are not intended for public consumption.

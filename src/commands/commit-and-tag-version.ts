@@ -6,6 +6,8 @@ import { getPackageVersion, getPackageVersionTag } from '../versions/package_ver
 import { getPrevVersionTag } from '../versions/git_helpers';
 import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
+import { isRedundantRunTriggeredBySystemUserPush, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
+import { printMultiLineString } from '../cli/printMultiLineString';
 
 const BADGE = '[commit-and-tag-version]\t';
 
@@ -22,6 +24,24 @@ export async function run(...args): Promise<boolean> {
 
   printInfo(isDryRun, isForced);
 
+  if (isRedundantRunTriggeredBySystemUserPush()) {
+    const currentVersionTag = getPackageVersionTag();
+    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
+
+    process.exit(0);
+  }
+
+  if (isRetryRunForPartiallySuccessfulBuild()) {
+    console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
+
+    process.exit(0);
+  }
+
+  annotatedSh('git config user.name');
+  annotatedSh('git config user.email');
+
   const packageVersion = getPackageVersion();
   const changelogText = await getChangelogText(getPrevVersionTag());
   const commitSuccessful = pushCommitAndTagCurrentVersion(packageVersion, changelogText);
@@ -35,6 +55,14 @@ export async function run(...args): Promise<boolean> {
   }
 
   return true;
+}
+
+function annotatedSh(cmd: string): string {
+  console.log(`${BADGE}|>>> ${cmd}`);
+  const output = sh(cmd);
+  printMultiLineString(output, `${BADGE}| `);
+
+  return output;
 }
 
 function printInfo(isDryRun: boolean, isForced: boolean): void {

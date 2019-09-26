@@ -1,8 +1,13 @@
 import chalk from 'chalk';
 
-import { getGitBranch, getGitTagList, getGitTagsFromCommit, isCurrentTag, isDirty, isExistingTag } from '../git/git';
+import { getGitBranch, getGitTagList, getGitTagsFromCommit, isDirty, isExistingTag } from '../git/git';
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
+import {
+  getPartiallySuccessfulBuildVersion,
+  isRedundantRunTriggeredBySystemUserPush,
+  isRetryRunForPartiallySuccessfulBuild
+} from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
 
@@ -46,33 +51,42 @@ export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
 
-  const currentVersionTag = getPackageVersionTag();
-  const nextVersion = getNextVersion();
-  const nextVersionTag = getVersionTag(nextVersion);
-
-  const currentVersionReleaseChannel = getReleaseChannelFromTag(currentVersionTag);
-  const nextVersionReleaseChannel = getReleaseChannelFromTag(nextVersionTag);
-  const isSameReleaseChannel = currentVersionReleaseChannel === nextVersionReleaseChannel;
+  let nextVersion = getNextVersion();
+  let nextVersionTag = getVersionTag(nextVersion);
 
   printInfo(nextVersion, isDryRun, isForced);
 
-  if (isSameReleaseChannel && isCurrentTag(currentVersionTag)) {
-    console.error(
-      chalk.yellow(
-        `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
-      )
-    );
+  if (isRetryRunForPartiallySuccessfulBuild()) {
+    console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
 
-    if (isForced) {
-      console.error(chalk.yellowBright(`${BADGE}Resuming since --force was provided.`));
-      console.log('');
-    } else {
-      console.error(chalk.yellow(`${BADGE}Nothing to do here!`));
+    nextVersion = getPartiallySuccessfulBuildVersion();
+    nextVersionTag = getVersionTag(nextVersion);
 
-      process.exit(1);
-    }
+    console.log('');
+    console.log(`${BADGE}resetting nextVersionTag:`, nextVersionTag);
   }
 
+  abortIfRetryRun();
+  abortIfDirtyWorkdir(allowDirtyWorkdir, isForced);
+  abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag, isForced);
+  abortIfDryRun(nextVersion, isDryRun, isForced);
+
+  sh(`npm version ${nextVersion} --no-git-tag-version`);
+
+  return true;
+}
+
+function abortIfRetryRun(): void {
+  if (isRedundantRunTriggeredBySystemUserPush()) {
+    const currentVersionTag = getPackageVersionTag();
+    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
+
+    process.exit(0);
+  }
+}
+
+function abortIfDirtyWorkdir(allowDirtyWorkdir: boolean, isForced: boolean): void {
   if (isDirty() && !allowDirtyWorkdir) {
     const workdirState = sh('git status --porcelain --untracked-files=no').trim();
 
@@ -88,8 +102,10 @@ export async function run(...args): Promise<boolean> {
       process.exit(1);
     }
   }
+}
 
-  if (isExistingTag(nextVersionTag)) {
+function abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag: string, isForced: boolean): void {
+  if (isExistingTag(nextVersionTag) && !isRetryRunForPartiallySuccessfulBuild()) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Tag "${nextVersionTag}" already exists!`));
 
@@ -102,7 +118,9 @@ export async function run(...args): Promise<boolean> {
       process.exit(1);
     }
   }
+}
 
+function abortIfDryRun(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
   if (isDryRun) {
     console.log(chalk.yellow(`${BADGE}I would write version ${nextVersion} to package.json.`));
     console.log(chalk.yellow(`${BADGE}Aborting due to --dry.`));
@@ -113,10 +131,6 @@ export async function run(...args): Promise<boolean> {
 
     process.exit(1);
   }
-
-  sh(`npm version ${nextVersion} --no-git-tag-version`);
-
-  return true;
 }
 
 function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
@@ -137,10 +151,4 @@ function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): v
   printMultiLineString(getGitTagsFromCommit('HEAD'));
   console.log(`${BADGE}nextVersionTag:`, getVersionTag(nextVersion));
   console.log('');
-}
-
-function getReleaseChannelFromTag(tagName: string): string {
-  const matched = tagName.match(/^v\d+\.\d+\.\d+-([^.]+)/);
-
-  return matched == null ? null : matched[0];
 }
