@@ -10,8 +10,15 @@ import { setupNpm } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
 import { isRedundantRunTriggeredBySystemUserPush } from '../versions/retry_run';
 
-const BADGE = '[publish-npm-package]\t';
+const COMMAND_NAME = 'publish-npm-package';
+const BADGE = `[${COMMAND_NAME}]\t`;
 
+const DOC = `
+Publishes the current package to npm.
+
+Does not complain if re-run (providing idempotency for CI).
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args);
   const isDryRun = argv.dry === true;
@@ -57,6 +64,16 @@ export async function run(...args): Promise<boolean> {
   }
 
   return publishCommandSuccessful;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--create-tag-from-branch-name] [--dry]`);
+  console.log('');
+  console.log(DOC.trim());
 }
 
 function getNpmPublishShellCommand(useBranchForTag: boolean, isDryRun: boolean): string {

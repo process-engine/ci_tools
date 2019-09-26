@@ -2,11 +2,13 @@ import { readFileSync } from 'fs';
 
 import chalk from 'chalk';
 
-const BADGE = '[fail-on-pre-version-dependencies]\t';
+const COMMAND_NAME = 'fail-on-pre-version-dependencies';
+const BADGE = `[${COMMAND_NAME}]\t`;
 
-/**
- * Fails if there are any requirements containing pre-versions in `package.json`.
- */
+const DOC = `
+Fails if there are any dependencies containing pre-versions in \`package.json\`.
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
   const content = readFileSync('package.json').toString();
   const json = JSON.parse(content);
@@ -32,4 +34,14 @@ export async function run(...args): Promise<boolean> {
   }
 
   return true;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(`Usage: ci_tools ${COMMAND_NAME}`);
+  console.log('');
+  console.log(DOC.trim());
 }

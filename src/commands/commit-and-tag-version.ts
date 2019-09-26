@@ -1,3 +1,4 @@
+import * as yargsParser from 'yargs-parser';
 import chalk from 'chalk';
 
 import { getChangelogText } from './internal/create-changelog';
@@ -9,16 +10,17 @@ import { sh } from '../cli/shell';
 import { isRedundantRunTriggeredBySystemUserPush, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
 
-const BADGE = '[commit-and-tag-version]\t';
+const COMMAND_NAME = 'commit-and-tag-version';
+const BADGE = `[${COMMAND_NAME}]\t`;
 
-/**
- * Commits, tags and pushes the current version
- * (when on one of the applicable branches).
- *
- */
+const DOC = `
+Commits, tags and pushes the current version (when on one of the applicable branches).
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
-  const isDryRun = args.indexOf('--dry') !== -1;
-  const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
+  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const isDryRun = argv.dry === true;
+  const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || argv.force === true;
 
   setupGit();
 
@@ -55,6 +57,16 @@ export async function run(...args): Promise<boolean> {
   }
 
   return true;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(`Usage: ci_tools ${COMMAND_NAME} <package-pattern> [<package-pattern>...] [--dry] [--force]`);
+  console.log('');
+  console.log(DOC.trim());
 }
 
 function annotatedSh(cmd: string): string {
