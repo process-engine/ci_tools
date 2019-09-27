@@ -11,41 +11,42 @@ import {
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
 
-const BADGE = '[prepare-version]\t';
+const COMMAND_NAME = 'prepare-version';
+const BADGE = `[${COMMAND_NAME}]\t`;
 
-/**
- * Increments the pre-version in `package.json` automatically.
- *
- * Example:
- *
- * Your package.json's version field is
- *
- *    1.2.0-alpha13
- *
- * if you push to develop again, it gets incremented:
- *
- *    1.2.0-alpha14
- *
- * If you merge into `beta`, the suffix is automatically changed and incremented with each subsequent merge/commit:
- *
- *    1.2.0-beta1
- *    1.2.0-beta2
- *    1.2.0-beta3
- *
- * IMPORTANT: This script always keeps the "base" of the version and never changes that!
- *
- *    1.2.0-alpha14
- *    1.2.0-beta2
- *    1.2.0
- *    ^^^^^ base version
- *
- * For alpha and beta releases, it adds the suffix, if not present.
- * For stable releases, it removes the suffix to the version, if present.
- *
- * It then writes package.json, commits, tags and pushes it
- * (when on one of the applicable branches).
- *
- */
+const DOC = `
+Adjusts the pre-version in \`package.json\` automatically.
+
+Example:
+
+Your package.json's version field is
+
+1.2.0-alpha13
+
+   if you push to develop again, it gets incremented:
+
+1.2.0-alpha14
+
+   If you merge into \`beta\`, the suffix is automatically changed and incremented with each subsequent merge/commit:
+
+1.2.0-beta1
+   1.2.0-beta2
+   1.2.0-beta3
+
+   IMPORTANT: This script always keeps the "base" of the version and never changes that!
+
+1.2.0-alpha14
+   1.2.0-beta2
+   1.2.0
+   ^^^^^ base version
+
+   For alpha and beta releases, it adds the suffix, if not present.
+For stable releases, it removes the suffix to the version, if present.
+
+It then writes package.json, commits, tags and pushes it
+(when on one of the applicable branches).
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
   const allowDirtyWorkdir = args.indexOf('--allow-dirty-workdir') !== -1;
   const isDryRun = args.indexOf('--dry') !== -1;
@@ -74,6 +75,16 @@ export async function run(...args): Promise<boolean> {
   sh(`npm version ${nextVersion} --no-git-tag-version`);
 
   return true;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--dry] [--force]`);
+  console.log('');
+  console.log(DOC.trim());
 }
 
 function abortIfRetryRun(): void {

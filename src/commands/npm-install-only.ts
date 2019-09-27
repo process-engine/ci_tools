@@ -3,8 +3,19 @@ import { readFileSync } from 'fs';
 
 import { asyncSh } from '../cli/shell';
 
-const BADGE = '[npm-install-only]\t';
+const COMMAND_NAME = 'npm-install-only';
+const BADGE = `[${COMMAND_NAME}]\t`;
 
+const DOC = `
+Uses \`npm install [--save-exact] <PACKAGE_NAME>\` on all dependencies matching the given patterns.
+
+Example:
+
+   ci_tools ${COMMAND_NAME} @process-engine/
+
+installs only deps starting with \`@process-engine/\`, honoring their '~' and '^' requirements.
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
 
@@ -38,6 +49,16 @@ export async function run(...args): Promise<boolean> {
   await annotatedSh(`npm install --save-exact ${npmInstallSaveExactArguments}`, isDryRun);
 
   return true;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(`Usage: ci_tools ${COMMAND_NAME} <package-pattern> [<package-pattern>...] [--dry]`);
+  console.log('');
+  console.log(DOC.trim());
 }
 
 async function annotatedSh(command: string, isDryRun: boolean): Promise<void> {
