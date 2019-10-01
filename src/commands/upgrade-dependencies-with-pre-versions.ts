@@ -30,9 +30,9 @@ export async function run(...args): Promise<boolean> {
   const dependenciesFilteredByName = filterDependenciesByName(dependencies, patternList);
   const dependenciesFilteredByRequirement = filterDependenciesByRequirement(dependencies, [/-(alpha|beta)\./]);
 
-  console.log(`${BADGE}patternList:`, patternList);
-  console.log(`${BADGE}dependenciesFilteredByName:`, dependenciesFilteredByName);
-  console.log(`${BADGE}dependenciesFilteredByRequirement:`, dependenciesFilteredByRequirement);
+  console.log(`${BADGE}patternList:\n`, patternList);
+  console.log(`${BADGE}dependenciesFilteredByName:\n`, dependenciesFilteredByName);
+  console.log(`${BADGE}dependenciesFilteredByRequirement:\n`, dependenciesFilteredByRequirement);
 
   const versionsToInstall = [];
   Object.keys(dependenciesFilteredByRequirement).forEach((packageName: string): void => {
@@ -62,9 +62,11 @@ export async function run(...args): Promise<boolean> {
     }
   });
 
-  console.log('versionsToInstall', versionsToInstall);
+  console.log(`${BADGE}versionsToInstall\n`, versionsToInstall);
 
-  await annotatedSh(`npm install --save-exact ${versionsToInstall.join(' ')}`, isDryRun);
+  if (versionsToInstall.length > 0) {
+    await annotatedSh(`npm install --save-exact ${versionsToInstall.join(' ')}`, isDryRun);
+  }
 
   return true;
 }
