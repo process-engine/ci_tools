@@ -4,22 +4,24 @@ import { readFileSync } from 'fs';
 import { asyncSh, sh } from '../cli/shell';
 import { parseVersion } from '../versions/parse_version';
 
-const BADGE = '[upgrade-dependencies-with-pre-versions]\t';
-
 type Pattern = string | RegExp;
 
-/**
- * Upgrades alpha- and beta-pre-versions for the packages with a name starting with one of the given args.
- *
- * Example:
- *
- *    ci_tools upgrade-dependencies-with-pre-versions @process-engine/
- *
- * Upgrades all deps starting with `@process-engine/` if there is a newer version available in their
- * release channel or if a stable version of the same base version has been released.
- *
- * This command does not change base version!
- */
+const COMMAND_NAME = 'upgrade-dependencies-with-pre-versions';
+const BADGE = `[${COMMAND_NAME}]\t`;
+
+const DOC = `
+Upgrades alpha- and beta-pre-versions for the packages with a name starting with one of the given args.
+
+Example:
+
+   ci_tools upgrade-dependencies-with-pre-versions @process-engine/
+
+Upgrades all deps starting with \`@process-engine/\` if there is a newer version available in their
+release channel or if a stable version of the same base version has been released.
+
+This command does not change base version!
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
   const isDryRun = args.indexOf('--dry') !== -1;
   const patternList = args.filter((arg: string): boolean => !arg.startsWith('-'));
@@ -28,9 +30,9 @@ export async function run(...args): Promise<boolean> {
   const dependenciesFilteredByName = filterDependenciesByName(dependencies, patternList);
   const dependenciesFilteredByRequirement = filterDependenciesByRequirement(dependencies, [/-(alpha|beta)\./]);
 
-  console.log(`${BADGE}patternList:`, patternList);
-  console.log(`${BADGE}dependenciesFilteredByName:`, dependenciesFilteredByName);
-  console.log(`${BADGE}dependenciesFilteredByRequirement:`, dependenciesFilteredByRequirement);
+  console.log(`${BADGE}patternList:\n`, patternList);
+  console.log(`${BADGE}dependenciesFilteredByName:\n`, dependenciesFilteredByName);
+  console.log(`${BADGE}dependenciesFilteredByRequirement:\n`, dependenciesFilteredByRequirement);
 
   const versionsToInstall = [];
   Object.keys(dependenciesFilteredByRequirement).forEach((packageName: string): void => {
@@ -60,11 +62,23 @@ export async function run(...args): Promise<boolean> {
     }
   });
 
-  console.log('versionsToInstall', versionsToInstall);
+  console.log(`${BADGE}versionsToInstall\n`, versionsToInstall);
 
-  await annotatedSh(`npm install --save-exact ${versionsToInstall.join(' ')}`, isDryRun);
+  if (versionsToInstall.length > 0) {
+    await annotatedSh(`npm install --save-exact ${versionsToInstall.join(' ')}`, isDryRun);
+  }
 
   return true;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(`Usage: ci_tools ${COMMAND_NAME} <package-pattern> [<package-pattern>...] [--dry]`);
+  console.log('');
+  console.log(DOC.trim());
 }
 
 export function getVersionToUpgradeTo(requirement: string, versions: string[]): string | null {

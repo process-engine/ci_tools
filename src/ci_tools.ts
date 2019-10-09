@@ -3,70 +3,73 @@
 import chalk from 'chalk';
 import * as yargsParser from 'yargs-parser';
 
-import { run as runAutoPublishIfApplicable } from './commands/internal/auto-publish-if-applicable';
-import { run as runCommitAndTagVersion } from './commands/commit-and-tag-version';
-import { run as runCreateChangelog } from './commands/internal/create-changelog';
-import { run as runFailOnPreVersionDependencies } from './commands/fail-on-pre-version-dependencies';
-import { run as runNpmInstallOnly } from './commands/npm-install-only';
-import { run as runPrepareVersion } from './commands/prepare-version';
-import { run as runPublishNpmPackage } from './commands/publish-npm-package';
-import { run as runSetupGitAndNpmConnections } from './commands/internal/setup-git-and-npm-connections';
-import { run as runUpdateGithubRelease } from './commands/update-github-release';
-import { run as runUpgradeDependenciesWithPreVersions } from './commands/upgrade-dependencies-with-pre-versions';
+import * as AutoPublishIfApplicable from './commands/internal/auto-publish-if-applicable';
+import * as CommitAndTagVersion from './commands/commit-and-tag-version';
+import * as CreateChangelog from './commands/internal/create-changelog';
+import * as FailOnPreVersionDependencies from './commands/fail-on-pre-version-dependencies';
+import * as NpmInstallOnly from './commands/npm-install-only';
+import * as PrepareVersion from './commands/prepare-version';
+import * as PublishNpmPackage from './commands/publish-npm-package';
+import * as SetupGitAndNpmConnections from './commands/internal/setup-git-and-npm-connections';
+import * as UpdateGithubRelease from './commands/update-github-release';
+import * as UpgradeDependenciesWithPreVersions from './commands/upgrade-dependencies-with-pre-versions';
 
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
 
 const COMMAND_HANDLERS = {
-  'commit-and-tag-version': runCommitAndTagVersion,
-  'fail-on-pre-version-dependencies': runFailOnPreVersionDependencies,
-  'prepare-version': runPrepareVersion,
-  'publish-npm-package': runPublishNpmPackage,
-  'npm-install-only': runNpmInstallOnly,
-  'update-github-release': runUpdateGithubRelease,
-  'upgrade-dependencies-with-pre-versions': runUpgradeDependenciesWithPreVersions
+  'commit-and-tag-version': CommitAndTagVersion,
+  'fail-on-pre-version-dependencies': FailOnPreVersionDependencies,
+  'prepare-version': PrepareVersion,
+  'publish-npm-package': PublishNpmPackage,
+  'npm-install-only': NpmInstallOnly,
+  'update-github-release': UpdateGithubRelease,
+  'upgrade-dependencies-with-pre-versions': UpgradeDependenciesWithPreVersions
 };
 
 // Internal commands are only used to develop ci_tools and are not intended for public consumption.
 const INTERNAL_COMMAND_HANDLERS = {
-  'auto-publish-if-applicable': runAutoPublishIfApplicable,
-  'create-changelog': runCreateChangelog,
-  'update-github-release': runUpdateGithubRelease,
-  'setup-git-and-npm-connections': runSetupGitAndNpmConnections
+  'auto-publish-if-applicable': AutoPublishIfApplicable,
+  'create-changelog': CreateChangelog,
+  'update-github-release': UpdateGithubRelease,
+  'setup-git-and-npm-connections': SetupGitAndNpmConnections
 };
 
-async function run(argv: string[]): Promise<void> {
-  const [, , ...args] = argv;
+async function run(originalArgv: string[]): Promise<void> {
+  const [, , ...args] = originalArgv;
+  const argv = yargsParser(args, { alias: { help: ['h'] } });
 
-  if (args.length === 0) {
-    console.log('Usage: ci_tools <COMMAND>');
-    console.log('');
-    console.log('COMMAND can be any of:');
-    Object.keys(COMMAND_HANDLERS).forEach((commandName: string): void => console.log(`  ${commandName}`));
+  if (args.length === 0 || (args.length === 1 && argv.help === true)) {
+    printHelp();
     process.exit(1);
   }
   const [commandName, ...restArgs] = args;
 
-  const foundCommand = COMMAND_HANDLERS[commandName] || INTERNAL_COMMAND_HANDLERS[commandName];
+  const commandHandler = COMMAND_HANDLERS[commandName] || INTERNAL_COMMAND_HANDLERS[commandName];
 
-  if (foundCommand == null) {
-    console.log(`No handler found for command: ${commandName}`);
+  if (commandHandler == null) {
+    console.error(`No handler found for command: ${commandName}`);
     process.exit(1);
   }
 
-  enforceUniversalCommandLineSwitches(commandName, args);
+  enforceUniversalCommandLineSwitches(commandHandler, commandName, args);
 
   try {
-    await foundCommand(...restArgs);
+    await commandHandler.run(...restArgs);
   } catch (error) {
     console.error(error);
     process.exit(1);
   }
 }
 
-function enforceUniversalCommandLineSwitches(commandName: string, args: string[]): void {
+function enforceUniversalCommandLineSwitches(commandHandler: any, commandName: string, args: string[]): void {
   const badge = `[${commandName}]\t`;
-  const argv = yargsParser(args);
+  const argv = yargsParser(args, { alias: { help: ['h'] } });
+
+  if (argv.help) {
+    printHelpForCommand(commandHandler, commandName);
+    process.exit(0);
+  }
 
   if (argv.onlyOnPrimaryBranches && argv.exceptOnPrimaryBranches) {
     console.error(chalk.red(`${badge}Both --only-on-primary-branches and --except-on-primary-branches given.`));
@@ -124,6 +127,24 @@ function ensureNotOnPrimaryBranchOrExit(badge: string): void {
 
     process.exit(0);
   }
+}
+
+function printHelp(): void {
+  console.log('Usage: ci_tools <COMMAND>');
+  console.log('');
+  console.log('COMMAND can be any of:');
+  Object.keys(COMMAND_HANDLERS).forEach((commandName: string): void => console.log(`  ${commandName}`));
+}
+
+function printHelpForCommand(commandHandler: any, commandName: string): void {
+  if (commandHandler.printHelp != null) {
+    commandHandler.printHelp();
+    return;
+  }
+
+  console.log(`Usage: ci_tools ${commandName}`);
+  console.log('');
+  console.log('No further instructions available.');
 }
 
 run(process.argv);
