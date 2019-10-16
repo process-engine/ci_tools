@@ -106,6 +106,7 @@ async function ensureVersionIsAvailable(packageName: string, packageVersion: str
     if (packageVersionFound) {
       break;
     } else {
+      console.log(chalk.yellow(`${BADGE}Version '${packageVersion}' not found. Retrying in 500ms...`));
       currentTry++;
       await new Promise((resolve): any => setTimeout(resolve, timeoutBetweenRetriesInMs));
     }
