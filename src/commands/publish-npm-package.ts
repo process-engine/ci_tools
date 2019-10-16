@@ -38,17 +38,7 @@ export async function run(...args): Promise<boolean> {
   const publishCommandSuccessful = lines[lines.length - 1] === expectedMessage;
 
   if (publishCommandSuccessful) {
-    const viewCommand = `npm view ${packageName} versions --json`;
-    const versions = sh(viewCommand);
-    const packageWasActuallyPublished = versions.includes(packageVersion);
-
-    if (packageWasActuallyPublished) {
-      console.log(chalk.green(`${BADGE}Successfully published version '${packageVersion}'.`));
-    } else {
-      console.error(chalk.red(`${BADGE}Version '${packageVersion}' is not reported by '${viewCommand}'.`));
-
-      process.exit(1);
-    }
+    await ensureVersionIsAvailable(packageName, packageVersion);
   } else {
     const isAlreadyPublished =
       npmPublishShellCommandOutput.match(/You cannot publish over the previously published versions/gi) != null;
@@ -92,9 +82,41 @@ function annotatedSh(cmd: string): string {
   return output;
 }
 
-function getPackageName(): string[] {
+function getPackageName(): string {
   const content = readFileSync('package.json').toString();
   const json = JSON.parse(content);
 
   return json.name;
+}
+
+async function ensureVersionIsAvailable(packageName: string, packageVersion: string): Promise<void> {
+
+  const viewCommand = `npm view ${packageName} versions --json`;
+  let packageVersionFound = false;
+
+  // TODO: It is certainly debatable on what the best settings would be here.
+  const maxNumberOfRetries = 20;
+  const timeoutBetweenRetriesInMs = 500;
+  let currentTry = 0;
+
+  while (packageVersionFound === false && currentTry < maxNumberOfRetries) {
+    const versions = sh(viewCommand);
+    packageVersionFound = versions.includes(packageVersion);
+
+    if (packageVersionFound) {
+      break;
+    } else {
+      console.log(chalk.yellow(`${BADGE}Version '${packageVersion}' not found. Retrying in 500ms...`));
+      currentTry++;
+      await new Promise((resolve): any => setTimeout(resolve, timeoutBetweenRetriesInMs));
+    }
+  }
+
+  if (packageVersionFound) {
+    console.log(chalk.green(`${BADGE}Successfully published version '${packageVersion}'.`));
+  } else {
+    console.error(chalk.red(`${BADGE}Version '${packageVersion}' is not reported by 'npm view'.`));
+
+    process.exit(1);
+  }
 }
