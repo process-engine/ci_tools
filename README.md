@@ -1,65 +1,40 @@
 # CI Tools
 
-This projects contains shared scripts for our ci pipeline.
+Allgemeines Tooling, welches im Rahmen unseres Release-Prozesses verwendet wird.
 
-## What Are the Goals of This Project?
+## Was sind die Ziele dieses Projekts?
 
-The goal of the project is to provide useful scripts for our ci pipeline.
+Automatisierung.
 
-## Relevant URLs
+## Wie kann ich das Projekt aufsetzen?
 
-1. https://ci.process-engine.io
 
-## How Do I Set This Project Up?
+### Voraussetzungen
 
-### Prerequesites
+* Node `>= 10.0.0`
+* npm `>= 6.0.0`
 
-- Node
 
 ### Setup/Installation
 
-Install dependencies:
-
-```bash
-npm install
+```shell
+$ npm install @process-engine/ci_tools
 ```
 
-Build the sources:
+## Wie kann ich das Projekt benutzen?
 
-```bash
-npm run build
+
+### Benutzung
+
+```shell
+$ ci_tools --help
 ```
 
-Link the package, to execute commands from the terminal:
+### Legacy Scripts
 
-```bash
-npm link
-```
+CI Tools wurden mit Version `2.0.0` komplett überarbeitet und neu ausgerichtet.
 
-## How Do I Use This Project?
-
-### Installation
-
-Install and save this package into your dev dependencies:
-
-```bash
-npm install --save-dev @process-engine/ci_tools
-```
-
-Now use it inside the `scripts` block:
-
-```json
-(...)
-  "scripts": {
-    "do-release": "create-github-release",
-    (...)
-  },
-(...)
-```
-
-### Usage
-
-Provided scripts:
+Die folgenden "Legacy Scripts" wurden in ihrer Funktionalität erhalten:
 
 #### Create GitHub Release
 
@@ -104,15 +79,3 @@ NUGET_ACCESS_TOKEN="NuGetAPITokenHere" is-nuget-packet-published https://5minds.
 
 This will check if the package `ProcessEngine.Runtime`, version `3.8.2-pre1` is
 published on the feed `process_engine_public`.
-
-### Deployment (*)
-
-> **TODO:** optional section; please refer to the german template for hints on how to fill this section.
-
-## What Else Is There to Know?
-
-> **TODO:** please refer to the german template for hints on how to fill this section.
-
-### Authors/Contact Information
-
-- Paul Heidenreich <paul.heidenreich@5minds.de>

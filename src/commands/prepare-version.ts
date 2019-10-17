@@ -1,78 +1,103 @@
 import chalk from 'chalk';
 
-import { getGitBranch, getGitTagList, getGitTagsFromCommit, isCurrentTag, isDirty, isExistingTag } from '../git/git';
+import { getGitBranch, getGitTagList, getGitTagsFromCommit, isDirty, isExistingTag } from '../git/git';
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
+import {
+  getPartiallySuccessfulBuildVersion,
+  isRedundantRunTriggeredBySystemUserPush,
+  isRetryRunForPartiallySuccessfulBuild
+} from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
 
-const BADGE = '[prepare-version]\t';
+const COMMAND_NAME = 'prepare-version';
+const BADGE = `[${COMMAND_NAME}]\t`;
 
-/**
- * Increments the pre-version in `package.json` automatically.
- *
- * Example:
- *
- * Your package.json's version field is
- *
- *    1.2.0-alpha13
- *
- * if you push to develop again, it gets incremented:
- *
- *    1.2.0-alpha14
- *
- * If you merge into `beta`, the suffix is automatically changed and incremented with each subsequent merge/commit:
- *
- *    1.2.0-beta1
- *    1.2.0-beta2
- *    1.2.0-beta3
- *
- * IMPORTANT: This script always keeps the "base" of the version and never changes that!
- *
- *    1.2.0-alpha14
- *    1.2.0-beta2
- *    1.2.0
- *    ^^^^^ base version
- *
- * For alpha and beta releases, it adds the suffix, if not present.
- * For stable releases, it removes the suffix to the version, if present.
- *
- * It then writes package.json, commits, tags and pushes it
- * (when on one of the applicable branches).
- *
- */
+const DOC = `
+Adjusts the pre-version in \`package.json\` automatically.
+
+Example:
+
+Your package.json's version field is
+
+1.2.0-alpha13
+
+   if you push to develop again, it gets incremented:
+
+1.2.0-alpha14
+
+   If you merge into \`beta\`, the suffix is automatically changed and incremented with each subsequent merge/commit:
+
+1.2.0-beta1
+   1.2.0-beta2
+   1.2.0-beta3
+
+   IMPORTANT: This script always keeps the "base" of the version and never changes that!
+
+1.2.0-alpha14
+   1.2.0-beta2
+   1.2.0
+   ^^^^^ base version
+
+   For alpha and beta releases, it adds the suffix, if not present.
+For stable releases, it removes the suffix to the version, if present.
+
+It then writes package.json, commits, tags and pushes it
+(when on one of the applicable branches).
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
   const allowDirtyWorkdir = args.indexOf('--allow-dirty-workdir') !== -1;
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
 
-  const currentVersionTag = getPackageVersionTag();
-  const nextVersion = getNextVersion();
-  const nextVersionTag = getVersionTag(nextVersion);
-
-  const currentVersionReleaseChannel = getReleaseChannelFromTag(currentVersionTag);
-  const nextVersionReleaseChannel = getReleaseChannelFromTag(nextVersionTag);
-  const isSameReleaseChannel = currentVersionReleaseChannel === nextVersionReleaseChannel;
+  let nextVersion = getNextVersion();
+  let nextVersionTag = getVersionTag(nextVersion);
 
   printInfo(nextVersion, isDryRun, isForced);
 
-  if (isSameReleaseChannel && isCurrentTag(currentVersionTag)) {
-    console.error(
-      chalk.yellow(
-        `${BADGE}Current commit is tagged with "${currentVersionTag}", which is the current package version.`
-      )
-    );
+  if (isRetryRunForPartiallySuccessfulBuild()) {
+    console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
 
-    if (isForced) {
-      console.error(chalk.yellowBright(`${BADGE}Resuming since --force was provided.`));
-      console.log('');
-    } else {
-      console.error(chalk.yellow(`${BADGE}Nothing to do here!`));
+    nextVersion = getPartiallySuccessfulBuildVersion();
+    nextVersionTag = getVersionTag(nextVersion);
 
-      process.exit(1);
-    }
+    console.log('');
+    console.log(`${BADGE}resetting nextVersionTag:`, nextVersionTag);
   }
 
+  abortIfRetryRun();
+  abortIfDirtyWorkdir(allowDirtyWorkdir, isForced);
+  abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag, isForced);
+  abortIfDryRun(nextVersion, isDryRun, isForced);
+
+  sh(`npm version ${nextVersion} --no-git-tag-version`);
+
+  return true;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--dry] [--force]`);
+  console.log('');
+  console.log(DOC.trim());
+}
+
+function abortIfRetryRun(): void {
+  if (isRedundantRunTriggeredBySystemUserPush()) {
+    const currentVersionTag = getPackageVersionTag();
+    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
+
+    process.exit(0);
+  }
+}
+
+function abortIfDirtyWorkdir(allowDirtyWorkdir: boolean, isForced: boolean): void {
   if (isDirty() && !allowDirtyWorkdir) {
     const workdirState = sh('git status --porcelain --untracked-files=no').trim();
 
@@ -88,8 +113,10 @@ export async function run(...args): Promise<boolean> {
       process.exit(1);
     }
   }
+}
 
-  if (isExistingTag(nextVersionTag)) {
+function abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag: string, isForced: boolean): void {
+  if (isExistingTag(nextVersionTag) && !isRetryRunForPartiallySuccessfulBuild()) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Tag "${nextVersionTag}" already exists!`));
 
@@ -102,7 +129,9 @@ export async function run(...args): Promise<boolean> {
       process.exit(1);
     }
   }
+}
 
+function abortIfDryRun(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
   if (isDryRun) {
     console.log(chalk.yellow(`${BADGE}I would write version ${nextVersion} to package.json.`));
     console.log(chalk.yellow(`${BADGE}Aborting due to --dry.`));
@@ -113,10 +142,6 @@ export async function run(...args): Promise<boolean> {
 
     process.exit(1);
   }
-
-  sh(`npm version ${nextVersion} --no-git-tag-version`);
-
-  return true;
 }
 
 function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
@@ -137,10 +162,4 @@ function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): v
   printMultiLineString(getGitTagsFromCommit('HEAD'));
   console.log(`${BADGE}nextVersionTag:`, getVersionTag(nextVersion));
   console.log('');
-}
-
-function getReleaseChannelFromTag(tagName: string): string {
-  const matched = tagName.match(/^v\d+\.\d+\.\d+-([^.]+)/);
-
-  return matched == null ? null : matched[0];
 }

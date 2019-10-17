@@ -1,3 +1,4 @@
+import * as yargsParser from 'yargs-parser';
 import chalk from 'chalk';
 
 import { getChangelogText } from './internal/create-changelog';
@@ -6,21 +7,42 @@ import { getPackageVersion, getPackageVersionTag } from '../versions/package_ver
 import { getPrevVersionTag } from '../versions/git_helpers';
 import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
+import { isRedundantRunTriggeredBySystemUserPush, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
+import { printMultiLineString } from '../cli/printMultiLineString';
 
-const BADGE = '[commit-and-tag-version]\t';
+const COMMAND_NAME = 'commit-and-tag-version';
+const BADGE = `[${COMMAND_NAME}]\t`;
 
-/**
- * Commits, tags and pushes the current version
- * (when on one of the applicable branches).
- *
- */
+const DOC = `
+Commits, tags and pushes the current version (when on one of the applicable branches).
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
-  const isDryRun = args.indexOf('--dry') !== -1;
-  const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
+  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const isDryRun = argv.dry === true;
+  const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || argv.force === true;
 
   setupGit();
 
   printInfo(isDryRun, isForced);
+
+  if (isRedundantRunTriggeredBySystemUserPush()) {
+    const currentVersionTag = getPackageVersionTag();
+    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
+
+    process.exit(0);
+  }
+
+  if (isRetryRunForPartiallySuccessfulBuild()) {
+    console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
+    console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
+
+    process.exit(0);
+  }
+
+  annotatedSh('git config user.name');
+  annotatedSh('git config user.email');
 
   const packageVersion = getPackageVersion();
   const changelogText = await getChangelogText(getPrevVersionTag());
@@ -35,6 +57,24 @@ export async function run(...args): Promise<boolean> {
   }
 
   return true;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(`Usage: ci_tools ${COMMAND_NAME} <package-pattern> [<package-pattern>...] [--dry] [--force]`);
+  console.log('');
+  console.log(DOC.trim());
+}
+
+function annotatedSh(cmd: string): string {
+  console.log(`${BADGE}|>>> ${cmd}`);
+  const output = sh(cmd);
+  printMultiLineString(output, `${BADGE}| `);
+
+  return output;
 }
 
 function printInfo(isDryRun: boolean, isForced: boolean): void {

@@ -13,14 +13,11 @@ export function getGitTagList(): string {
 }
 
 export function getGitCommitListSince(ref: string, since: string): string {
-  console.log(`>> git log --format="%H" --since ${since} ${ref}`);
-  const out = sh(`git log --format="%H" --since ${since} ${ref}`).trim();
-  console.log(out);
-  return out;
+  return sh(`git log --format="%H" --since ${since} ${ref}`).trim();
 }
 
-export function getGitCommitSha1(): string {
-  return sh('git rev-parse HEAD').trim();
+export function getGitCommitSha1(ref: string = 'HEAD'): string {
+  return sh(`git rev-parse ${ref}`).trim();
 }
 
 export function getGitBranch(): string {
@@ -95,17 +92,21 @@ export function gitTag(newTag: string): GitOperationResult {
 }
 
 export function gitPush(remoteName: string, branchName: string): GitOperationResult {
-  return sh(`git push ${remoteName} ${branchName}`);
+  const cmd = `git push ${remoteName} ${branchName}`;
+  console.log(`>> ${cmd}`);
+  const output = sh(cmd).trim();
+  console.log(output);
+
+  return output;
 }
 
 export function gitPushTags(): GitOperationResult {
-  return sh('git push --tags');
-}
+  const cmd = 'git push --tags';
+  console.log(`>> ${cmd}`);
+  const output = sh(cmd).trim();
+  console.log(output);
 
-export function isCurrentTag(tagName: string): boolean {
-  const tags = getGitTagsFromCommit('HEAD');
-
-  return tags.includes(tagName);
+  return output;
 }
 
 export function isDirty(): boolean {

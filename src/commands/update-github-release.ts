@@ -9,15 +9,22 @@ import { getCurrentRepoNameWithOwner, getFullCommitMessageFromRef, isExistingTag
 import { getPackageVersionTag } from '../versions/package_version';
 import { setupGit } from './internal/setup-git-and-npm-connections';
 
-const BADGE = '[update-github-release]\t';
-const SKIP_CI_MESSAGE = '[skip ci]';
-
 type GitTag = string;
 type GitHubRepo = {
   owner: string;
   name: string;
 };
 
+const COMMAND_NAME = 'update-github-release';
+const BADGE = `[${COMMAND_NAME}]\t`;
+const SKIP_CI_MESSAGE = '[skip ci]';
+
+const DOC = `
+Updates or creates a GitHub release using the current version (or given \`--version-tag\`).
+
+Uploads all given \`--assets\`, resolving globs and updating existing assets on GitHub.
+`;
+// DOC: see above
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args);
   const isDryRun = argv.dry;
@@ -70,6 +77,18 @@ export async function run(...args): Promise<boolean> {
   }
 
   return success;
+}
+
+export function getShortDoc(): string {
+  return DOC.trim().split('\n')[0];
+}
+
+export function printHelp(): void {
+  console.log(
+    `Usage: ci_tools ${COMMAND_NAME} [--use-title-and-text-from-git-tag | --title [--text]] [--assets <asset-name-or-glob> ...] [--version-tag] [--dry]`
+  );
+  console.log('');
+  console.log(DOC.trim());
 }
 
 /**
