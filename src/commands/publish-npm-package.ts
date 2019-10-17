@@ -95,7 +95,8 @@ async function ensureVersionIsAvailable(packageName: string, packageVersion: str
   let packageVersionFound = false;
 
   // TODO: It is certainly debatable on what the best settings would be here.
-  const maxNumberOfRetries = 20;
+  // For now, a window of 30 seconds is granted, before the publishing is regarded as failure.
+  const maxNumberOfRetries = 60;
   const timeoutBetweenRetriesInMs = 500;
   let currentTry = 0;
 
