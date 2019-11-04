@@ -1,4 +1,4 @@
-import { sh } from '../cli/shell';
+import { escapeForShell, sh } from '../cli/shell';
 
 const CURRENT_BRANCH_MARKER = /^\* /;
 
@@ -82,7 +82,7 @@ export function gitAdd(...files: string[]): GitOperationResult {
 }
 
 export function gitCommit(commitMessage: string): GitOperationResult {
-  const escapedCommitMessage = commitMessage.replace(/"/g, '\\"');
+  const escapedCommitMessage = escapeForShell(commitMessage);
 
   return sh(`git commit -m "${escapedCommitMessage}"`);
 }
