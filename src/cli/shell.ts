@@ -13,3 +13,7 @@ export function asyncSh(command: string): Promise<string> {
     });
   });
 }
+
+export function escapeForShell(text: string): string {
+  return text.replace(/(`|\$|")/g, '\\$1');
+}
