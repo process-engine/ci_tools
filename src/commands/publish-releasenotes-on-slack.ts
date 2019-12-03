@@ -11,6 +11,8 @@ const BADGE = `[${COMMAND_NAME}]\t`;
 
 const DOC = `
 Publishes the releasenotes for the current version on slack.
+
+To use this command, an incoming webhook for slack is required and must be configured as an environment variable named 'SLACK_WEBHOOK'.
 `;
 // DOC: see above
 export async function run(): Promise<boolean> {
