@@ -45,8 +45,13 @@ export async function run(...args): Promise<boolean> {
 
   console.log(`${BADGE}`);
 
-  await annotatedSh(`npm install ${npmInstallArguments}`, isDryRun);
-  await annotatedSh(`npm install --save-exact ${npmInstallSaveExactArguments}`, isDryRun);
+  if (npmInstallArguments.length !== 0) {
+    await annotatedSh(`npm install ${npmInstallArguments}`, isDryRun);
+  }
+
+  if (npmInstallSaveExactArguments.length !== 0) {
+    await annotatedSh(`npm install --save-exact ${npmInstallSaveExactArguments}`, isDryRun);
+  }
 
   return true;
 }
@@ -91,32 +96,38 @@ function getPackageNamesMatchingPattern(allPackageNames: string[], patternList: 
 function getAllPackageNamesWithNoStrictVersion(): string[] {
   const content = readFileSync('package.json').toString();
   const json = JSON.parse(content);
+  let dependencies: string[] = [];
+  let devDependencies: string[] = [];
 
-  const dependencies: string[] = Object.keys(json.dependencies)
-    .filter((dependency): boolean => {
-      const version: string = json.dependencies[dependency];
+  if (json.dependencies) {
+    dependencies = Object.keys(json.dependencies)
+      .filter((dependency): boolean => {
+        const version: string = json.dependencies[dependency];
 
-      const versionIsNotStrict: boolean = version.startsWith('^') || version.startsWith('~');
+        const versionIsNotStrict: boolean = version.startsWith('^') || version.startsWith('~');
 
-      return versionIsNotStrict;
-    })
-    .map((dependency: string): string => {
-      const version: string = json.dependencies[dependency];
+        return versionIsNotStrict;
+      })
+      .map((dependency: string): string => {
+        const version: string = json.dependencies[dependency];
 
-      return `${dependency}@${version}`;
-    });
+        return `${dependency}@${version}`;
+      });
+  }
 
-  const devDependencies: string[] = Object.keys(json.devDependencies)
-    .filter((devDependency): boolean => {
-      const version: string = json.devDependencies[devDependency];
+  if (json.devDependencies) {
+    devDependencies = Object.keys(json.devDependencies)
+      .filter((devDependency): boolean => {
+        const version: string = json.devDependencies[devDependency];
 
-      const versionIsNotStrict: boolean = version.startsWith('^') || version.startsWith('~');
+        const versionIsNotStrict: boolean = version.startsWith('^') || version.startsWith('~');
 
-      return versionIsNotStrict;
-    })
-    .map((devDependency: string): string => {
-      return `${devDependency}@${json.devDependencies[devDependency]}`;
-    });
+        return versionIsNotStrict;
+      })
+      .map((devDependency: string): string => {
+        return `${devDependency}@${json.devDependencies[devDependency]}`;
+      });
+  }
 
   const allPackageNames: string[] = [...dependencies].concat(devDependencies).sort();
 
@@ -126,32 +137,38 @@ function getAllPackageNamesWithNoStrictVersion(): string[] {
 function getAllPackageNamesWithStrictVersion(): string[] {
   const content = readFileSync('package.json').toString();
   const json = JSON.parse(content);
+  let dependencies: string[] = [];
+  let devDependencies: string[] = [];
 
-  const dependencies: string[] = Object.keys(json.dependencies)
-    .filter((dependency): boolean => {
-      const version: string = json.dependencies[dependency];
+  if (json.dependencies) {
+    dependencies = Object.keys(json.dependencies)
+      .filter((dependency): boolean => {
+        const version: string = json.dependencies[dependency];
 
-      const versionIsStrict: boolean = !(version.startsWith('^') || version.startsWith('~'));
+        const versionIsStrict: boolean = !(version.startsWith('^') || version.startsWith('~'));
 
-      return versionIsStrict;
-    })
-    .map((dependency: string): string => {
-      const version: string = json.dependencies[dependency];
+        return versionIsStrict;
+      })
+      .map((dependency: string): string => {
+        const version: string = json.dependencies[dependency];
 
-      return `${dependency}@${version}`;
-    });
+        return `${dependency}@${version}`;
+      });
+  }
 
-  const devDependencies: string[] = Object.keys(json.devDependencies)
-    .filter((devDependency): boolean => {
-      const version: string = json.devDependencies[devDependency];
+  if (json.devDependencies) {
+    devDependencies = Object.keys(json.devDependencies)
+      .filter((devDependency): boolean => {
+        const version: string = json.devDependencies[devDependency];
 
-      const versionIsNotStrict: boolean = !(version.startsWith('^') || version.startsWith('~'));
+        const versionIsNotStrict: boolean = !(version.startsWith('^') || version.startsWith('~'));
 
-      return versionIsNotStrict;
-    })
-    .map((devDependency: string): string => {
-      return `${devDependency}@${json.devDependencies[devDependency]}`;
-    });
+        return versionIsNotStrict;
+      })
+      .map((devDependency: string): string => {
+        return `${devDependency}@${json.devDependencies[devDependency]}`;
+      });
+  }
 
   const allPackageNames: string[] = [...dependencies].concat(devDependencies).sort();
 
