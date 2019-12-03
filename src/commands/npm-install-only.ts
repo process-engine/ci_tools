@@ -45,11 +45,11 @@ export async function run(...args): Promise<boolean> {
 
   console.log(`${BADGE}`);
 
-  if (foundPatternMatchingPackagesWithNoStrictVersion.length !== 0) {
+  if (npmInstallArguments.length !== 0) {
     await annotatedSh(`npm install ${npmInstallArguments}`, isDryRun);
   }
 
-  if (foundPatternMatchingPackagesWithStrictVersion.length !== 0) {
+  if (npmInstallSaveExactArguments.length !== 0) {
     await annotatedSh(`npm install --save-exact ${npmInstallSaveExactArguments}`, isDryRun);
   }
 
