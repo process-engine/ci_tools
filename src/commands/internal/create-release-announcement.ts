@@ -2,8 +2,9 @@ import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
 
+import { readFileSync } from 'fs';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
-import { getCurrentApiBaseUrlWithAuth, getGitCommitListSince } from '../../git/git';
+import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
 import { getNextVersion, getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
 
 type CommitFromApi = any;
@@ -18,10 +19,10 @@ const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 100;
 const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
 
 /**
- * Creates a changelog announcement based on data available in Git and GitHub:
+ * Creates an announcement based on data available in Git and GitHub:
  *
  * - Git: latest commits and tags
- * - GitHub: PRs and Issues
+ * - GitHub: PRs
  */
 export async function run(...args): Promise<boolean> {
   let startRef = args[0];
@@ -29,13 +30,14 @@ export async function run(...args): Promise<boolean> {
     startRef = getPrevVersionTag();
     console.log(`${BADGE}No start ref given, using: "${startRef}"`);
   }
-  const changelogAnnouncementText = await getChangelogAnnouncementText(startRef);
+  const changelogAnnouncementText = await getReleaseAnnouncement();
 
   console.log(changelogAnnouncementText);
   return true;
 }
 
-export async function getChangelogAnnouncementText(startRef: string): Promise<string> {
+export async function getReleaseAnnouncement(): Promise<string> {
+  const startRef: string = getPrevVersionTag();
   const startCommit = await getCommitFromApi(startRef);
   const startCommitDate = startCommit.commit.committer.date;
   const startDate = moment(startCommitDate)
@@ -61,7 +63,7 @@ export async function getChangelogAnnouncementText(startRef: string): Promise<st
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Found an unexpectedly high number of merged pull requests:`));
     console.error(
-      chalk.red(`${BADGE}  ${mergedPullRequests.length} (threshold is ${MERGED_PULL_REQUEST_LENGTH_THRESHOLD})`)
+      chalk.red(`${BADGE}${mergedPullRequests.length} (threshold is ${MERGED_PULL_REQUEST_LENGTH_THRESHOLD})`)
     );
     process.exit(2);
   }
@@ -74,13 +76,19 @@ export async function getChangelogAnnouncementText(startRef: string): Promise<st
     })
     .join('\n');
 
+  const productName = getPackageName();
+
   const changelogText = `
-*BPMN Studio ${nextVersionTag} was released*
+*${productName} ${nextVersionTag} was released!*
 
 The new version includes the following changes:
 
 ${mergedPullRequestsText}
-  `.trim();
+
+*For a more detailed changelog have a look at:* http://github.com/${getCurrentRepoNameWithOwner()}/releases/tag/${nextVersionTag}
+  `
+    .replace('`', "'")
+    .trim();
 
   return changelogText;
 }
@@ -90,6 +98,13 @@ async function getCommitFromApi(ref: string): Promise<CommitFromApi> {
   const response = await fetch(url);
 
   return response.json();
+}
+
+function getPackageName(): string {
+  const content = readFileSync('package.json').toString();
+  const json = JSON.parse(content);
+
+  return json.name;
 }
 
 function printInfo(

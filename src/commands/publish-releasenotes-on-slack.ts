@@ -1,11 +1,10 @@
 import { getGitBranch } from '../git/git';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
-import { getPrevVersionTag } from '../versions/git_helpers';
 import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sendSlackMessage } from '../slack/notifier';
-import { getChangelogAnnouncementText } from './internal/create-changelog-announcement';
+import { getReleaseAnnouncement } from './internal/create-release-announcement';
 
 const COMMAND_NAME = 'publish-releasenotes-on-slack';
 const BADGE = `[${COMMAND_NAME}]\t`;
@@ -22,7 +21,7 @@ export async function run(...args): Promise<boolean> {
   annotatedSh('git config user.name');
   annotatedSh('git config user.email');
 
-  const releasenotes = await getChangelogAnnouncementText(getPrevVersionTag());
+  const releasenotes = await getReleaseAnnouncement();
 
   await sendSlackMessage(releasenotes);
 

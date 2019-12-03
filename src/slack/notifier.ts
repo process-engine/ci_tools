@@ -16,7 +16,7 @@ function getSlackWebhook(): string {
   const webhook: string = process.env.SLACK_WEBHOOK;
 
   if (webhook === undefined) {
-    throw new Error("The slack webhook must be provided via environment variable 'SLACK_WEBHOOK'");
+    throw new Error("The slack incoming webhook URL must be configured as environment variable 'SLACK_WEBHOOK'!");
   }
 
   return webhook;
