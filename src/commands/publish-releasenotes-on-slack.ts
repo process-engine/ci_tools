@@ -13,7 +13,7 @@ const DOC = `
 Publishes the releasenotes for the current version on slack.
 `;
 // DOC: see above
-export async function run(...args): Promise<boolean> {
+export async function run(): Promise<boolean> {
   setupGit();
 
   printInfo();

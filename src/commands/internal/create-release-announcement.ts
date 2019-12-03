@@ -24,18 +24,6 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  * - Git: latest commits and tags
  * - GitHub: PRs
  */
-export async function run(...args): Promise<boolean> {
-  let startRef = args[0];
-  if (!startRef) {
-    startRef = getPrevVersionTag();
-    console.log(`${BADGE}No start ref given, using: "${startRef}"`);
-  }
-  const changelogAnnouncementText = await getReleaseAnnouncement();
-
-  console.log(changelogAnnouncementText);
-  return true;
-}
-
 export async function getReleaseAnnouncement(): Promise<string> {
   const startRef: string = getPrevVersionTag();
   const startCommit = await getCommitFromApi(startRef);
