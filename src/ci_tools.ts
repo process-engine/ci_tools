@@ -13,6 +13,7 @@ import * as PublishNpmPackage from './commands/publish-npm-package';
 import * as SetupGitAndNpmConnections from './commands/internal/setup-git-and-npm-connections';
 import * as UpdateGithubRelease from './commands/update-github-release';
 import * as UpgradeDependenciesWithPreVersions from './commands/upgrade-dependencies-with-pre-versions';
+import * as PublishReleasenotesOnSlack from './commands/publish-releasenotes-on-slack';
 
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
@@ -24,7 +25,8 @@ const COMMAND_HANDLERS = {
   'publish-npm-package': PublishNpmPackage,
   'npm-install-only': NpmInstallOnly,
   'update-github-release': UpdateGithubRelease,
-  'upgrade-dependencies-with-pre-versions': UpgradeDependenciesWithPreVersions
+  'upgrade-dependencies-with-pre-versions': UpgradeDependenciesWithPreVersions,
+  'publish-releasenotes-on-slack': PublishReleasenotesOnSlack
 };
 
 // Internal commands are only used to develop ci_tools and are not intended for public consumption.
