@@ -41,6 +41,12 @@ export async function run(...args): Promise<boolean> {
 
 export async function getChangelogText(startRef: string): Promise<string> {
   const startCommit = await getCommitFromApi(startRef);
+  if (startCommit.commit === undefined) {
+    console.error(chalk.red(`${BADGE}${startCommit.message}`));
+
+    process.exit(3);
+  }
+
   const startCommitDate = startCommit.commit.committer.date;
   const startDate = moment(startCommitDate)
     .subtract(CONSIDER_PULL_REQUESTS_WEEKS_BACK, 'weeks')
