@@ -2,53 +2,32 @@ import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
 
+import { readFileSync } from 'fs';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
 import { getNextVersion, getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
 
 type CommitFromApi = any;
-type IssueFromApi = any;
 
-const GITHUB_REPO = getCurrentRepoNameWithOwner();
 const COMMIT_API_URI = getCurrentApiBaseUrlWithAuth('/commits/:commit_sha');
-const ISSUES_API_URI = getCurrentApiBaseUrlWithAuth('/issues?state=closed&since=:since&page=:page');
 
-const BADGE = '[create-changelog]\t';
+const BADGE = '[create-changelog-announcement]\t';
 
 const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 100;
-const CLOSED_ISSUE_LENGTH_THRESHOLD = 100;
 
 // two weeks for feature-freeze period plus one week buffer for late releases
 const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
 
 /**
- * Creates a changelog based on data available in Git and GitHub:
+ * Creates an announcement based on data available in Git and GitHub:
  *
  * - Git: latest commits and tags
- * - GitHub: PRs and Issues
+ * - GitHub: PRs
  */
-export async function run(...args): Promise<boolean> {
-  let startRef = args[0];
-  if (!startRef) {
-    startRef = getPrevVersionTag();
-    console.log(`${BADGE}No start ref given, using: "${startRef}"`);
-  }
-  const changelogText = await getChangelogText(startRef);
-
-  console.log(changelogText);
-  return true;
-}
-
-export async function getChangelogText(startRef: string): Promise<string> {
-  const apiResponse = await getCommitFromApi(startRef);
-
-  if (apiResponse.commit === undefined) {
-    console.error(chalk.red(`${BADGE}${apiResponse.message}`));
-
-    process.exit(3);
-  }
-
-  const startCommitDate = apiResponse.commit.committer.date;
+export async function getReleaseAnnouncement(): Promise<string> {
+  const startRef: string = getPrevVersionTag();
+  const startCommit = await getCommitFromApi(startRef);
+  const startCommitDate = startCommit.commit.committer.date;
   const startDate = moment(startCommitDate)
     .subtract(CONSIDER_PULL_REQUESTS_WEEKS_BACK, 'weeks')
     .toISOString();
@@ -72,60 +51,32 @@ export async function getChangelogText(startRef: string): Promise<string> {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Found an unexpectedly high number of merged pull requests:`));
     console.error(
-      chalk.red(`${BADGE}  ${mergedPullRequests.length} (threshold is ${MERGED_PULL_REQUEST_LENGTH_THRESHOLD})`)
-    );
-    process.exit(2);
-  }
-
-  const closedIssuesSince = await getClosedIssuesFromApi(startDate);
-  const issuesClosedByPullRequest = closedIssuesSince.filter((issue: any): boolean => {
-    const pullRequestClosingThisIssue = mergedPullRequests.find(
-      (pr: PullRequest): boolean => pr.closedIssueNumbers.indexOf(issue.number) !== -1
-    );
-    return pullRequestClosingThisIssue != null;
-  });
-  if (issuesClosedByPullRequest.length >= CLOSED_ISSUE_LENGTH_THRESHOLD) {
-    console.error(chalk.red(`${BADGE}Sanity check failed!`));
-    console.error(chalk.red(`${BADGE}Found an unexpectedly high number of closed issues:`));
-    console.error(
-      chalk.red(`${BADGE}  ${issuesClosedByPullRequest.length} (threshold is ${CLOSED_ISSUE_LENGTH_THRESHOLD})`)
+      chalk.red(`${BADGE}${mergedPullRequests.length} (threshold is ${MERGED_PULL_REQUEST_LENGTH_THRESHOLD})`)
     );
     process.exit(2);
   }
 
   const mergedPullRequestsText = mergedPullRequests
     .map((pr: PullRequest): string => {
-      const mergedAt = moment(pr.mergedAt).format('YYYY-MM-DD');
       const title = ensureSpaceAfterLeadingEmoji(pr.title);
 
-      return `- #${pr.number} ${title} (merged ${mergedAt})`;
-    })
-    .join('\n');
-  const issuesClosedByPullRequestText = issuesClosedByPullRequest
-    .map((issue: IssueFromApi): string => {
-      const title = ensureSpaceAfterLeadingEmoji(issue.title);
-
-      return `- #${issue.number} ${title}`;
+      return `- ${title}`;
     })
     .join('\n');
 
-  const now = moment();
+  const productName = getPackageName();
+
   const changelogText = `
-# Changelog ${nextVersionTag} (${now.format('YYYY-MM-DD')})
+*${productName} ${nextVersionTag} was released!*
 
-This changelog covers the changes between [${startRef} and ${nextVersionTag}](https://github.com/${GITHUB_REPO}/compare/${startRef}...${nextVersionTag}).
+The new version includes the following changes:
 
-For further reference, please refer to the changelog of the previous version, [${startRef}](https://github.com/${GITHUB_REPO}/releases/tag/${startRef}).
+${mergedPullRequestsText}
 
-## Merged Pull Requests
-
-${mergedPullRequestsText || '- none'}
-
-## Corresponding Issues
-
-${issuesClosedByPullRequestText || '- none'}
-
-  `.trim();
+*For a more detailed changelog have a look at:* http://github.com/${getCurrentRepoNameWithOwner()}/releases/tag/${nextVersionTag}
+  `
+    .replace('`', "'")
+    .trim();
 
   return changelogText;
 }
@@ -133,22 +84,15 @@ ${issuesClosedByPullRequestText || '- none'}
 async function getCommitFromApi(ref: string): Promise<CommitFromApi> {
   const url = COMMIT_API_URI.replace(':commit_sha', ref);
   const response = await fetch(url);
+
   return response.json();
 }
 
-async function getClosedIssuesFromApi(since: string, page: number = 1): Promise<IssueFromApi[]> {
-  const url = ISSUES_API_URI.replace(':since', since).replace(':page', page.toString());
-  const response = await fetch(url);
-  const issues = await response.json();
-  const relevantIssues = issues.filter((issue: IssueFromApi): boolean => !issue.pull_request);
+function getPackageName(): string {
+  const content = readFileSync('package.json').toString();
+  const json = JSON.parse(content);
 
-  if (relevantIssues.length > 0) {
-    const nextPageIssues = await getClosedIssuesFromApi(since, page + 1);
-
-    return [...relevantIssues].concat(nextPageIssues);
-  }
-
-  return relevantIssues;
+  return json.name;
 }
 
 function printInfo(
