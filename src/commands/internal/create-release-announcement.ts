@@ -5,7 +5,8 @@ import * as moment from 'moment';
 import { readFileSync } from 'fs';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
-import { getNextVersion, getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
+import { getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
+import { getPackageVersion } from '../../versions/package_version';
 
 type CommitFromApi = any;
 
@@ -34,7 +35,7 @@ export async function getReleaseAnnouncement(): Promise<string> {
 
   const endRef = 'HEAD';
 
-  const nextVersion = getNextVersion();
+  const nextVersion = getPackageVersion();
   if (nextVersion == null) {
     console.error(chalk.red(`${BADGE}Could not determine nextVersion!`));
     process.exit(3);
