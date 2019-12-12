@@ -27,8 +27,16 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  */
 export async function getReleaseAnnouncement(): Promise<string> {
   const startRef: string = getPrevVersionTag();
-  const startCommit = await getCommitFromApi(startRef);
-  const startCommitDate = startCommit.commit.committer.date;
+
+  const apiResponse = await getCommitFromApi(startRef);
+
+  if (apiResponse.commit === undefined) {
+    console.error(chalk.red(`${BADGE}${apiResponse.message}`));
+
+    process.exit(3);
+  }
+
+  const startCommitDate = apiResponse.commit.committer.date;
   const startDate = moment(startCommitDate)
     .subtract(CONSIDER_PULL_REQUESTS_WEEKS_BACK, 'weeks')
     .toISOString();
