@@ -5,7 +5,8 @@ import * as moment from 'moment';
 import { readFileSync } from 'fs';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
-import { getNextVersion, getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
+import { getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
+import { getPackageVersion } from '../../versions/package_version';
 
 type CommitFromApi = any;
 
@@ -26,15 +27,23 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  */
 export async function getReleaseAnnouncement(): Promise<string> {
   const startRef: string = getPrevVersionTag();
-  const startCommit = await getCommitFromApi(startRef);
-  const startCommitDate = startCommit.commit.committer.date;
+
+  const apiResponse = await getCommitFromApi(startRef);
+
+  if (apiResponse.commit === undefined) {
+    console.error(chalk.red(`${BADGE}${apiResponse.message}`));
+
+    process.exit(3);
+  }
+
+  const startCommitDate = apiResponse.commit.committer.date;
   const startDate = moment(startCommitDate)
     .subtract(CONSIDER_PULL_REQUESTS_WEEKS_BACK, 'weeks')
     .toISOString();
 
   const endRef = 'HEAD';
 
-  const nextVersion = getNextVersion();
+  const nextVersion = getPackageVersion();
   if (nextVersion == null) {
     console.error(chalk.red(`${BADGE}Could not determine nextVersion!`));
     process.exit(3);
