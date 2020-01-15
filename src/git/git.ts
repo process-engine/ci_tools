@@ -84,7 +84,7 @@ export function gitAdd(...files: string[]): GitOperationResult {
 export function gitCommit(commitMessage: string): GitOperationResult {
   const escapedCommitMessage = escapeForShell(commitMessage);
 
-  return sh(`git commit -m "${escapedCommitMessage}"`);
+  return sh(`git commit --allow-empty -m "${escapedCommitMessage}"`);
 }
 
 export function gitTag(newTag: string): GitOperationResult {
