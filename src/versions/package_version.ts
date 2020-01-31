@@ -10,10 +10,7 @@ export function getPackageVersion(): string {
 }
 
 export function getMajorPackageVersion(): string {
-  const rawdata = fs.readFileSync('package.json').toString();
-  const packageJson = JSON.parse(rawdata);
-
-  const regexResult: RegExpExecArray = versionRegex.exec(packageJson.version);
+  const regexResult: RegExpExecArray = versionRegex.exec(getPackageVersion());
   const majorVersion: string = regexResult[1];
 
   return majorVersion;
