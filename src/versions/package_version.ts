@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-const versionRegex: RegExp = /(\d+)\.(\d+).(\d+)/;
+const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
 export function getPackageVersion(): string {
   const rawdata = fs.readFileSync('package.json').toString();
