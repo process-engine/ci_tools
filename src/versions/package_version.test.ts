@@ -13,7 +13,7 @@ describe('package_version.ts', (): void => {
   describe('getMajorPackageVersion()', (): void => {
     it('should return something', (): void => {
       const packageVersion = getMajorPackageVersion();
-      const versionRegex = /\d+/;
+      const versionRegex = /^\d+$/;
       assert.ok(packageVersion.match(versionRegex));
     });
   });
