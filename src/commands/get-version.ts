@@ -28,7 +28,7 @@ export function getShortDoc(): string {
 }
 
 export function printHelp(): void {
-  console.log(`Usage: ci_tools ${COMMAND_NAME} <package-pattern> [<package-pattern>...] [--dry] [--force]`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--major]`);
   console.log('');
   console.log(DOC.trim());
 }
