@@ -40,6 +40,10 @@ export async function run(...args): Promise<boolean> {
 }
 
 export async function getChangelogText(startRef: string): Promise<string> {
+  if (!startRef) {
+    return '';
+  }
+
   const apiResponse = await getCommitFromApi(startRef);
 
   if (apiResponse.commit === undefined) {
