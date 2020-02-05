@@ -40,7 +40,7 @@ export async function run(...args): Promise<boolean> {
 }
 
 export async function getChangelogText(startRef: string): Promise<string> {
-  if (startRef != null) {
+  if (startRef == null) {
     return '';
   }
 
