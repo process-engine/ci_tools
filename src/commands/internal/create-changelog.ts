@@ -40,9 +40,13 @@ export async function run(...args): Promise<boolean> {
 }
 
 export async function getChangelogText(startRef: string): Promise<string> {
+  if (startRef == null) {
+    return '';
+  }
+
   const apiResponse = await getCommitFromApi(startRef);
 
-  if (apiResponse.commit === undefined) {
+  if (apiResponse.commit == null) {
     console.error(chalk.red(`${BADGE}${apiResponse.message}`));
 
     process.exit(3);
