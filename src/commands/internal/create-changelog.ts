@@ -46,7 +46,7 @@ export async function getChangelogText(startRef: string): Promise<string> {
 
   const apiResponse = await getCommitFromApi(startRef);
 
-  if (apiResponse.commit === undefined) {
+  if (apiResponse.commit == null) {
     console.error(chalk.red(`${BADGE}${apiResponse.message}`));
 
     process.exit(3);
