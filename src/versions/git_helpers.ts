@@ -44,7 +44,7 @@ export function getPrevVersion(): string {
 export function getPrevVersionTag(): string {
   const previousVersion = getPrevVersion();
 
-  return previousVersion != null ? `v${previousVersion}` : null;
+  return previousVersion == null ? null : `v${previousVersion}`;
 }
 
 function getRandomSuffix(): string {
