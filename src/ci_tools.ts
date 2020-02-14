@@ -5,6 +5,7 @@ import * as yargsParser from 'yargs-parser';
 
 import * as AutoPublishIfApplicable from './commands/internal/auto-publish-if-applicable';
 import * as CommitAndTagVersion from './commands/commit-and-tag-version';
+import * as CopyAndCommitVersionForSubpackage from './commands/copy-and-commit-version-for-subpackage';
 import * as CreateChangelog from './commands/internal/create-changelog';
 import * as FailOnPreVersionDependencies from './commands/fail-on-pre-version-dependencies';
 import * as NpmInstallOnly from './commands/npm-install-only';
@@ -21,6 +22,7 @@ import { PRIMARY_BRANCHES } from './versions/increment_version';
 
 const COMMAND_HANDLERS = {
   'commit-and-tag-version': CommitAndTagVersion,
+  'copy-and-commit-version-for-subpackage': CopyAndCommitVersionForSubpackage,
   'fail-on-pre-version-dependencies': FailOnPreVersionDependencies,
   'prepare-version': PrepareVersion,
   'publish-npm-package': PublishNpmPackage,
