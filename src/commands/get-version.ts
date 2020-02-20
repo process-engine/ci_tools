@@ -1,5 +1,10 @@
 import * as yargsParser from 'yargs-parser';
-import { getMajorPackageVersion, getPackageVersion } from '../versions/package_version';
+import {
+  getDotnetMajorPackageVersion,
+  getDotnetPackageVersion,
+  getMajorPackageVersion,
+  getPackageVersion
+} from '../versions/package_version';
 
 const COMMAND_NAME = 'get-version';
 const DOC = `
@@ -9,11 +14,25 @@ Returns the package version.
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] } });
   const majorRequired = argv.major;
+  const csprojPath = argv.csprojPath;
 
   if (majorRequired) {
+    if (csprojPath) {
+      const majorVersion = getDotnetMajorPackageVersion(csprojPath);
+      console.log(majorVersion);
+
+      return true;
+    }
+
     const majorVersion = getMajorPackageVersion();
     console.log(majorVersion);
 
+    return true;
+  }
+
+  if (csprojPath) {
+    const dotnetVersion = getDotnetPackageVersion(csprojPath);
+    console.log(dotnetVersion);
     return true;
   }
 
@@ -29,6 +48,7 @@ export function getShortDoc(): string {
 
 export function printHelp(): void {
   console.log(`Usage: ci_tools ${COMMAND_NAME} [--major]`);
+  console.log(`.Net Usage: ci_tools ${COMMAND_NAME} [--csprojPath="<path-to-csproj>"] [--major]`);
   console.log('');
   console.log(DOC.trim());
 }
