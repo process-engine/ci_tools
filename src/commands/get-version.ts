@@ -29,7 +29,6 @@ export function getShortDoc(): string {
 
 export function printHelp(): void {
   console.log(`Usage: ci_tools ${COMMAND_NAME} [--major]`);
-  console.log(`.Net Usage: ci_tools ${COMMAND_NAME} [--csprojPath="<path-to-csproj>"] [--major]`);
   console.log('');
   console.log(DOC.trim());
 }
