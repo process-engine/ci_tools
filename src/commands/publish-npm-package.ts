@@ -23,9 +23,9 @@ export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args);
   const isDryRun = argv.dry === true;
   const createTagFromBranchName = argv.createTagFromBranchName === true;
-
+  const mode = argv.mode;
   const packageName = getPackageName();
-  const packageVersion = getPackageVersion();
+  const packageVersion = getPackageVersion(mode);
 
   const npmPublishShellCommand = getNpmPublishShellCommand(createTagFromBranchName, isDryRun);
 
@@ -46,7 +46,7 @@ export async function run(...args): Promise<boolean> {
     if (isAlreadyPublished) {
       console.log(chalk.yellow(`${BADGE}This package version was already published: '${packageVersion}'.`));
     }
-    if (isRedundantRunTriggeredBySystemUserPush()) {
+    if (isRedundantRunTriggeredBySystemUserPush(mode)) {
       console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
       process.exit(0);
@@ -90,7 +90,6 @@ function getPackageName(): string {
 }
 
 async function ensureVersionIsAvailable(packageName: string, packageVersion: string): Promise<void> {
-
   const viewCommand = `npm view ${packageName} versions --json`;
   let packageVersionFound = false;
 

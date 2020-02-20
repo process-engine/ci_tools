@@ -28,6 +28,7 @@ Uploads all given \`--assets\`, resolving globs and updating existing assets on 
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args);
   const isDryRun = argv.dry;
+  const mode = argv.mode;
   let versionTag = argv.versionTag;
   let title = argv.title;
   let text = argv.text;
@@ -35,7 +36,7 @@ export async function run(...args): Promise<boolean> {
   setupGit();
 
   if (versionTag == null) {
-    versionTag = getPackageVersionTag();
+    versionTag = getPackageVersionTag(mode);
 
     console.log(`${BADGE}No --version-tag given, versionTag set to:`, versionTag);
   }

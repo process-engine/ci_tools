@@ -4,8 +4,8 @@ import { sh } from '../cli/shell';
 
 const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
-export function getPackageVersion(): string {
-  if (process.env.MODE === 'dotnet') {
+export function getPackageVersion(mode: string): string {
+  if (mode === 'dotnet') {
     return getDotnetPackageVersion();
   }
 
@@ -15,12 +15,12 @@ export function getPackageVersion(): string {
   return packageJson.version;
 }
 
-export function getMajorPackageVersion(): string {
-  return getMajorVersion(getPackageVersion());
+export function getMajorPackageVersion(mode: string): string {
+  return getMajorVersion(getPackageVersion(mode));
 }
 
-export function getPackageVersionTag(): string {
-  return `v${getPackageVersion()}`;
+export function getPackageVersionTag(mode): string {
+  return `v${getPackageVersion(mode)}`;
 }
 
 export function getDotnetPackageVersion(): string {
@@ -30,8 +30,8 @@ export function getDotnetPackageVersion(): string {
   return version;
 }
 
-export function setPackageVersion(version): void {
-  if (process.env.MODE === 'dotnet') {
+export function setPackageVersion(mode: string, version: string): void {
+  if (mode === 'dotnet') {
     setDotnetPackageVersion(version);
     return;
   }

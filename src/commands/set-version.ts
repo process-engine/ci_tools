@@ -9,13 +9,14 @@ Sets the package version.
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] } });
   const version = argv.version;
+  const mode = argv.mode;
 
   if (!version) {
     printHelp();
     return false;
   }
 
-  setPackageVersion(version);
+  setPackageVersion(mode, version);
 
   return true;
 }

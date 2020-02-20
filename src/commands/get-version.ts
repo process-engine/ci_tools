@@ -9,15 +9,16 @@ Returns the package version.
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] } });
   const majorRequired = argv.major;
+  const mode = argv.mode;
 
   if (majorRequired) {
-    const majorVersion = getMajorPackageVersion();
+    const majorVersion = getMajorPackageVersion(mode);
     console.log(majorVersion);
 
     return true;
   }
 
-  const packageVersion = getPackageVersion();
+  const packageVersion = getPackageVersion(mode);
   console.log(packageVersion);
 
   return true;

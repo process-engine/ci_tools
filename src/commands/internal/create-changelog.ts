@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
+import * as yargsParser from 'yargs-parser';
 
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
@@ -28,18 +29,20 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  * - GitHub: PRs and Issues
  */
 export async function run(...args): Promise<boolean> {
+  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const mode = argv.mode;
   let startRef = args[0];
   if (!startRef) {
-    startRef = getPrevVersionTag();
+    startRef = getPrevVersionTag(mode);
     console.log(`${BADGE}No start ref given, using: "${startRef}"`);
   }
-  const changelogText = await getChangelogText(startRef);
+  const changelogText = await getChangelogText(mode, startRef);
 
   console.log(changelogText);
   return true;
 }
 
-export async function getChangelogText(startRef: string): Promise<string> {
+export async function getChangelogText(mode: string, startRef: string): Promise<string> {
   if (startRef == null) {
     return '';
   }
@@ -59,7 +62,7 @@ export async function getChangelogText(startRef: string): Promise<string> {
 
   const endRef = 'HEAD';
 
-  const nextVersion = getNextVersion();
+  const nextVersion = getNextVersion(mode);
   if (nextVersion == null) {
     console.error(chalk.red(`${BADGE}Could not determine nextVersion!`));
     process.exit(3);

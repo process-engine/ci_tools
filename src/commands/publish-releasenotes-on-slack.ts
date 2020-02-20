@@ -1,3 +1,5 @@
+import * as yargsParser from 'yargs-parser';
+
 import { getGitBranch } from '../git/git';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
 import { setupGit } from './internal/setup-git-and-npm-connections';
@@ -15,15 +17,17 @@ Publishes the releasenotes for the current version on slack.
 To use this command, an incoming webhook for slack is required and must be configured as an environment variable named 'SLACK_WEBHOOK'.
 `;
 // DOC: see above
-export async function run(): Promise<boolean> {
+export async function run(...args): Promise<boolean> {
+  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const mode = argv.mode;
   setupGit();
 
-  printInfo();
+  printInfo(mode);
 
   annotatedSh('git config user.name');
   annotatedSh('git config user.email');
 
-  const releasenotes = await getReleaseAnnouncement();
+  const releasenotes = await getReleaseAnnouncement(mode);
 
   await sendSlackMessage(releasenotes);
 
@@ -48,9 +52,9 @@ function annotatedSh(cmd: string): string {
   return output;
 }
 
-function printInfo(): void {
-  const packageVersion = getPackageVersion();
-  const packageVersionTag = getPackageVersionTag();
+function printInfo(mode: string): void {
+  const packageVersion = getPackageVersion(mode);
+  const packageVersionTag = getPackageVersionTag(mode);
   const branchName = getGitBranch();
 
   console.log(`${BADGE}packageVersion:`, packageVersion);

@@ -3,6 +3,7 @@
 import chalk from 'chalk';
 import * as yargsParser from 'yargs-parser';
 
+import { isBoolean } from 'util';
 import * as AutoPublishIfApplicable from './commands/internal/auto-publish-if-applicable';
 import * as CommitAndTagVersion from './commands/commit-and-tag-version';
 import * as CopyAndCommitVersionForSubpackage from './commands/copy-and-commit-version-for-subpackage';
@@ -45,6 +46,8 @@ const INTERNAL_COMMAND_HANDLERS = {
   'setup-git-and-npm-connections': SetupGitAndNpmConnections
 };
 
+const DEFAULT_MODE = 'node';
+
 async function run(originalArgv: string[]): Promise<void> {
   const [, , ...args] = originalArgv;
   const argv = yargsParser(args, { alias: { help: ['h'] } });
@@ -53,6 +56,18 @@ async function run(originalArgv: string[]): Promise<void> {
     printHelp();
     process.exit(1);
   }
+
+  const mode: string = argv.mode || DEFAULT_MODE;
+
+  if (isBoolean(mode) || (mode !== 'dotnet' && mode !== DEFAULT_MODE)) {
+    console.error('Mode must be set to `dotnet` or `node`. \n Default is `node`');
+    process.exit(1);
+  }
+
+  if (argv.mode === undefined) {
+    args.push(`--mode=${mode}`);
+  }
+
   const [commandName, ...restArgs] = args;
 
   const commandHandler = COMMAND_HANDLERS[commandName] || INTERNAL_COMMAND_HANDLERS[commandName];
