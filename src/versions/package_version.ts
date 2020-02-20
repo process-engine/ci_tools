@@ -67,6 +67,17 @@ function getCsprojPath(): string {
     return csprojPath.trim();
   }
 
-  const csprojPath = sh('find . -print | grep -i .csproj');
-  return csprojPath.trim();
+  const result = sh('find . -print | grep -i .csproj');
+
+  const paths = result.split('\n');
+  const filteredPaths = paths.filter((path: string) => {
+    const trimmedPath = path.trim();
+    return trimmedPath.endsWith('.csproj') && !trimmedPath.includes('/test/') && !trimmedPath.includes('/tests/');
+  });
+
+  if (filteredPaths.length > 1) {
+    throw new Error(`More than one .csproj file found: ${filteredPaths}`);
+  }
+
+  return filteredPaths[0];
 }
