@@ -1,6 +1,6 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "2.6.0-alpha.2",
+  "version": "3.0.0-alpha.1",
   "description": "CI tools for process-engine.io",
   "main": "dist/ci_tools.js",
   "scripts": {
@@ -12,9 +12,7 @@
     "test": "mocha -r ts-node/register src/**/*.test.ts"
   },
   "bin": {
-    "ci_tools": "./dist/ci_tools.js",
-    "create-github-release": "./dist/legacy/create-github-release.js",
-    "is-nuget-package-published": "./dist/legacy/is-nuget-package-published.js"
+    "ci_tools": "./dist/ci_tools.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +29,7 @@
     "moment": "^2.24.0",
     "node-fetch": "^2.6.0",
     "shelljs": "^0.8.3",
+    "xml2json": "^0.12.0",
     "yargs-parser": "^13.1.1"
   },
   "devDependencies": {
