@@ -60,7 +60,7 @@ async function run(originalArgv: string[]): Promise<void> {
   const mode: string = argv.mode || DEFAULT_MODE;
 
   if (isBoolean(mode) || (mode !== 'dotnet' && mode !== DEFAULT_MODE)) {
-    console.error('Mode must be set to `dotnet` or `node`. \n Default is `node`');
+    console.error('Mode must be set to `dotnet` or `node`. \nDefault is `node`');
     process.exit(1);
   }
 
