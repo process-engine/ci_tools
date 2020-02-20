@@ -73,8 +73,3 @@ export async function run(): Promise<void> {
 
   console.log(packageIsPublished);
 }
-
-// run().catch((error: Error): void => {
-//   console.error(error);
-//   process.exit(1);
-// });
