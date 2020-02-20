@@ -62,14 +62,11 @@ function setDotnetPackageVersion(version: string): void {
 }
 
 function getCsprojPath(): string {
-
-  if (process.env.MODE === 'dotnet') {
+  if (process.platform === 'win32') {
     const csprojPath = sh('where /r . *.csproj');
     return csprojPath.trim();
   }
 
   const csprojPath = sh('find . -print | grep -i .csproj');
   return csprojPath.trim();
-
-  // WINDOWS: where /r ` testen.
 }
