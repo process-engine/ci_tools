@@ -1,7 +1,6 @@
 import * as fs from 'fs';
-import { execSync } from 'child_process';
-
 import * as parser from 'xml2json';
+import { sh } from '../cli/shell';
 
 const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
@@ -63,9 +62,8 @@ function setDotnetPackageVersion(version: string): void {
 }
 
 function getCsprojPath(): string {
-  const csprojPath = execSync('find . -print | grep -i .csproj');
-
-  return csprojPath.toString('utf8').trim();
+  const csprojPath = sh('find . -print | grep -i .csproj');
+  return csprojPath.trim();
 
   // WINDOWS: where /r ` testen.
 }
