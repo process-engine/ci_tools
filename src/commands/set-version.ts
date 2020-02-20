@@ -1,5 +1,5 @@
 import * as yargsParser from 'yargs-parser';
-import { setDotnetPackageVersion } from '../versions/package_version';
+import { setPackageVersion } from '../versions/package_version';
 
 const COMMAND_NAME = 'set-version';
 const DOC = `
@@ -8,15 +8,14 @@ Sets the package version.
 
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] } });
-  const csprojPath = argv.csprojPath;
   const version = argv.version;
 
-  if (!version || !csprojPath) {
+  if (!version) {
     printHelp();
     return false;
   }
 
-  setDotnetPackageVersion(version, csprojPath);
+  setPackageVersion(version);
 
   return true;
 }
@@ -26,7 +25,7 @@ export function getShortDoc(): string {
 }
 
 export function printHelp(): void {
-  console.log(`.Net Usage: ci_tools ${COMMAND_NAME} [--version="<version>"] [--csprojPath="<path-to-csproj>"]`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--version="<version>"]`);
   console.log('');
   console.log(DOC.trim());
 }
