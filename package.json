@@ -13,7 +13,6 @@
   },
   "bin": {
     "ci_tools": "./dist/ci_tools.js",
-    "create-github-release": "./dist/legacy/create-github-release.js"
   },
   "repository": {
     "type": "git",
