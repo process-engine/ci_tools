@@ -16,6 +16,8 @@ import * as UpdateGithubRelease from './commands/update-github-release';
 import * as UpgradeDependenciesWithPreVersions from './commands/upgrade-dependencies-with-pre-versions';
 import * as PublishReleasenotesOnSlack from './commands/publish-releasenotes-on-slack';
 import * as GetVersion from './commands/get-version';
+import * as SetVersion from './commands/set-version';
+import * as IsNugetPackagePublished from './legacy/is-nuget-package-published';
 
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
@@ -30,7 +32,9 @@ const COMMAND_HANDLERS = {
   'update-github-release': UpdateGithubRelease,
   'upgrade-dependencies-with-pre-versions': UpgradeDependenciesWithPreVersions,
   'publish-releasenotes-on-slack': PublishReleasenotesOnSlack,
-  'get-version': GetVersion
+  'get-version': GetVersion,
+  'set-version': SetVersion,
+  'is-nuget-package-published': IsNugetPackagePublished
 };
 
 // Internal commands are only used to develop ci_tools and are not intended for public consumption.
