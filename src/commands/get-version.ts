@@ -1,10 +1,5 @@
 import * as yargsParser from 'yargs-parser';
-import {
-  getDotnetMajorPackageVersion,
-  getDotnetPackageVersion,
-  getMajorPackageVersion,
-  getPackageVersion
-} from '../versions/package_version';
+import { getMajorPackageVersion, getPackageVersion } from '../versions/package_version';
 
 const COMMAND_NAME = 'get-version';
 const DOC = `
@@ -14,25 +9,11 @@ Returns the package version.
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] } });
   const majorRequired = argv.major;
-  const csprojPath = argv.csprojPath;
 
   if (majorRequired) {
-    if (csprojPath) {
-      const majorVersion = getDotnetMajorPackageVersion(csprojPath);
-      console.log(majorVersion);
-
-      return true;
-    }
-
     const majorVersion = getMajorPackageVersion();
     console.log(majorVersion);
 
-    return true;
-  }
-
-  if (csprojPath) {
-    const dotnetVersion = getDotnetPackageVersion(csprojPath);
-    console.log(dotnetVersion);
     return true;
   }
 
