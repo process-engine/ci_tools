@@ -1,9 +1,15 @@
 import * as fs from 'fs';
+import { execSync } from 'child_process';
+
 import * as parser from 'xml2json';
 
 const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
 export function getPackageVersion(): string {
+  if (process.env.MODE === '.net') {
+    return getDotnetPackageVersion();
+  }
+
   const rawdata = fs.readFileSync('package.json').toString();
   const packageJson = JSON.parse(rawdata);
 
@@ -18,16 +24,20 @@ export function getPackageVersionTag(): string {
   return `v${getPackageVersion()}`;
 }
 
-export function getDotnetPackageVersion(filePath: string): string {
-  const version = JSON.parse(getJsonFromFile(filePath)).Project.PropertyGroup.Version;
+export function getDotnetPackageVersion(): string {
+  const pathToCsproj = getCsprojPath();
+  const version = JSON.parse(getJsonFromFile(pathToCsproj)).Project.PropertyGroup.Version;
 
   return version;
 }
 
-export function getDotnetMajorPackageVersion(filePath: string): string {
-  const version = getDotnetPackageVersion(filePath);
+export function setPackageVersion(version): void {
+  if (process.env.MODE === '.net') {
+    setDotnetPackageVersion(version);
+  }
 
-  return getMajorVersion(version);
+  // todo set package version for npm packages/projects
+  console.log(`Version set to ${version}`);
 }
 
 function getMajorVersion(version: string): string {
@@ -45,9 +55,17 @@ function getJsonFromFile(filePath: string): string {
   return jsonString;
 }
 
-export function setDotnetPackageVersion(version, filePath: string): void {
-  const csProj = fs.readFileSync(filePath, { encoding: 'utf8' });
-  const csProjWithNewVersion = csProj.replace(getDotnetPackageVersion(filePath).toString(), version);
-  fs.writeFileSync(filePath, csProjWithNewVersion);
-  console.log(`Version set to ${version}`);
+function setDotnetPackageVersion(version: string): void {
+  const pathToCsproj = getCsprojPath();
+  const csProj = fs.readFileSync(pathToCsproj, { encoding: 'utf8' });
+  const csProjWithNewVersion = csProj.replace(getDotnetPackageVersion().toString(), version);
+  fs.writeFileSync(pathToCsproj, csProjWithNewVersion);
+}
+
+function getCsprojPath(): string {
+  const csprojPath = execSync('find . -print | grep -i .csproj');
+
+  return csprojPath.toString('utf8').trim();
+
+  // WINDOWS: where /r ` testen.
 }
