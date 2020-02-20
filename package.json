@@ -1,6 +1,6 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "2.6.0-alpha.2",
+  "version": "2.6.1-alpha.2",
   "description": "CI tools for process-engine.io",
   "main": "dist/ci_tools.js",
   "scripts": {
