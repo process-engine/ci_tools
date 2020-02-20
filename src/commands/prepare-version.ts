@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, isDirty, isExistingTag } from '../git/git';
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
-import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
+import { getPackageVersion, getPackageVersionTag, setPackageVersion } from '../versions/package_version';
 import {
   getPartiallySuccessfulBuildVersion,
   isRedundantRunTriggeredBySystemUserPush,
@@ -72,7 +72,7 @@ export async function run(...args): Promise<boolean> {
   abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag, isForced);
   abortIfDryRun(nextVersion, isDryRun, isForced);
 
-  sh(`npm version ${nextVersion} --no-git-tag-version`);
+  setPackageVersion(nextVersion);
 
   return true;
 }

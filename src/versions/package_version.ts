@@ -33,10 +33,10 @@ export function getDotnetPackageVersion(): string {
 export function setPackageVersion(version): void {
   if (process.env.MODE === '.net') {
     setDotnetPackageVersion(version);
+    return;
   }
 
-  // todo set package version for npm packages/projects
-  console.log(`Version set to ${version}`);
+  sh(`npm version ${version} --no-git-tag-version`);
 }
 
 function getMajorVersion(version: string): string {
