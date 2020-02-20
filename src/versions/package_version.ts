@@ -67,6 +67,7 @@ function getCsprojPath(): string {
     const paths = result.split('\n');
 
     const filteredPaths = paths.filter((path: string) => {
+      // Replace the current working dir, because Windows returns absolute paths when using `where`
       const trimmedPath = path.trim().replace(process.cwd(), '');
 
       return trimmedPath.endsWith('.csproj') && !trimmedPath.includes('\\test\\') && !trimmedPath.includes('\\tests\\');
