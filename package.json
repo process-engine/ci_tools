@@ -12,7 +12,7 @@
     "test": "mocha -r ts-node/register src/**/*.test.ts"
   },
   "bin": {
-    "ci_tools": "./dist/ci_tools.js",
+    "ci_tools": "./dist/ci_tools.js"
   },
   "repository": {
     "type": "git",
