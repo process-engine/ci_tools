@@ -15,14 +15,13 @@ const COMMIT_API_URI = getCurrentApiBaseUrlWithAuth('/commits/:commit_sha');
 const ISSUES_API_URI = getCurrentApiBaseUrlWithAuth('/issues?state=closed&since=:since&page=:page');
 
 const BADGE = '[create-changelog]\t';
+const DEFAULT_MODE = 'node';
 
 const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 100;
 const CLOSED_ISSUE_LENGTH_THRESHOLD = 100;
 
 // two weeks for feature-freeze period plus one week buffer for late releases
 const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
-
-const DEFAULT_MODE = 'node';
 
 /**
  * Creates a changelog based on data available in Git and GitHub:

@@ -12,13 +12,13 @@ import { printMultiLineString } from '../cli/printMultiLineString';
 
 const COMMAND_NAME = 'commit-and-tag-version';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
 Commits, tags and pushes the current version (when on one of the applicable branches).
 `;
 // DOC: see above
 
-const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const isDryRun = argv.dry === true;

@@ -17,6 +17,7 @@ type GitHubRepo = {
 
 const COMMAND_NAME = 'update-github-release';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 const SKIP_CI_MESSAGE = '[skip ci]';
 
 const DOC = `
@@ -26,7 +27,6 @@ Uploads all given \`--assets\`, resolving globs and updating existing assets on 
 `;
 // DOC: see above
 
-const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { default: { mode: DEFAULT_MODE } });
   const isDryRun = argv.dry;

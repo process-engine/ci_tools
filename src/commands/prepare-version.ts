@@ -14,6 +14,7 @@ import { sh } from '../cli/shell';
 
 const COMMAND_NAME = 'prepare-version';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
 Adjusts the pre-version in \`package.json\` automatically.
@@ -49,7 +50,6 @@ It then writes package.json, commits, tags and pushes it
 `;
 // DOC: see above
 
-const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const allowDirtyWorkdir = args.indexOf('--allow-dirty-workdir') !== -1;

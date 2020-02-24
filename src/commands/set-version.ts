@@ -2,11 +2,12 @@ import * as yargsParser from 'yargs-parser';
 import { setPackageVersion } from '../versions/package_version';
 
 const COMMAND_NAME = 'set-version';
+const DEFAULT_MODE = 'node';
+
 const DOC = `
 Sets the package version.
 `;
 
-const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const version = argv.version;

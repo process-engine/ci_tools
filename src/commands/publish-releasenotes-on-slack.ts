@@ -10,6 +10,7 @@ import { getReleaseAnnouncement } from './internal/create-release-announcement';
 
 const COMMAND_NAME = 'publish-releasenotes-on-slack';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
 Publishes the releasenotes for the current version on slack.
@@ -18,7 +19,6 @@ To use this command, an incoming webhook for slack is required and must be confi
 `;
 // DOC: see above
 
-const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const mode = argv.mode;

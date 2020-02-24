@@ -12,6 +12,7 @@ import { isRedundantRunTriggeredBySystemUserPush } from '../versions/retry_run';
 
 const COMMAND_NAME = 'publish-npm-package';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
 Publishes the current package to npm.
@@ -20,7 +21,6 @@ Does not complain if re-run (providing idempotency for CI).
 `;
 // DOC: see above
 
-const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { default: { mode: DEFAULT_MODE } });
   const isDryRun = argv.dry === true;
