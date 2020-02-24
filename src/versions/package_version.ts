@@ -74,18 +74,18 @@ function getCsprojPathOnWindows(): string {
   const result = sh('where /r . *.csproj');
   const paths = result.split('\n');
 
-  const filteredPath = getFilteredPath(paths);
-  return filteredPath.replace(/\r/g, '');
+  const relativeCsprojPath = findRelativeCsprojPath(paths);
+  return relativeCsprojPath.replace(/\r/g, '');
 }
 
 function getCsprojPathOnNonWindows(): string {
   const result = sh('find . -print | grep -i .csproj');
   const paths = result.split('\n');
 
-  return getFilteredPath(paths);
+  return findRelativeCsprojPath(paths);
 }
 
-function getFilteredPath(paths: Array<string>): string {
+function findRelativeCsprojPath(paths: Array<string>): string {
   const filteredPaths = paths.filter((filePath: string) => {
     // Replace the current working dir, because Windows returns absolute paths when using `where`
     const relativePathToCsproj = filePath.trim().replace(process.cwd(), '');
