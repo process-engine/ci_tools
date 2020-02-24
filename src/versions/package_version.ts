@@ -82,7 +82,7 @@ function getFilteredPath(paths: Array<string>): string {
     // Replace the current working dir, because Windows returns absolute paths when using `where`
     const trimmedPath = filePath.trim().replace(process.cwd(), '');
     const parsedPath = path.parse(trimmedPath);
-    console.log(parsedPath);
+
     return trimmedPath.endsWith('.csproj') && !parsedPath.dir.includes('test') && !parsedPath.dir.includes('tests');
   });
 
