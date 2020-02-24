@@ -88,10 +88,12 @@ function getCsprojPathOnNonWindows(): string {
 function getFilteredPath(paths: Array<string>): string {
   const filteredPaths = paths.filter((filePath: string) => {
     // Replace the current working dir, because Windows returns absolute paths when using `where`
-    const trimmedPath = filePath.trim().replace(process.cwd(), '');
-    const parsedPath = path.parse(trimmedPath);
+    const relativePathToCsproj = filePath.trim().replace(process.cwd(), '');
+    const parsedPath = path.parse(relativePathToCsproj);
 
-    return trimmedPath.endsWith('.csproj') && !parsedPath.dir.includes('test') && !parsedPath.dir.includes('tests');
+    return (
+      relativePathToCsproj.endsWith('.csproj') && !parsedPath.dir.includes('test') && !parsedPath.dir.includes('tests')
+    );
   });
 
   if (filteredPaths.length > 1) {
