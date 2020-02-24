@@ -50,7 +50,7 @@ const DEFAULT_MODE = 'node';
 async function run(originalArgv: string[]): Promise<void> {
   const [, , ...args] = originalArgv;
   const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
-  const mode: string = argv.mode;
+  const mode = argv.mode;
 
   if (args.length === 0 || (args.length === 1 && argv.help === true)) {
     printHelp();
