@@ -22,6 +22,8 @@ const CLOSED_ISSUE_LENGTH_THRESHOLD = 100;
 // two weeks for feature-freeze period plus one week buffer for late releases
 const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
 
+const DEFAULT_MODE = 'node';
+
 /**
  * Creates a changelog based on data available in Git and GitHub:
  *
@@ -29,7 +31,7 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  * - GitHub: PRs and Issues
  */
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const mode = argv.mode;
   let startRef = args[0];
   if (!startRef) {

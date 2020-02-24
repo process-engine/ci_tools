@@ -17,8 +17,10 @@ Publishes the releasenotes for the current version on slack.
 To use this command, an incoming webhook for slack is required and must be configured as an environment variable named 'SLACK_WEBHOOK'.
 `;
 // DOC: see above
+
+const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const mode = argv.mode;
   setupGit();
 

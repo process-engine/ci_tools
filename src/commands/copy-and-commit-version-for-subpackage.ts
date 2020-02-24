@@ -17,8 +17,10 @@ const DOC = `
 Copies the version from the main package to a subpackage and commits the change.
 `;
 // DOC: see above
+
+const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
   const mode = argv.mode;

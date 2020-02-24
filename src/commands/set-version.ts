@@ -6,8 +6,9 @@ const DOC = `
 Sets the package version.
 `;
 
+const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const version = argv.version;
   const mode = argv.mode;
 

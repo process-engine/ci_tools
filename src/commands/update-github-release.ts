@@ -25,8 +25,10 @@ Updates or creates a GitHub release using the current version (or given \`--vers
 Uploads all given \`--assets\`, resolving globs and updating existing assets on GitHub.
 `;
 // DOC: see above
+
+const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args);
+  const argv = yargsParser(args, { default: { mode: DEFAULT_MODE } });
   const isDryRun = argv.dry;
   const mode = argv.mode;
   let versionTag = argv.versionTag;

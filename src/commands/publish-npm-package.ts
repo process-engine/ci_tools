@@ -19,8 +19,10 @@ Publishes the current package to npm.
 Does not complain if re-run (providing idempotency for CI).
 `;
 // DOC: see above
+
+const DEFAULT_MODE = 'node';
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args);
+  const argv = yargsParser(args, { default: { mode: DEFAULT_MODE } });
   const isDryRun = argv.dry === true;
   const createTagFromBranchName = argv.createTagFromBranchName === true;
   const mode = argv.mode;
