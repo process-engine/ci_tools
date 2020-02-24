@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as parser from 'xml2json';
+import * as path from 'path';
 import { sh } from '../cli/shell';
 
 const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
@@ -66,25 +67,23 @@ function getCsprojPath(): string {
     const result = sh('where /r . *.csproj');
     const paths = result.split('\n');
 
-    const filteredPaths = paths.filter((path: string) => {
-      // Replace the current working dir, because Windows returns absolute paths when using `where`
-      const trimmedPath = path.trim().replace(process.cwd(), '');
-
-      return trimmedPath.endsWith('.csproj') && !trimmedPath.includes('\\test\\') && !trimmedPath.includes('\\tests\\');
-    });
-
-    if (filteredPaths.length > 1) {
-      throw new Error(`More than one .csproj file found: ${filteredPaths}`);
-    }
-    return filteredPaths[0].replace(/\r/g, '');
+    const filteredPath = getFilteredPath(paths);
+    return filteredPath.replace(/\r/g, '');
   }
 
   const result = sh('find . -print | grep -i .csproj');
-
   const paths = result.split('\n');
-  const filteredPaths = paths.filter((path: string) => {
-    const trimmedPath = path.trim();
-    return trimmedPath.endsWith('.csproj') && !trimmedPath.includes('/test/') && !trimmedPath.includes('/tests/');
+
+  return getFilteredPath(paths);
+}
+
+function getFilteredPath(paths: Array<string>): string {
+  const filteredPaths = paths.filter((filePath: string) => {
+    // Replace the current working dir, because Windows returns absolute paths when using `where`
+    const trimmedPath = filePath.trim().replace(process.cwd(), '');
+    const parsedPath = path.parse(trimmedPath);
+    console.log(parsedPath);
+    return trimmedPath.endsWith('.csproj') && !parsedPath.dir.includes('test') && !parsedPath.dir.includes('tests');
   });
 
   if (filteredPaths.length > 1) {
