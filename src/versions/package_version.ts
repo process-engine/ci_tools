@@ -2,10 +2,11 @@ import * as fs from 'fs';
 import * as parser from 'xml2json';
 import { sh } from '../cli/shell';
 
+const PACKAGE_MODE_DOTNET = 'dotnet';
 const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
 export function getPackageVersion(mode: string): string {
-  if (mode === 'dotnet') {
+  if (mode === PACKAGE_MODE_DOTNET) {
     return getDotnetPackageVersion();
   }
 
@@ -31,7 +32,7 @@ export function getDotnetPackageVersion(): string {
 }
 
 export function setPackageVersion(mode: string, version: string): void {
-  if (mode === 'dotnet') {
+  if (mode === PACKAGE_MODE_DOTNET) {
     setDotnetPackageVersion(version);
     return;
   }
