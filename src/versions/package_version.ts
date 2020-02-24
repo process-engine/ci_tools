@@ -64,13 +64,21 @@ function setDotnetPackageVersion(version: string): void {
 
 function getCsprojPath(): string {
   if (process.platform === 'win32') {
-    const result = sh('where /r . *.csproj');
-    const paths = result.split('\n');
-
-    const filteredPath = getFilteredPath(paths);
-    return filteredPath.replace(/\r/g, '');
+    return getCsprojPathOnWindows();
   }
 
+  return getCsprojPathOnNonWindows();
+}
+
+function getCsprojPathOnWindows(): string {
+  const result = sh('where /r . *.csproj');
+  const paths = result.split('\n');
+
+  const filteredPath = getFilteredPath(paths);
+  return filteredPath.replace(/\r/g, '');
+}
+
+function getCsprojPathOnNonWindows(): string {
   const result = sh('find . -print | grep -i .csproj');
   const paths = result.split('\n');
 
