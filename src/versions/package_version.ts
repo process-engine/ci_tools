@@ -8,12 +8,13 @@ const PACKAGE_MODE_NODE = 'node';
 const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
 export function getPackageVersion(mode: string): string {
-  if (mode === PACKAGE_MODE_DOTNET) {
-    return getPackageVersionDotnet();
-  } else if (mode === PACKAGE_MODE_NODE) {
-    return getPackageVersionNode();
-  } else {
-    throw new Error(`Unknown value for \`mode\`: ${mode}`);
+  switch (mode) {
+    case PACKAGE_MODE_DOTNET:
+      return getPackageVersionDotnet();
+    case PACKAGE_MODE_NODE:
+      return getPackageVersionNode();
+    default:
+      throw new Error(`Unknown value for \`mode\`: ${mode}`);
   }
 }
 
