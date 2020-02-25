@@ -12,29 +12,32 @@ import { printMultiLineString } from '../cli/printMultiLineString';
 
 const COMMAND_NAME = 'commit-and-tag-version';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
 Commits, tags and pushes the current version (when on one of the applicable branches).
 `;
 // DOC: see above
+
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const isDryRun = argv.dry === true;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || argv.force === true;
+  const mode = argv.mode;
 
   setupGit();
 
-  printInfo(isDryRun, isForced);
+  printInfo(mode, isDryRun, isForced);
 
-  if (isRedundantRunTriggeredBySystemUserPush()) {
-    const currentVersionTag = getPackageVersionTag();
+  if (isRedundantRunTriggeredBySystemUserPush(mode)) {
+    const currentVersionTag = getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 
     process.exit(0);
   }
 
-  if (isRetryRunForPartiallySuccessfulBuild()) {
+  if (isRetryRunForPartiallySuccessfulBuild(mode)) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
@@ -44,8 +47,8 @@ export async function run(...args): Promise<boolean> {
   annotatedSh('git config user.name');
   annotatedSh('git config user.email');
 
-  const packageVersion = getPackageVersion();
-  const changelogText = await getChangelogText(getPrevVersionTag());
+  const packageVersion = getPackageVersion(mode);
+  const changelogText = await getChangelogText(mode, getPrevVersionTag(mode));
   const commitSuccessful = pushCommitAndTagCurrentVersion(packageVersion, changelogText);
 
   if (commitSuccessful) {
@@ -77,9 +80,9 @@ function annotatedSh(cmd: string): string {
   return output;
 }
 
-function printInfo(isDryRun: boolean, isForced: boolean): void {
-  const packageVersion = getPackageVersion();
-  const packageVersionTag = getPackageVersionTag();
+function printInfo(mode: string, isDryRun: boolean, isForced: boolean): void {
+  const packageVersion = getPackageVersion(mode);
+  const packageVersionTag = getPackageVersionTag(mode);
   const branchName = getGitBranch();
 
   console.log(`${BADGE}isDryRun:`, isDryRun);

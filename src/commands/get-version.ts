@@ -2,22 +2,25 @@ import * as yargsParser from 'yargs-parser';
 import { getMajorPackageVersion, getPackageVersion } from '../versions/package_version';
 
 const COMMAND_NAME = 'get-version';
+const DEFAULT_MODE = 'node';
+
 const DOC = `
 Returns the package version.
 `;
 
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const majorRequired = argv.major;
+  const mode = argv.mode;
 
   if (majorRequired) {
-    const majorVersion = getMajorPackageVersion();
+    const majorVersion = getMajorPackageVersion(mode);
     console.log(majorVersion);
 
     return true;
   }
 
-  const packageVersion = getPackageVersion();
+  const packageVersion = getPackageVersion(mode);
   console.log(packageVersion);
 
   return true;

@@ -45,14 +45,23 @@ const INTERNAL_COMMAND_HANDLERS = {
   'setup-git-and-npm-connections': SetupGitAndNpmConnections
 };
 
+const DEFAULT_MODE = 'node';
+
 async function run(originalArgv: string[]): Promise<void> {
   const [, , ...args] = originalArgv;
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
+  const mode = argv.mode;
 
   if (args.length === 0 || (args.length === 1 && argv.help === true)) {
     printHelp();
     process.exit(1);
   }
+
+  if (mode !== 'dotnet' && mode !== DEFAULT_MODE) {
+    console.error('Mode must be set to `dotnet` or `node`. \nDefault is `node`');
+    process.exit(1);
+  }
+
   const [commandName, ...restArgs] = args;
 
   const commandHandler = COMMAND_HANDLERS[commandName] || INTERNAL_COMMAND_HANDLERS[commandName];

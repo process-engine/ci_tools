@@ -12,6 +12,7 @@ import { isRedundantRunTriggeredBySystemUserPush } from '../versions/retry_run';
 
 const COMMAND_NAME = 'publish-npm-package';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
 Publishes the current package to npm.
@@ -19,13 +20,14 @@ Publishes the current package to npm.
 Does not complain if re-run (providing idempotency for CI).
 `;
 // DOC: see above
+
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args);
+  const argv = yargsParser(args, { default: { mode: DEFAULT_MODE } });
   const isDryRun = argv.dry === true;
   const createTagFromBranchName = argv.createTagFromBranchName === true;
-
+  const mode = argv.mode;
   const packageName = getPackageName();
-  const packageVersion = getPackageVersion();
+  const packageVersion = getPackageVersion(mode);
 
   const npmPublishShellCommand = getNpmPublishShellCommand(createTagFromBranchName, isDryRun);
 
@@ -46,7 +48,7 @@ export async function run(...args): Promise<boolean> {
     if (isAlreadyPublished) {
       console.log(chalk.yellow(`${BADGE}This package version was already published: '${packageVersion}'.`));
     }
-    if (isRedundantRunTriggeredBySystemUserPush()) {
+    if (isRedundantRunTriggeredBySystemUserPush(mode)) {
       console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
       process.exit(0);
@@ -90,7 +92,6 @@ function getPackageName(): string {
 }
 
 async function ensureVersionIsAvailable(packageName: string, packageVersion: string): Promise<void> {
-
   const viewCommand = `npm view ${packageName} versions --json`;
   let packageVersionFound = false;
 

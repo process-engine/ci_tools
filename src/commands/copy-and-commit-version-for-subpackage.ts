@@ -1,6 +1,8 @@
 import chalk from 'chalk';
 
 import { existsSync } from 'fs';
+import * as yargsParser from 'yargs-parser';
+
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, gitAdd, gitCommit, gitPush } from '../git/git';
 import { getVersionTag } from '../versions/git_helpers';
 import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
@@ -10,22 +12,25 @@ import { sh } from '../cli/shell';
 
 const COMMAND_NAME = 'copy-and-commit-version-for-subpackage';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
 Copies the version from the main package to a subpackage and commits the change.
 `;
 // DOC: see above
+
 export async function run(...args): Promise<boolean> {
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
-
+  const mode = argv.mode;
   const subpackageLocation = getSubpackageLocationFromArgs(args);
 
-  const mainPackageVersion = getPackageVersion();
+  const mainPackageVersion = getPackageVersion(mode);
 
-  printInfo(mainPackageVersion, isDryRun, isForced);
+  printInfo(mode, mainPackageVersion, isDryRun, isForced);
 
-  abortIfRetryRun();
+  abortIfRetryRun(mode);
   abortIfSubpackageLocationIsMissing(subpackageLocation);
   abortIfDryRun(mainPackageVersion, isDryRun, isForced);
 
@@ -53,9 +58,9 @@ export function printHelp(): void {
   console.log(DOC.trim());
 }
 
-function abortIfRetryRun(): void {
-  if (isRedundantRunTriggeredBySystemUserPush()) {
-    const currentVersionTag = getPackageVersionTag();
+function abortIfRetryRun(mode: string): void {
+  if (isRedundantRunTriggeredBySystemUserPush(mode)) {
+    const currentVersionTag = getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 
@@ -96,8 +101,8 @@ function abortIfDryRun(nextVersion: string, isDryRun: boolean, isForced: boolean
   }
 }
 
-function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
-  const packageVersion = getPackageVersion();
+function printInfo(mode: string, nextVersion: string, isDryRun: boolean, isForced: boolean): void {
+  const packageVersion = getPackageVersion(mode);
   const packageVersionTag = getVersionTag(packageVersion);
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();
