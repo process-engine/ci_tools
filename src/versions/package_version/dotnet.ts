@@ -11,7 +11,7 @@ export function getPackageVersionDotnet(): string {
   const filename = getCsprojPath();
   const json = getCsprojAsObject(filename);
   if (json == null) {
-    throw new Error(`Could not convert cproj to JSON: ${filename}`);
+    throw new Error(`Could not convert csproj to JSON: ${filename}`);
   }
   const version = json?.Project?.PropertyGroup?.Version;
   if (version == null) {
