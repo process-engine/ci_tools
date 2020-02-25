@@ -1,0 +1,46 @@
+{
+  "name": "@process-engine/ci_tools",
+  "version": "1.2.3",
+  "description": "CI tools for process-engine.io",
+  "main": "dist/ci_tools.js",
+  "scripts": {
+    "auto-publish-if-applicable": "node dist/ci_tools.js setup-git-and-npm-connections && node dist/ci_tools.js prepare-version && node dist/ci_tools.js commit-and-tag-version --only-on-primary-branches && node dist/ci_tools.js update-github-release --only-on-primary-branches --use-title-and-text-from-git-tag && node dist/ci_tools.js publish-npm-package --create-tag-from-branch-name",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "prepare": "npm run build",
+    "lint": "eslint src/**/*.ts src/*.ts",
+    "test": "mocha -r ts-node/register src/**/*.test.ts"
+  },
+  "bin": {
+    "ci_tools": "./dist/ci_tools.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:process-engine/ci_tools.git"
+  },
+  "author": "5Minds IT-Solutions GmbH & Co. KG",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "15.15.1",
+    "chalk": "^2.4.2",
+    "compare-versions": "^3.4.0",
+    "glob": "^7.1.4",
+    "mime-types": "^2.1.18",
+    "moment": "^2.24.0",
+    "node-fetch": "^2.6.0",
+    "shelljs": "^0.8.3",
+    "xml2json": "^0.12.0",
+    "yargs-parser": "^13.1.1"
+  },
+  "devDependencies": {
+    "@essential-projects/eslint-config": "^1.2.3",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.6.9",
+    "eslint": "^5.16.0",
+    "mocha": "^6.1.4",
+    "prettier": "^1.18.2",
+    "ts-node": "^8.1.0",
+    "tsconfig": "^7.0.0",
+    "typescript": "^3.5.2"
+  }
+}
