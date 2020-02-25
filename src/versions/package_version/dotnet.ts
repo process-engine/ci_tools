@@ -53,5 +53,5 @@ function getCsprojPath(): string {
     throw new Error(`More than one .csproj file found: ${paths.join('\n')}`);
   }
 
-  return paths[0];}
+  return paths[0];
 }
