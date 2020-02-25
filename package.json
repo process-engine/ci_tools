@@ -41,6 +41,6 @@
     "prettier": "^1.18.2",
     "ts-node": "^8.1.0",
     "tsconfig": "^7.0.0",
-    "typescript": "^3.5.2"
+    "typescript": "^3.8.2"
   }
 }
