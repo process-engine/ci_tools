@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as parser from 'xml2json';
+import * as path from 'path';
 import { sh } from '../cli/shell';
 
 const PACKAGE_MODE_DOTNET = 'dotnet';
@@ -64,10 +65,41 @@ function setDotnetPackageVersion(version: string): void {
 
 function getCsprojPath(): string {
   if (process.platform === 'win32') {
-    const csprojPath = sh('where /r . *.csproj');
-    return csprojPath.trim();
+    return getCsprojPathOnWindows();
   }
 
-  const csprojPath = sh('find . -print | grep -i .csproj');
-  return csprojPath.trim();
+  return getCsprojPathOnNonWindows();
+}
+
+function getCsprojPathOnWindows(): string {
+  const result = sh('where /r . *.csproj');
+  const paths = result.split('\n');
+
+  const relativeCsprojPath = findRelativeCsprojPath(paths);
+  return relativeCsprojPath.replace(/\r/g, '');
+}
+
+function getCsprojPathOnNonWindows(): string {
+  const result = sh('find . -print | grep -i .csproj');
+  const paths = result.split('\n');
+
+  return findRelativeCsprojPath(paths);
+}
+
+function findRelativeCsprojPath(paths: Array<string>): string {
+  const filteredPaths = paths.filter((filePath: string) => {
+    // Replace the current working dir, because Windows returns absolute paths when using `where`
+    const relativePathToCsproj = filePath.trim().replace(process.cwd(), '');
+    const parsedPath = path.parse(relativePathToCsproj);
+
+    return (
+      relativePathToCsproj.endsWith('.csproj') && !parsedPath.dir.includes('test') && !parsedPath.dir.includes('tests')
+    );
+  });
+
+  if (filteredPaths.length > 1) {
+    throw new Error(`More than one .csproj file found: ${filteredPaths}`);
+  }
+
+  return filteredPaths[0];
 }
