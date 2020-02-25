@@ -6,6 +6,11 @@ const DEFAULT_MODE = 'node';
 
 const DOC = `
 Returns the package version.
+
+OPTIONS
+
+--mode    sets the package mode [dotnet, node] (default: node)
+
 `;
 
 export async function run(...args): Promise<boolean> {
@@ -31,7 +36,7 @@ export function getShortDoc(): string {
 }
 
 export function printHelp(): void {
-  console.log(`Usage: ci_tools ${COMMAND_NAME} [--major]`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--major] [--mode <MODE>]`);
   console.log('');
   console.log(DOC.trim());
 }

@@ -25,12 +25,13 @@ export function getPackageVersionTag(mode): string {
 }
 
 export function setPackageVersion(mode: string, version: string): void {
-  if (mode === PACKAGE_MODE_DOTNET) {
-    setPackageVersionDotnet(version);
-  } else if (mode === PACKAGE_MODE_NODE) {
-    setPackageVersionNode(version);
-  } else {
-    throw new Error(`Unknown value for \`mode\`: ${mode}`);
+  switch (mode) {
+    case PACKAGE_MODE_DOTNET:
+      setPackageVersionDotnet(version);
+    case PACKAGE_MODE_NODE:
+      setPackageVersionNode(version);
+    default:
+      throw new Error(`Unknown value for \`mode\`: ${mode}`);
   }
 }
 

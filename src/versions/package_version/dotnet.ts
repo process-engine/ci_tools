@@ -3,6 +3,9 @@ import * as parser from 'xml2json';
 import * as path from 'path';
 import { sh } from '../../cli/shell';
 
+/**
+ * Internal: Used by package_version.ts
+ */
 export function getPackageVersionDotnet(): string {
   const pathToCsproj = getCsprojPath();
   const version = JSON.parse(getJsonFromFile(pathToCsproj)).Project.PropertyGroup.Version;
@@ -10,6 +13,9 @@ export function getPackageVersionDotnet(): string {
   return version;
 }
 
+/**
+ * Internal: Used by package_version.ts
+ */
 export function setPackageVersionDotnet(newVersion: string): void {
   const currentVersion = getPackageVersionDotnet();
   if (currentVersion == null) {
