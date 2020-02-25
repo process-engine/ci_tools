@@ -28,8 +28,10 @@ export function setPackageVersion(mode: string, version: string): void {
   switch (mode) {
     case PACKAGE_MODE_DOTNET:
       setPackageVersionDotnet(version);
+      return;
     case PACKAGE_MODE_NODE:
       setPackageVersionNode(version);
+      return;
     default:
       throw new Error(`Unknown value for \`mode\`: ${mode}`);
   }
