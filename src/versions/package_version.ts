@@ -9,13 +9,12 @@ const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
 export function getPackageVersion(mode: string): string {
   if (mode === PACKAGE_MODE_DOTNET) {
-    return getDotnetPackageVersion();
+    return getPackageVersionDotnet();
+  } else if (mode === PACKAGE_MODE_NODE) {
+    return getPackageVersionNode();
+  } else {
+    throw new Error(`Unknown value for \`mode\`: ${mode}`);
   }
-
-  const rawdata = fs.readFileSync('package.json').toString();
-  const packageJson = JSON.parse(rawdata);
-
-  return packageJson.version;
 }
 
 export function getMajorPackageVersion(mode: string): string {
@@ -26,11 +25,18 @@ export function getPackageVersionTag(mode): string {
   return `v${getPackageVersion(mode)}`;
 }
 
-export function getDotnetPackageVersion(): string {
+function getPackageVersionDotnet(): string {
   const pathToCsproj = getCsprojPath();
   const version = JSON.parse(getJsonFromFile(pathToCsproj)).Project.PropertyGroup.Version;
 
   return version;
+}
+
+function getPackageVersionNode(): string {
+  const rawdata = fs.readFileSync('package.json').toString();
+  const packageJson = JSON.parse(rawdata);
+
+  return packageJson.version;
 }
 
 export function setPackageVersion(mode: string, version: string): void {
@@ -63,7 +69,7 @@ function setPackageVersionNode(version: string): void {
 }
 
 function setPackageVersionDotnet(newVersion: string): void {
-  const currentVersion = getDotnetPackageVersion();
+  const currentVersion = getPackageVersionDotnet();
   if (currentVersion == null) {
     throw new Error('Unexpected value: `currentVersion` should not be null here.');
   }
