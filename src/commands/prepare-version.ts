@@ -17,9 +17,16 @@ const BADGE = `[${COMMAND_NAME}]\t`;
 const DEFAULT_MODE = 'node';
 
 const DOC = `
-Adjusts the pre-version in \`package.json\` automatically.
+Adjusts the pre-version in your project file automatically (\`package.json\` for Node or \`*.csproj\` for C# .NET).
 
-Example:
+OPTIONS
+
+--allow-dirty-workdir   allows for a "dirty" Git workdir
+--dry                   performs a dry which does not changes any files
+--force                 overrides all plausibility checks and increments the pre-version
+--mode                  sets the package mode [dotnet, node] (default: node)
+
+EXAMPLES
 
 Your package.json's version field is
 
@@ -87,7 +94,7 @@ export function getShortDoc(): string {
 }
 
 export function printHelp(): void {
-  console.log(`Usage: ci_tools ${COMMAND_NAME} [--dry] [--force]`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--allow-dirty-workdir] [--dry] [--force] [--mode <MODE>]`);
   console.log('');
   console.log(DOC.trim());
 }
