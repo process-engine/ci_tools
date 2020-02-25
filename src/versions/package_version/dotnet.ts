@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
-import {toJson as xmlToJson} from 'xml2json';
+import { toJson as xmlToJson } from 'xml2json';
 
 const CSPROJ_FILE_GLOB = '*.csproj';
 
@@ -10,12 +10,12 @@ const CSPROJ_FILE_GLOB = '*.csproj';
 export function getPackageVersionDotnet(): string {
   const filename = getCsprojPath();
   const json = getCsprojAsObject(filename);
-  if( json == null ) {
-    throw new Error("Could not convert cproj to JSON: ${filename}")
+  if (json == null) {
+    throw new Error(`Could not convert cproj to JSON: ${filename}`);
   }
   const version = json?.Project?.PropertyGroup?.Version;
-  if( version == null ) {
-    throw new Error("Could not read version from converted JSON: ${filename}")
+  if (version == null) {
+    throw new Error(`Could not read version from converted JSON: ${filename}`);
   }
 
   return version;
