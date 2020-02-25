@@ -1,14 +1,22 @@
 import * as fs from 'fs';
-import * as parser from 'xml2json';
-import * as path from 'path';
-import { sh } from '../../cli/shell';
+import * as glob from 'glob';
+import { toJson as xmlToJson } from 'xml2json';
+
+const CSPROJ_FILE_GLOB = '*.csproj';
 
 /**
  * Internal: Used by package_version.ts
  */
 export function getPackageVersionDotnet(): string {
-  const pathToCsproj = getCsprojPath();
-  const version = JSON.parse(getJsonFromFile(pathToCsproj)).Project.PropertyGroup.Version;
+  const filename = getCsprojPath();
+  const json = getCsprojAsObject(filename);
+  if (json == null) {
+    throw new Error(`Could not convert csproj to JSON: ${filename}`);
+  }
+  const version = json?.Project?.PropertyGroup?.Version;
+  if (version == null) {
+    throw new Error(`Could not read version from converted JSON: ${filename}`);
+  }
 
   return version;
 }
@@ -32,51 +40,18 @@ export function setPackageVersionDotnet(newVersion: string): void {
   fs.writeFileSync(pathToCsproj, csProjWithNewVersion);
 }
 
-function getJsonFromFile(filePath: string): string {
-  const csproj = fs.readFileSync(filePath, { encoding: 'utf8' });
+function getCsprojAsObject(filePath: string): any {
+  const contents = fs.readFileSync(filePath, { encoding: 'utf8' });
 
-  const jsonString = parser.toJson(csproj);
-
-  return jsonString;
+  return JSON.parse(xmlToJson(contents));
 }
 
 function getCsprojPath(): string {
-  if (process.platform === 'win32') {
-    return getCsprojPathOnWindows();
+  const paths = glob.sync(CSPROJ_FILE_GLOB);
+
+  if (paths.length > 1) {
+    throw new Error(`More than one .csproj file found: ${paths.join('\n')}`);
   }
 
-  return getCsprojPathOnNonWindows();
-}
-
-function getCsprojPathOnWindows(): string {
-  const result = sh('where /r . *.csproj');
-  const paths = result.split('\n');
-
-  const relativeCsprojPath = findRelativeCsprojPath(paths);
-  return relativeCsprojPath.replace(/\r/g, '');
-}
-
-function getCsprojPathOnNonWindows(): string {
-  const result = sh('find . -print | grep -i .csproj');
-  const paths = result.split('\n');
-
-  return findRelativeCsprojPath(paths);
-}
-
-function findRelativeCsprojPath(paths: Array<string>): string {
-  const filteredPaths = paths.filter((filePath: string) => {
-    // Replace the current working dir, because Windows returns absolute paths when using `where`
-    const relativePathToCsproj = filePath.trim().replace(process.cwd(), '');
-    const parsedPath = path.parse(relativePathToCsproj);
-
-    return (
-      relativePathToCsproj.endsWith('.csproj') && !parsedPath.dir.includes('test') && !parsedPath.dir.includes('tests')
-    );
-  });
-
-  if (filteredPaths.length > 1) {
-    throw new Error(`More than one .csproj file found: ${filteredPaths}`);
-  }
-
-  return filteredPaths[0];
+  return paths[0];
 }
