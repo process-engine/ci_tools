@@ -4,6 +4,7 @@ import * as path from 'path';
 import { sh } from '../cli/shell';
 
 const PACKAGE_MODE_DOTNET = 'dotnet';
+const PACKAGE_MODE_NODE = 'node';
 const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
 export function getPackageVersion(mode: string): string {
@@ -34,11 +35,12 @@ export function getDotnetPackageVersion(): string {
 
 export function setPackageVersion(mode: string, version: string): void {
   if (mode === PACKAGE_MODE_DOTNET) {
-    setDotnetPackageVersion(version);
-    return;
+    setPackageVersionDotnet(version);
+  } else if (mode === PACKAGE_MODE_NODE) {
+    setPackageVersionNode(version);
+  } else {
+    throw new Error(`Unknown value for \`mode\`: ${mode}`);
   }
-
-  sh(`npm version ${version} --no-git-tag-version`);
 }
 
 function getMajorVersion(version: string): string {
@@ -56,10 +58,23 @@ function getJsonFromFile(filePath: string): string {
   return jsonString;
 }
 
-function setDotnetPackageVersion(version: string): void {
+function setPackageVersionNode(version: string): void {
+  sh(`npm version ${version} --no-git-tag-version`);
+}
+
+function setPackageVersionDotnet(newVersion: string): void {
+  const currentVersion = getDotnetPackageVersion();
+  if (currentVersion == null) {
+    throw new Error('Unexpected value: `currentVersion` should not be null here.');
+  }
+
   const pathToCsproj = getCsprojPath();
   const csProj = fs.readFileSync(pathToCsproj, { encoding: 'utf8' });
-  const csProjWithNewVersion = csProj.replace(getDotnetPackageVersion().toString(), version);
+  const csProjWithNewVersion = csProj.replace(
+    `<Version>${currentVersion}</Version>`,
+    `<Version>${newVersion}</Version>`
+  );
+
   fs.writeFileSync(pathToCsproj, csProjWithNewVersion);
 }
 
