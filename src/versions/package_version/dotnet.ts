@@ -1,8 +1,15 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
-import { toJson as xmlToJson } from 'xml2json';
+import * as xml2js from 'xml2js';
 
 const CSPROJ_FILE_GLOB = '*.csproj';
+
+const xmlParserOptions = {
+  explicitArray: false,
+  mergeAttrs: true,
+};
+
+const xmlParser = new xml2js.Parser(xmlParserOptions);
 
 /**
  * Internal: Used by package_version.ts
@@ -43,7 +50,9 @@ export function setPackageVersionDotnet(newVersion: string): void {
 function getCsprojAsObject(filePath: string): any {
   const contents = fs.readFileSync(filePath, { encoding: 'utf8' });
 
-  return JSON.parse(xmlToJson(contents));
+  xmlParser.parseString(contents, (results) => {
+    return results;
+  });
 }
 
 function getCsprojPath(): string {
