@@ -145,7 +145,7 @@ function getAllPackageNamesWithStrictVersion(): string[] {
       .filter((dependency): boolean => {
         const version: string = json.dependencies[dependency];
 
-        const versionIsStrict: boolean = !(version.startsWith('^') || version.startsWith('~'));
+        const versionIsStrict = !(version.startsWith('^') || version.startsWith('~'));
 
         return versionIsStrict;
       })
@@ -161,7 +161,7 @@ function getAllPackageNamesWithStrictVersion(): string[] {
       .filter((devDependency): boolean => {
         const version: string = json.devDependencies[devDependency];
 
-        const versionIsNotStrict: boolean = !(version.startsWith('^') || version.startsWith('~'));
+        const versionIsNotStrict = !(version.startsWith('^') || version.startsWith('~'));
 
         return versionIsNotStrict;
       })
