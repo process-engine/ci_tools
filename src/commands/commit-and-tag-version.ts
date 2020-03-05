@@ -27,9 +27,9 @@ export async function run(...args): Promise<boolean> {
 
   setupGit();
 
-  printInfo(mode, isDryRun, isForced);
+  await printInfo(mode, isDryRun, isForced);
 
-  if (isRedundantRunTriggeredBySystemUserPush(mode)) {
+  if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
     const currentVersionTag = getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
@@ -47,8 +47,9 @@ export async function run(...args): Promise<boolean> {
   annotatedSh('git config user.name');
   annotatedSh('git config user.email');
 
-  const packageVersion = getPackageVersion(mode);
-  const changelogText = await getChangelogText(mode, getPrevVersionTag(mode));
+  const packageVersion = await getPackageVersion(mode);
+  const preVersionTag = await getPrevVersionTag(mode);
+  const changelogText = await getChangelogText(mode, preVersionTag);
   const commitSuccessful = pushCommitAndTagCurrentVersion(packageVersion, changelogText);
 
   if (commitSuccessful) {
@@ -80,8 +81,8 @@ function annotatedSh(cmd: string): string {
   return output;
 }
 
-function printInfo(mode: string, isDryRun: boolean, isForced: boolean): void {
-  const packageVersion = getPackageVersion(mode);
+async function printInfo(mode: string, isDryRun: boolean, isForced: boolean): Promise<void> {
+  const packageVersion = await getPackageVersion(mode);
   const packageVersionTag = getPackageVersionTag(mode);
   const branchName = getGitBranch();
 

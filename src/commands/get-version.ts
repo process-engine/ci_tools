@@ -25,7 +25,7 @@ export async function run(...args): Promise<boolean> {
     return true;
   }
 
-  const packageVersion = getPackageVersion(mode);
+  const packageVersion = await getPackageVersion(mode);
   console.log(packageVersion);
 
   return true;

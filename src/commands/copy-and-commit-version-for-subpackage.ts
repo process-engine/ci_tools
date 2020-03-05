@@ -26,11 +26,11 @@ export async function run(...args): Promise<boolean> {
   const mode = argv.mode;
   const subpackageLocation = getSubpackageLocationFromArgs(args);
 
-  const mainPackageVersion = getPackageVersion(mode);
+  const mainPackageVersion = await getPackageVersion(mode);
 
-  printInfo(mode, mainPackageVersion, isDryRun, isForced);
+  await printInfo(mode, mainPackageVersion, isDryRun, isForced);
 
-  abortIfRetryRun(mode);
+  await abortIfRetryRun(mode);
   abortIfSubpackageLocationIsMissing(subpackageLocation);
   abortIfDryRun(mainPackageVersion, isDryRun, isForced);
 
@@ -58,8 +58,8 @@ export function printHelp(): void {
   console.log(DOC.trim());
 }
 
-function abortIfRetryRun(mode: string): void {
-  if (isRedundantRunTriggeredBySystemUserPush(mode)) {
+async function abortIfRetryRun(mode: string): Promise<void> {
+  if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
     const currentVersionTag = getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
@@ -101,8 +101,8 @@ function abortIfDryRun(nextVersion: string, isDryRun: boolean, isForced: boolean
   }
 }
 
-function printInfo(mode: string, nextVersion: string, isDryRun: boolean, isForced: boolean): void {
-  const packageVersion = getPackageVersion(mode);
+async function printInfo(mode: string, nextVersion: string, isDryRun: boolean, isForced: boolean): Promise<void> {
+  const packageVersion = await getPackageVersion(mode);
   const packageVersionTag = getVersionTag(packageVersion);
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();

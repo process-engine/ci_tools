@@ -5,7 +5,7 @@ const PACKAGE_MODE_DOTNET = 'dotnet';
 const PACKAGE_MODE_NODE = 'node';
 const versionRegex: RegExp = /^(\d+)\.(\d+).(\d+)/;
 
-export function getPackageVersion(mode: string): string {
+export async function getPackageVersion(mode: string): Promise<string> {
   switch (mode) {
     case PACKAGE_MODE_DOTNET:
       return getPackageVersionDotnet();
@@ -16,18 +16,20 @@ export function getPackageVersion(mode: string): string {
   }
 }
 
-export function getMajorPackageVersion(mode: string): string {
-  return getMajorVersion(getPackageVersion(mode));
+export async function getMajorPackageVersion(mode: string): Promise<string> {
+  const packageVersion = await getPackageVersion(mode);
+  return getMajorVersion(packageVersion);
 }
 
-export function getPackageVersionTag(mode): string {
-  return `v${getPackageVersion(mode)}`;
+export async function getPackageVersionTag(mode): Promise<string> {
+  const packageVersion = await getPackageVersion(mode);
+  return `v${packageVersion}`;
 }
 
-export function setPackageVersion(mode: string, version: string): void {
+export async function setPackageVersion(mode: string, version: string): Promise<void> {
   switch (mode) {
     case PACKAGE_MODE_DOTNET:
-      setPackageVersionDotnet(version);
+      await setPackageVersionDotnet(version);
       return;
     case PACKAGE_MODE_NODE:
       setPackageVersionNode(version);
