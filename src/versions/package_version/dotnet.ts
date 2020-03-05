@@ -40,7 +40,7 @@ export async function setPackageVersionDotnet(newVersion: string): Promise<void>
   fs.writeFileSync(pathToCsproj, csProjWithNewVersion);
 }
 
-async function getCsprojAsObject(filePath: string): Promise<any> {
+function getCsprojAsObject(filePath: string): Promise<any> {
   const contents = fs.readFileSync(filePath, { encoding: 'utf8' });
 
   return parseStringPromise(contents.toString());
