@@ -42,7 +42,12 @@ export function getPrevVersion(): string {
  * Returns the "previous" version tag according to the rules described in `run`.
  */
 export function getPrevVersionTag(): string {
-  return `v${getPrevVersion()}`;
+  const preVersion = getPrevVersion();
+  if (preVersion == null) {
+    return null;
+  }
+
+  return `v${preVersion}`;
 }
 
 function getRandomSuffix(): string {
