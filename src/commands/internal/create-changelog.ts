@@ -45,7 +45,7 @@ export async function run(...args): Promise<boolean> {
 
 export async function getChangelogText(mode: string, startRef: string): Promise<string> {
   if (startRef == null) {
-    return '';
+    return 'This changelog is empty.';
   }
 
   const apiResponse = await getCommitFromApi(startRef);
