@@ -9,6 +9,9 @@ export async function getPartiallySuccessfulBuildVersion(mode: string): Promise<
 
 export async function isRetryRunForPartiallySuccessfulBuild(mode: string): Promise<boolean> {
   const latestVersion = await getSuspectedPartiallySuccessfulBuildVersion(mode);
+  if (latestVersion == null) {
+    return false;
+  }
   const latestVersionTag = getVersionTag(latestVersion);
   const latestVersionTagAlreadyExists = isExistingTag(latestVersionTag);
 
