@@ -69,7 +69,7 @@ export async function run(...args): Promise<boolean> {
 
   await printInfo(mode, nextVersion, isDryRun, isForced);
 
-  if (isRetryRunForPartiallySuccessfulBuild(mode)) {
+  if (await isRetryRunForPartiallySuccessfulBuild(mode)) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
 
     nextVersion = await getPartiallySuccessfulBuildVersion(mode);
@@ -81,7 +81,7 @@ export async function run(...args): Promise<boolean> {
 
   await abortIfRetryRun(mode);
   abortIfDirtyWorkdir(allowDirtyWorkdir, isForced);
-  abortIfTagAlreadyExistsAndIsNoRetryRun(mode, nextVersionTag, isForced);
+  await abortIfTagAlreadyExistsAndIsNoRetryRun(mode, nextVersionTag, isForced);
   abortIfDryRun(nextVersion, isDryRun, isForced);
 
   setPackageVersion(mode, nextVersion);
@@ -101,7 +101,7 @@ export function printHelp(): void {
 
 async function abortIfRetryRun(mode: string): Promise<void> {
   if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
-    const currentVersionTag = getPackageVersionTag(mode);
+    const currentVersionTag = await getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 
@@ -127,8 +127,13 @@ function abortIfDirtyWorkdir(allowDirtyWorkdir: boolean, isForced: boolean): voi
   }
 }
 
-function abortIfTagAlreadyExistsAndIsNoRetryRun(mode: string, nextVersionTag: string, isForced: boolean): void {
-  if (isExistingTag(nextVersionTag) && !isRetryRunForPartiallySuccessfulBuild(mode)) {
+async function abortIfTagAlreadyExistsAndIsNoRetryRun(
+  mode: string,
+  nextVersionTag: string,
+  isForced: boolean
+): Promise<void> {
+  const isRetryRun = await isRetryRunForPartiallySuccessfulBuild(mode);
+  if (isExistingTag(nextVersionTag) && !isRetryRun) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Tag "${nextVersionTag}" already exists!`));
 

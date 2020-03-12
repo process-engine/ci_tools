@@ -37,7 +37,7 @@ export async function run(...args): Promise<boolean> {
     process.exit(0);
   }
 
-  if (isRetryRunForPartiallySuccessfulBuild(mode)) {
+  if (await isRetryRunForPartiallySuccessfulBuild(mode)) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
@@ -83,7 +83,7 @@ function annotatedSh(cmd: string): string {
 
 async function printInfo(mode: string, isDryRun: boolean, isForced: boolean): Promise<void> {
   const packageVersion = await getPackageVersion(mode);
-  const packageVersionTag = getPackageVersionTag(mode);
+  const packageVersionTag = await getPackageVersionTag(mode);
   const branchName = getGitBranch();
 
   console.log(`${BADGE}isDryRun:`, isDryRun);

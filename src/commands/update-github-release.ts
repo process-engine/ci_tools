@@ -38,7 +38,7 @@ export async function run(...args): Promise<boolean> {
   setupGit();
 
   if (versionTag == null) {
-    versionTag = getPackageVersionTag(mode);
+    versionTag = await getPackageVersionTag(mode);
 
     console.log(`${BADGE}No --version-tag given, versionTag set to:`, versionTag);
   }
@@ -158,14 +158,15 @@ async function updateExistingRelease(
       try {
         const uploadSuccess = await uploadAsset(octokit, uploadUrl, filename);
         success = success && uploadSuccess;
-      } catch (e) {
-        const data = JSON.parse(e.message);
-        const alreadyExists = data?.errors?.length === 1 && data?.errors[0]?.code === 'already_exists';
+      } catch (error) {
+        const data = tryToParseJson(error.message);
+        const errorIsFromOctokitAndAssetAlreadyExists =
+          data?.errors?.length === 1 && data?.errors[0]?.code === 'already_exists';
 
-        if (alreadyExists) {
+        if (errorIsFromOctokitAndAssetAlreadyExists) {
           console.log(`${BADGE}  INFO: Asset '${filename}' already exists.`);
         } else {
-          throw e;
+          throw error;
         }
       }
     }
@@ -251,6 +252,14 @@ async function getExistingReleaseId(octokit: Octokit, repo: GitHubRepo, versionT
 
     return response.data.id;
   } catch (error) {
+    return null;
+  }
+}
+
+function tryToParseJson(text: string): any | null {
+  try {
+    return JSON.parse(text);
+  } catch (e) {
     return null;
   }
 }
