@@ -37,7 +37,7 @@ export async function run(...args): Promise<boolean> {
     process.exit(0);
   }
 
-  if (isRetryRunForPartiallySuccessfulBuild(mode)) {
+  if (await isRetryRunForPartiallySuccessfulBuild(mode)) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
