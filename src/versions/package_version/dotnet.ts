@@ -1,15 +1,15 @@
 import * as fs from 'fs';
 import * as glob from 'glob';
-import { toJson as xmlToJson } from 'xml2json';
+import { parseStringPromise } from 'xml2js';
 
 const CSPROJ_FILE_GLOB = '*.csproj';
 
 /**
  * Internal: Used by package_version.ts
  */
-export function getPackageVersionDotnet(): string {
+export async function getPackageVersionDotnet(): Promise<string> {
   const filename = getCsprojPath();
-  const json = getCsprojAsObject(filename);
+  const json = await getCsprojAsObject(filename);
   if (json == null) {
     throw new Error(`Could not convert csproj to JSON: ${filename}`);
   }
@@ -24,7 +24,7 @@ export function getPackageVersionDotnet(): string {
 /**
  * Internal: Used by package_version.ts
  */
-export function setPackageVersionDotnet(newVersion: string): void {
+export async function setPackageVersionDotnet(newVersion: string): Promise<void> {
   const currentVersion = getPackageVersionDotnet();
   if (currentVersion == null) {
     throw new Error('Unexpected value: `currentVersion` should not be null here.');
@@ -40,10 +40,10 @@ export function setPackageVersionDotnet(newVersion: string): void {
   fs.writeFileSync(pathToCsproj, csProjWithNewVersion);
 }
 
-function getCsprojAsObject(filePath: string): any {
+function getCsprojAsObject(filePath: string): Promise<any> {
   const contents = fs.readFileSync(filePath, { encoding: 'utf8' });
 
-  return JSON.parse(xmlToJson(contents));
+  return parseStringPromise(contents.toString());
 }
 
 function getCsprojPath(): string {

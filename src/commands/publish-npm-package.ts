@@ -27,7 +27,7 @@ export async function run(...args): Promise<boolean> {
   const createTagFromBranchName = argv.createTagFromBranchName === true;
   const mode = argv.mode;
   const packageName = getPackageName();
-  const packageVersion = getPackageVersion(mode);
+  const packageVersion = await getPackageVersion(mode);
 
   const npmPublishShellCommand = getNpmPublishShellCommand(createTagFromBranchName, isDryRun);
 
@@ -48,7 +48,7 @@ export async function run(...args): Promise<boolean> {
     if (isAlreadyPublished) {
       console.log(chalk.yellow(`${BADGE}This package version was already published: '${packageVersion}'.`));
     }
-    if (isRedundantRunTriggeredBySystemUserPush(mode)) {
+    if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
       console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
       process.exit(0);

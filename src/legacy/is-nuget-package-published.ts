@@ -3,7 +3,7 @@
 import * as fetch from 'node-fetch';
 
 interface IApiIndex {
-  resources: Array<IApiResource>;
+  resources: IApiResource[];
 }
 
 interface IApiResource {

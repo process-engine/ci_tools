@@ -34,7 +34,7 @@ export async function run(...args): Promise<boolean> {
   const mode = argv.mode;
   let startRef = args[0];
   if (!startRef) {
-    startRef = getPrevVersionTag(mode);
+    startRef = await getPrevVersionTag(mode);
     console.log(`${BADGE}No start ref given, using: "${startRef}"`);
   }
   const changelogText = await getChangelogText(mode, startRef);
@@ -63,7 +63,7 @@ export async function getChangelogText(mode: string, startRef: string): Promise<
 
   const endRef = 'HEAD';
 
-  const nextVersion = getNextVersion(mode);
+  const nextVersion = await getNextVersion(mode);
   if (nextVersion == null) {
     console.error(chalk.red(`${BADGE}Could not determine nextVersion!`));
     process.exit(3);

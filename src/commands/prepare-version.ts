@@ -64,22 +64,22 @@ export async function run(...args): Promise<boolean> {
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
   const mode = argv.mode;
 
-  let nextVersion = getNextVersion(mode);
+  let nextVersion = await getNextVersion(mode);
   let nextVersionTag = getVersionTag(nextVersion);
 
-  printInfo(mode, nextVersion, isDryRun, isForced);
+  await printInfo(mode, nextVersion, isDryRun, isForced);
 
   if (isRetryRunForPartiallySuccessfulBuild(mode)) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
 
-    nextVersion = getPartiallySuccessfulBuildVersion(mode);
+    nextVersion = await getPartiallySuccessfulBuildVersion(mode);
     nextVersionTag = getVersionTag(nextVersion);
 
     console.log('');
     console.log(`${BADGE}resetting nextVersionTag:`, nextVersionTag);
   }
 
-  abortIfRetryRun(mode);
+  await abortIfRetryRun(mode);
   abortIfDirtyWorkdir(allowDirtyWorkdir, isForced);
   abortIfTagAlreadyExistsAndIsNoRetryRun(mode, nextVersionTag, isForced);
   abortIfDryRun(nextVersion, isDryRun, isForced);
@@ -99,8 +99,8 @@ export function printHelp(): void {
   console.log(DOC.trim());
 }
 
-function abortIfRetryRun(mode: string): void {
-  if (isRedundantRunTriggeredBySystemUserPush(mode)) {
+async function abortIfRetryRun(mode: string): Promise<void> {
+  if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
     const currentVersionTag = getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
@@ -156,8 +156,8 @@ function abortIfDryRun(nextVersion: string, isDryRun: boolean, isForced: boolean
   }
 }
 
-function printInfo(mode: string, nextVersion: string, isDryRun: boolean, isForced: boolean): void {
-  const packageVersion = getPackageVersion(mode);
+async function printInfo(mode: string, nextVersion: string, isDryRun: boolean, isForced: boolean): Promise<void> {
+  const packageVersion = await getPackageVersion(mode);
   const packageVersionTag = getVersionTag(packageVersion);
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();

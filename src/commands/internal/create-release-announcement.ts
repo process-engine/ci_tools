@@ -26,8 +26,7 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  * - GitHub: PRs
  */
 export async function getReleaseAnnouncement(mode: string): Promise<string> {
-  const startRef: string = getPrevVersionTag(mode);
-
+  const startRef: string = await getPrevVersionTag(mode);
   const apiResponse = await getCommitFromApi(startRef);
 
   if (apiResponse.commit === undefined) {
@@ -43,7 +42,7 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
 
   const endRef = 'HEAD';
 
-  const nextVersion = getPackageVersion(mode);
+  const nextVersion = await getPackageVersion(mode);
   if (nextVersion == null) {
     console.error(chalk.red(`${BADGE}Could not determine nextVersion!`));
     process.exit(3);

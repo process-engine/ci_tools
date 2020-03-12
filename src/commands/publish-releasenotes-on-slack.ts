@@ -24,7 +24,7 @@ export async function run(...args): Promise<boolean> {
   const mode = argv.mode;
   setupGit();
 
-  printInfo(mode);
+  await printInfo(mode);
 
   annotatedSh('git config user.name');
   annotatedSh('git config user.email');
@@ -54,8 +54,8 @@ function annotatedSh(cmd: string): string {
   return output;
 }
 
-function printInfo(mode: string): void {
-  const packageVersion = getPackageVersion(mode);
+async function printInfo(mode: string): Promise<void> {
+  const packageVersion = await getPackageVersion(mode);
   const packageVersionTag = getPackageVersionTag(mode);
   const branchName = getGitBranch();
 
