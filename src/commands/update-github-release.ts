@@ -38,7 +38,7 @@ export async function run(...args): Promise<boolean> {
   setupGit();
 
   if (versionTag == null) {
-    versionTag = getPackageVersionTag(mode);
+    versionTag = await getPackageVersionTag(mode);
 
     console.log(`${BADGE}No --version-tag given, versionTag set to:`, versionTag);
   }

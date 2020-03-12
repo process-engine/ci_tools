@@ -19,7 +19,7 @@ export async function run(...args): Promise<boolean> {
   const mode = argv.mode;
 
   if (majorRequired) {
-    const majorVersion = getMajorPackageVersion(mode);
+    const majorVersion = await getMajorPackageVersion(mode);
     console.log(majorVersion);
 
     return true;

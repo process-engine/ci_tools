@@ -56,7 +56,7 @@ function annotatedSh(cmd: string): string {
 
 async function printInfo(mode: string): Promise<void> {
   const packageVersion = await getPackageVersion(mode);
-  const packageVersionTag = getPackageVersionTag(mode);
+  const packageVersionTag = await getPackageVersionTag(mode);
   const branchName = getGitBranch();
 
   console.log(`${BADGE}packageVersion:`, packageVersion);

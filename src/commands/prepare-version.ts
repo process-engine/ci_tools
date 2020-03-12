@@ -101,7 +101,7 @@ export function printHelp(): void {
 
 async function abortIfRetryRun(mode: string): Promise<void> {
   if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
-    const currentVersionTag = getPackageVersionTag(mode);
+    const currentVersionTag = await getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 

@@ -25,7 +25,7 @@ export async function getPackageVersionDotnet(): Promise<string> {
  * Internal: Used by package_version.ts
  */
 export async function setPackageVersionDotnet(newVersion: string): Promise<void> {
-  const currentVersion = getPackageVersionDotnet();
+  const currentVersion = await getPackageVersionDotnet();
   if (currentVersion == null) {
     throw new Error('Unexpected value: `currentVersion` should not be null here.');
   }
