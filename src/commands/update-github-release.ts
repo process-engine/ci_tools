@@ -160,7 +160,7 @@ async function updateExistingRelease(
         success = success && uploadSuccess;
       } catch (e) {
         const data = JSON.parse(e.message);
-        const alreadyExists = data.errors.length === 1 && data.errors[0].code === 'already_exists';
+        const alreadyExists = data?.errors?.length === 1 && data?.errors[0]?.code === 'already_exists';
 
         if (alreadyExists) {
           console.log(`${BADGE}  INFO: Asset '${filename}' already exists.`);

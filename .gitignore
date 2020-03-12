@@ -5,6 +5,8 @@ npm-debug.log*
 
 # build directories
 dist
+bin
+obj
 
 # auto-generated schemas and documentation
 doc
