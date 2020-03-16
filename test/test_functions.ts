@@ -7,12 +7,12 @@ export const ROOT_DIR = resolve(join(__dirname, '..'));
 const CI_TOOLS_EXECUTABLE = join(ROOT_DIR, 'dist', 'ci_tools.js');
 
 export function run(ciToolsCommand: string): string {
-  console.log('run:', ciToolsCommand);
   return shell(`node ${CI_TOOLS_EXECUTABLE} ${ciToolsCommand}`);
 }
 
 export function shell(shellCommand: string): string {
-  const output = execSync(`${shellCommand}`, { encoding: 'utf-8' });
+  console.log('      shell:', shellCommand);
+  const output = execSync(`${shellCommand} 2>&1`, { encoding: 'utf-8' });
 
   return output;
 }
