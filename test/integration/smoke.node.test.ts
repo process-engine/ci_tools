@@ -1,7 +1,7 @@
 import { inDirSync, run, setupGitWorkingCopyForTest, shell } from '../test_functions';
 import { assertNewTagCreated, assertNoNewTagsCreated, assertNodePackageVersion } from '../assert_functions';
 
-function setNodePackageVersion(version: string) {
+function setNodePackageVersion(version: string): void {
   shell(`npm version ${version} --no-git-tag-version`);
   assertNodePackageVersion(version);
 }

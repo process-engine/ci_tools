@@ -4,25 +4,23 @@ import * as JSON5 from 'json5';
 
 import { shell } from './test_functions';
 
-function getGitTags(): string[] {
-  return shell('git tag --sort=-creatordate')
-    .trim()
-    .split('\n');
+export function assertNodePackageVersion(version: string): void {
+  assert.strictEqual(getNodePackageVersion(), version);
 }
 
-export function assertTagCount(count: number) {
+export function assertTagCount(count: number): void {
   const tags = getGitTags();
 
   assert.strictEqual(tags.length, count);
 }
 
-export function assertTagExists(tag: string) {
+export function assertTagExists(tag: string): void {
   const tags = getGitTags();
 
   assert.ok(tags.includes(tag), `Expected tag '${tag}' to exist, got: ${JSON.stringify(tags)}`);
 }
 
-export function rejectTagExists(tag: string) {
+export function rejectTagExists(tag: string): void {
   const tags = getGitTags();
 
   assert.ok(!tags.includes(tag), `Expected tag '${tag}' to NOT exist, got: ${JSON.stringify(tags)}`);
@@ -49,6 +47,8 @@ function getNodePackageVersion(): string {
   return JSON5.parse(output)['@process-engine/ci_tools'];
 }
 
-export function assertNodePackageVersion(version: string): void {
-  assert.strictEqual(getNodePackageVersion(), version);
+function getGitTags(): string[] {
+  return shell('git tag --sort=-creatordate')
+    .trim()
+    .split('\n');
 }
