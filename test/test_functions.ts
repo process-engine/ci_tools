@@ -17,7 +17,7 @@ export function shell(shellCommand: string): string {
   delete env['GIT_BRANCH'];
   delete env['GITHUB_REF'];
 
-  const output = execSync(`${shellCommand} 2>&1`, { encoding: 'utf-8', env: env });
+  const output = execSync(`${shellCommand}`, { encoding: 'utf-8', env: env });
 
   return output;
 }
