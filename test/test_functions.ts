@@ -35,6 +35,7 @@ export async function inDir(directory: string, callback: () => Promise<void>): P
     await callback.apply(null);
   } catch (err) {
     console.error(`inDir(${directory}): ${err}`);
+    throw err;
   } finally {
     process.chdir(oldDir);
   }
@@ -47,6 +48,7 @@ export function inDirSync(directory: string, callback: () => void): void {
     callback.apply(null);
   } catch (err) {
     console.error(`inDir(${directory}): ${err}`);
+    throw err;
   } finally {
     process.chdir(oldDir);
   }
