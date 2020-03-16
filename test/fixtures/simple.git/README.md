@@ -5,7 +5,7 @@ This is a bare repo for integration tests.
 You can clone this repo locally, e.g. from the root of the `ci_tools` project, like this:
 
     $ pwd
-    /Users/rrrene/projects/pe2/ci_tools
+    /Users/rrrene/projects/ci_tools
 
     $ git clone test/fixtures/simple.git tmp/simple
     Cloning into 'tmp/simple'...
