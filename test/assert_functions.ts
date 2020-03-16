@@ -20,7 +20,7 @@ export function assertTagExists(tag: string): void {
   assert.ok(tags.includes(tag), `Expected tag '${tag}' to exist, got: ${JSON.stringify(tags)}`);
 }
 
-export function rejectTagExists(tag: string): void {
+export function assertTagDoesNotExist(tag: string): void {
   const tags = getGitTags();
 
   assert.ok(!tags.includes(tag), `Expected tag '${tag}' to NOT exist, got: ${JSON.stringify(tags)}`);
@@ -34,7 +34,7 @@ export function assertNoNewTagsCreated(callback: () => void): void {
 
 export function assertNewTagCreated(tag: string, callback: () => void): void {
   const tagCountBefore = getGitTags().length;
-  rejectTagExists(tag);
+  assertTagDoesNotExist(tag);
 
   callback.apply(null);
 

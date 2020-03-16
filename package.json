@@ -11,7 +11,7 @@
     "lint": "eslint \"src/**/*.ts\"",
     "test": "npm run test:unit",
     "test:unit": "mocha -r ts-node/register -r choma \"src/**/*.test.ts\"",
-    "test:integration": "mocha --slow 60000 --timeout 60000 -r ts-node/register -r choma \"test/integration/*.test.ts\""
+    "test:integration": "mocha --slow 60000 --timeout 600000 -r ts-node/register -r choma \"test/integration/*.test.ts\""
   },
   "bin": {
     "ci_tools": "./dist/ci_tools.js"

@@ -1,9 +1,11 @@
 import { inDirSync, run, setupGitWorkingCopyForTest, shell } from '../test_functions';
 import { assertNewTagCreated, assertNoNewTagsCreated, assertNodePackageVersion } from '../assert_functions';
 
-function setNodePackageVersion(version: string): void {
+function setNodePackageVersionAndCommit(version: string): void {
   shell(`npm version ${version} --no-git-tag-version`);
   assertNodePackageVersion(version);
+  shell('git add package.json');
+  shell(`git commit --message "Bump version to ${version}"`);
 }
 
 describe('ci_tools', () => {
@@ -13,43 +15,43 @@ describe('ci_tools', () => {
       // alpha
 
       shell('git checkout develop');
-      setNodePackageVersion('1.2.1-dev');
+      setNodePackageVersionAndCommit('1.2.1-dev');
 
       assertNoNewTagsCreated(() => {
-        run('prepare-version --force');
+        run('prepare-version');
         assertNodePackageVersion('1.2.1-alpha.11');
       });
 
       assertNewTagCreated('v1.2.1-alpha.11', () => {
-        run('commit-and-tag-version --force');
+        run('commit-and-tag-version');
       });
 
       // beta
 
       shell('git checkout beta');
-      setNodePackageVersion('1.2.1-dev');
+      setNodePackageVersionAndCommit('1.2.1-dev');
 
       assertNoNewTagsCreated(() => {
-        run('prepare-version --force');
+        run('prepare-version');
         assertNodePackageVersion('1.2.1-beta.1');
       });
 
       assertNewTagCreated('v1.2.1-beta.1', () => {
-        run('commit-and-tag-version --force');
+        run('commit-and-tag-version');
       });
 
       // stable
 
       shell('git checkout master');
-      setNodePackageVersion('1.2.1-dev');
+      setNodePackageVersionAndCommit('1.2.1-dev');
 
       assertNoNewTagsCreated(() => {
-        run('prepare-version --force');
+        run('prepare-version');
         assertNodePackageVersion('1.2.1');
       });
 
       assertNewTagCreated('v1.2.1', () => {
-        run('commit-and-tag-version --force');
+        run('commit-and-tag-version');
       });
     });
   });
