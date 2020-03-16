@@ -54,6 +54,15 @@ export function inDirSync(directory: string, callback: () => void): void {
   }
 }
 
+/**
+ * Sets up a working copy of a sample repo, including a Git remote that integration tests can safely push to.
+ */
+export function setupGitWorkingCopyForTest(): string {
+  const gitRemoteForTest = createGitRemoteToCloneFrom();
+  const gitTempWorkingCopy = cloneTestRepoFromRemote(gitRemoteForTest);
+  return gitTempWorkingCopy;
+}
+
 function createGitRemoteToCloneFrom(): string {
   // this is a Git bare repo that we can easily clone locally for testing purposes
   const gitFixtureDir = resolve(join(ROOT_DIR, 'test', 'fixtures', 'simple.git'));
@@ -72,13 +81,4 @@ function cloneTestRepoFromRemote(remote: string): string {
   shell(`git clone ${remote} ${workingCopyDir}`);
 
   return workingCopyDir;
-}
-
-/**
- * Sets up a working copy of a sample repo, including a Git remote that integration tests can safely push to
- */
-export function setupGitWorkingCopyForTest(): string {
-  const gitRemoteForTest = createGitRemoteToCloneFrom();
-  const gitTempWorkingCopy = cloneTestRepoFromRemote(gitRemoteForTest);
-  return gitTempWorkingCopy;
 }
