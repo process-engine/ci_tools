@@ -12,6 +12,9 @@ describe('ci_tools', () => {
   it('should work with mode: node', async () => {
     const gitTempWorkingCopy = setupGitWorkingCopyForTest();
     inDirSync(gitTempWorkingCopy, () => {
+      shell('git config user.email "process-engine-ci@5minds.de"');
+      shell('git config user.name "Integration Testbot"');
+
       // alpha
 
       shell('git checkout develop');
