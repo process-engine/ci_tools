@@ -1,3 +1,22 @@
+import { execSync } from 'child_process';
+import { join, resolve } from 'path';
+
+import * as fsExtra from 'fs-extra';
+
+export const ROOT_DIR = resolve(join(__dirname, '..'));
+const CI_TOOLS_EXECUTABLE = join(ROOT_DIR, 'dist', 'ci_tools.js');
+
+export function run(ciToolsCommand: string): any {
+  console.log('run:', ciToolsCommand);
+  return shell(`node ${CI_TOOLS_EXECUTABLE} ${ciToolsCommand}`);
+}
+
+export function shell(shellCommand: string): string {
+  const output = execSync(`${shellCommand}`, { encoding: 'utf-8' });
+
+  return output;
+}
+
 /**
  * Changes the current working directory (cwd) to the given `directory` and executes the given `callback`.
  * Resets the cwd afterwards.
@@ -15,8 +34,49 @@ export async function inDir(directory: string, callback: () => Promise<void>): P
     process.chdir(directory);
     await callback.apply(null);
   } catch (err) {
-    console.error(`chdir: ${err}`);
+    console.error(`inDir(${directory}): ${err}`);
   } finally {
     process.chdir(oldDir);
   }
+}
+
+export function inDirSync(directory: string, callback: () => void): void {
+  const oldDir = process.cwd();
+  try {
+    process.chdir(directory);
+    callback.apply(null);
+  } catch (err) {
+    console.error(`inDir(${directory}): ${err}`);
+  } finally {
+    process.chdir(oldDir);
+  }
+}
+
+function createGitRemoteToCloneFrom() {
+  // this is a Git bare repo that we can easily clone locally for testing purposes
+  const gitFixtureDir = resolve(join(ROOT_DIR, 'test', 'fixtures', 'simple.git'));
+  const newGitRemote = resolve(join(ROOT_DIR, 'tmp', 'origin'));
+
+  fsExtra.removeSync(newGitRemote);
+  fsExtra.copySync(gitFixtureDir, newGitRemote);
+
+  return newGitRemote;
+}
+
+function cloneTestRepoFromRemote(remote: string): string {
+  const workingCopyDir = resolve(join(ROOT_DIR, 'tmp', 'working-copy'));
+
+  fsExtra.removeSync(workingCopyDir);
+  shell(`git clone ${remote} ${workingCopyDir}`);
+
+  return workingCopyDir;
+}
+
+/**
+ * Sets up a working copy of a sample repo, including a Git remote that integration tests can safely push to
+ */
+export function setupGitWorkingCopyForTest(): string {
+  const gitRemoteForTest = createGitRemoteToCloneFrom();
+  const gitTempWorkingCopy = cloneTestRepoFromRemote(gitRemoteForTest);
+  return gitTempWorkingCopy;
 }

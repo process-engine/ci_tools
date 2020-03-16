@@ -9,7 +9,9 @@
     "build": "npm run clean && tsc",
     "prepare": "npm run build",
     "lint": "eslint \"src/**/*.ts\"",
-    "test": "mocha -r ts-node/register src/**/*.test.ts"
+    "test": "npm run test:unit",
+    "test:unit": "mocha -r ts-node/register -r choma \"src/**/*.test.ts\"",
+    "test:integration": "mocha --slow 60000 --timeout 60000 -r ts-node/register -r choma \"test/integration/*.test.ts\""
   },
   "bin": {
     "ci_tools": "./dist/ci_tools.js"
@@ -36,7 +38,10 @@
     "@essential-projects/eslint-config": "^1.2.3",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.9",
+    "choma": "^1.2.1",
     "eslint": "^5.16.0",
+    "fs-extra": "^8.1.0",
+    "json5": "^2.1.1",
     "mocha": "^6.1.4",
     "prettier": "^1.19.1",
     "ts-node": "^8.1.0",
