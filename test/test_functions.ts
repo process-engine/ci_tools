@@ -12,7 +12,12 @@ export function run(ciToolsCommand: string): string {
 
 export function shell(shellCommand: string): string {
   console.log('      shell:', shellCommand);
-  const output = execSync(`${shellCommand} 2>&1`, { encoding: 'utf-8' });
+
+  const env = { ...process.env };
+  delete env['GIT_BRANCH'];
+  delete env['GITHUB_REF'];
+
+  const output = execSync(`${shellCommand} 2>&1`, { encoding: 'utf-8', env: env });
 
   return output;
 }
