@@ -5,6 +5,7 @@ import * as yargsParser from 'yargs-parser';
 
 import * as AutoPublishIfApplicable from './commands/internal/auto-publish-if-applicable';
 import * as CommitAndTagVersion from './commands/commit-and-tag-version';
+import * as CopyAndCommitVersionForSubpackage from './commands/copy-and-commit-version-for-subpackage';
 import * as CreateChangelog from './commands/internal/create-changelog';
 import * as FailOnPreVersionDependencies from './commands/fail-on-pre-version-dependencies';
 import * as NpmInstallOnly from './commands/npm-install-only';
@@ -15,12 +16,15 @@ import * as UpdateGithubRelease from './commands/update-github-release';
 import * as UpgradeDependenciesWithPreVersions from './commands/upgrade-dependencies-with-pre-versions';
 import * as PublishReleasenotesOnSlack from './commands/publish-releasenotes-on-slack';
 import * as GetVersion from './commands/get-version';
+import * as SetVersion from './commands/set-version';
+import * as IsNugetPackagePublished from './legacy/is-nuget-package-published';
 
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
 
 const COMMAND_HANDLERS = {
   'commit-and-tag-version': CommitAndTagVersion,
+  'copy-and-commit-version-for-subpackage': CopyAndCommitVersionForSubpackage,
   'fail-on-pre-version-dependencies': FailOnPreVersionDependencies,
   'prepare-version': PrepareVersion,
   'publish-npm-package': PublishNpmPackage,
@@ -28,7 +32,9 @@ const COMMAND_HANDLERS = {
   'update-github-release': UpdateGithubRelease,
   'upgrade-dependencies-with-pre-versions': UpgradeDependenciesWithPreVersions,
   'publish-releasenotes-on-slack': PublishReleasenotesOnSlack,
-  'get-version': GetVersion
+  'get-version': GetVersion,
+  'set-version': SetVersion,
+  'is-nuget-package-published': IsNugetPackagePublished
 };
 
 // Internal commands are only used to develop ci_tools and are not intended for public consumption.
@@ -39,14 +45,23 @@ const INTERNAL_COMMAND_HANDLERS = {
   'setup-git-and-npm-connections': SetupGitAndNpmConnections
 };
 
+const DEFAULT_MODE = 'node';
+
 async function run(originalArgv: string[]): Promise<void> {
   const [, , ...args] = originalArgv;
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
+  const mode = argv.mode;
 
   if (args.length === 0 || (args.length === 1 && argv.help === true)) {
     printHelp();
     process.exit(1);
   }
+
+  if (mode !== 'dotnet' && mode !== DEFAULT_MODE) {
+    console.error('Mode must be set to `dotnet` or `node`. \nDefault is `node`');
+    process.exit(1);
+  }
+
   const [commandName, ...restArgs] = args;
 
   const commandHandler = COMMAND_HANDLERS[commandName] || INTERNAL_COMMAND_HANDLERS[commandName];

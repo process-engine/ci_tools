@@ -9,32 +9,36 @@ import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
 import { isRedundantRunTriggeredBySystemUserPush, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
+import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE } from '../contracts/modes';
 
 const COMMAND_NAME = 'commit-and-tag-version';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
 Commits, tags and pushes the current version (when on one of the applicable branches).
 `;
 // DOC: see above
+
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const isDryRun = argv.dry === true;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || argv.force === true;
+  const mode = argv.mode;
 
   setupGit();
 
-  printInfo(isDryRun, isForced);
+  await printInfo(mode, isDryRun, isForced);
 
-  if (isRedundantRunTriggeredBySystemUserPush()) {
-    const currentVersionTag = getPackageVersionTag();
+  if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
+    const currentVersionTag = getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 
     process.exit(0);
   }
 
-  if (isRetryRunForPartiallySuccessfulBuild()) {
+  if (await isRetryRunForPartiallySuccessfulBuild(mode)) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here!`));
 
@@ -44,15 +48,21 @@ export async function run(...args): Promise<boolean> {
   annotatedSh('git config user.name');
   annotatedSh('git config user.email');
 
-  const packageVersion = getPackageVersion();
-  const changelogText = await getChangelogText(getPrevVersionTag());
-  const commitSuccessful = pushCommitAndTagCurrentVersion(packageVersion, changelogText);
+  const packageVersion = await getPackageVersion(mode);
+  const preVersionTag = await getPrevVersionTag(mode);
+  const changelogText = await getChangelogText(mode, preVersionTag);
+
+  if (isDryRun) {
+    console.log(`${BADGE}Would commit version ${packageVersion} and tag the commit as "v${packageVersion}".`);
+    console.log(`${BADGE}Skipping since this is a dry run!`);
+    return true;
+  }
+
+  const commitSuccessful = pushCommitAndTagCurrentVersion(mode, packageVersion, changelogText);
 
   if (commitSuccessful) {
     console.log(
-      chalk.greenBright(
-        `${BADGE}Commited package.json with version ${packageVersion} and tagged that commit as "v${packageVersion}"`
-      )
+      chalk.greenBright(`${BADGE}Committed version ${packageVersion} and tagged that commit as "v${packageVersion}"`)
     );
   }
 
@@ -77,9 +87,9 @@ function annotatedSh(cmd: string): string {
   return output;
 }
 
-function printInfo(isDryRun: boolean, isForced: boolean): void {
-  const packageVersion = getPackageVersion();
-  const packageVersionTag = getPackageVersionTag();
+async function printInfo(mode: string, isDryRun: boolean, isForced: boolean): Promise<void> {
+  const packageVersion = await getPackageVersion(mode);
+  const packageVersionTag = await getPackageVersionTag(mode);
   const branchName = getGitBranch();
 
   console.log(`${BADGE}isDryRun:`, isDryRun);
@@ -91,14 +101,13 @@ function printInfo(isDryRun: boolean, isForced: boolean): void {
   console.log('');
 }
 
-function pushCommitAndTagCurrentVersion(currentVersion: string, changelogText: string): boolean {
+function pushCommitAndTagCurrentVersion(mode: string, currentVersion: string, changelogText: string): boolean {
   const branchName = getGitBranch();
   const currentVersionTag = `v${currentVersion}`;
 
   sh(`git checkout ${branchName}`);
 
-  gitAdd('package.json');
-  gitAdd('package-lock.json');
+  addPackageFilesToGit(mode);
 
   sh('git status');
 
@@ -109,4 +118,18 @@ function pushCommitAndTagCurrentVersion(currentVersion: string, changelogText: s
 
   // TODO: we should check if these were successful!
   return true;
+}
+
+function addPackageFilesToGit(mode: string): void {
+  switch (mode) {
+    case PACKAGE_MODE_DOTNET:
+      gitAdd('*.csproj');
+      break;
+    case PACKAGE_MODE_NODE:
+      gitAdd('package.json');
+      gitAdd('package-lock.json');
+      break;
+    default:
+      throw new Error(`Unknown value for \`mode\`: ${mode}`);
+  }
 }

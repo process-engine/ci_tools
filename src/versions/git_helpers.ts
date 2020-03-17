@@ -3,8 +3,8 @@ import { getPackageVersion } from './package_version';
 import { incrementVersion } from './increment_version';
 import { previousStableVersion } from './previous_stable_version';
 
-export function getNextVersion(): string | null {
-  const packageVersion = getPackageVersion();
+export async function getNextVersion(mode: string): Promise<string | null> {
+  const packageVersion = await getPackageVersion(mode);
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();
   const incrementedVersion = incrementVersion(packageVersion, branchName, gitTagList);
@@ -31,8 +31,8 @@ export function getVersionTag(version: string): string {
 /**
  * Returns the "prev" version according to the rules described in `run`.
  */
-export function getPrevVersion(): string {
-  const packageVersion = getPackageVersion();
+export async function getPrevVersion(mode: string): Promise<string> {
+  const packageVersion = await getPackageVersion(mode);
   const gitTagList = getGitTagList();
 
   return previousStableVersion(packageVersion, gitTagList);
@@ -41,13 +41,10 @@ export function getPrevVersion(): string {
 /**
  * Returns the "previous" version tag according to the rules described in `run`.
  */
-export function getPrevVersionTag(): string {
-  const preVersion = getPrevVersion();
-  if (preVersion == null) {
-    return null;
-  }
+export async function getPrevVersionTag(mode: string): Promise<string> {
+  const previousVersion = await getPrevVersion(mode);
 
-  return `v${preVersion}`;
+  return previousVersion == null ? null : `v${previousVersion}`;
 }
 
 function getRandomSuffix(): string {

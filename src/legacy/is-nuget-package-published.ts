@@ -3,7 +3,7 @@
 import * as fetch from 'node-fetch';
 
 interface IApiIndex {
-  resources: Array<IApiResource>;
+  resources: IApiResource[];
 }
 
 interface IApiResource {
@@ -11,24 +11,7 @@ interface IApiResource {
   '@type': string;
 }
 
-if (process.argv.length < 4) {
-  console.error('Please supply arguments: <NuGet V3 feed URL> <package> <version>');
-  process.exit(1);
-}
-
 let requestParameters: fetch.RequestInit = {};
-
-if (
-  process.env['NUGET_ACCESS_TOKEN'] !== null &&
-  process.env['NUGET_ACCESS_TOKEN'] !== undefined &&
-  process.env['NUGET_ACCESS_TOKEN'] !== ''
-) {
-  requestParameters = {
-    headers: {
-      'X-NuGet-ApiKey': process.env['NUGET_ACCESS_TOKEN']
-    }
-  };
-}
 
 const nugetFeedURL: string = process.argv[2];
 const packageName: string = process.argv[3];
@@ -65,7 +48,24 @@ async function doesPackageExist(metadataResource: IApiResource): Promise<boolean
   return isNot404;
 }
 
-async function main(): Promise<void> {
+export async function run(): Promise<void> {
+  if (process.argv.length < 4) {
+    console.error('Please supply arguments: <NuGet V3 feed URL> <package> <version>');
+    process.exit(1);
+  }
+
+  if (
+    process.env['NUGET_ACCESS_TOKEN'] !== null &&
+    process.env['NUGET_ACCESS_TOKEN'] !== undefined &&
+    process.env['NUGET_ACCESS_TOKEN'] !== ''
+  ) {
+    requestParameters = {
+      headers: {
+        'X-NuGet-ApiKey': process.env['NUGET_ACCESS_TOKEN']
+      }
+    };
+  }
+
   const apiIndex: IApiIndex = await getApiIndex();
   const apiResource: IApiResource = await getPackageMetadataResource(apiIndex);
 
@@ -73,8 +73,3 @@ async function main(): Promise<void> {
 
   console.log(packageIsPublished);
 }
-
-main().catch((error: Error): void => {
-  console.error(error);
-  process.exit(1);
-});

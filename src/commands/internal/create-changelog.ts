@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
+import * as yargsParser from 'yargs-parser';
 
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
@@ -14,6 +15,7 @@ const COMMIT_API_URI = getCurrentApiBaseUrlWithAuth('/commits/:commit_sha');
 const ISSUES_API_URI = getCurrentApiBaseUrlWithAuth('/issues?state=closed&since=:since&page=:page');
 
 const BADGE = '[create-changelog]\t';
+const DEFAULT_MODE = 'node';
 
 const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 100;
 const CLOSED_ISSUE_LENGTH_THRESHOLD = 100;
@@ -28,25 +30,27 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  * - GitHub: PRs and Issues
  */
 export async function run(...args): Promise<boolean> {
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
+  const mode = argv.mode;
   let startRef = args[0];
   if (!startRef) {
-    startRef = getPrevVersionTag();
+    startRef = await getPrevVersionTag(mode);
     console.log(`${BADGE}No start ref given, using: "${startRef}"`);
   }
-  const changelogText = await getChangelogText(startRef);
+  const changelogText = await getChangelogText(mode, startRef);
 
   console.log(changelogText);
   return true;
 }
 
-export async function getChangelogText(startRef: string): Promise<string> {
+export async function getChangelogText(mode: string, startRef: string): Promise<string> {
   if (startRef == null) {
     return '';
   }
 
   const apiResponse = await getCommitFromApi(startRef);
 
-  if (apiResponse.commit === undefined) {
+  if (apiResponse.commit == null) {
     console.error(chalk.red(`${BADGE} API responded with: ${apiResponse.message}`));
 
     process.exit(3);
@@ -59,7 +63,7 @@ export async function getChangelogText(startRef: string): Promise<string> {
 
   const endRef = 'HEAD';
 
-  const nextVersion = getNextVersion();
+  const nextVersion = await getNextVersion(mode);
   if (nextVersion == null) {
     console.error(chalk.red(`${BADGE}Could not determine nextVersion!`));
     process.exit(3);

@@ -1,8 +1,9 @@
 import chalk from 'chalk';
 
+import * as yargsParser from 'yargs-parser';
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, isDirty, isExistingTag } from '../git/git';
 import { getNextVersion, getVersionTag } from '../versions/git_helpers';
-import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
+import { getPackageVersion, getPackageVersionTag, setPackageVersion } from '../versions/package_version';
 import {
   getPartiallySuccessfulBuildVersion,
   isRedundantRunTriggeredBySystemUserPush,
@@ -13,11 +14,19 @@ import { sh } from '../cli/shell';
 
 const COMMAND_NAME = 'prepare-version';
 const BADGE = `[${COMMAND_NAME}]\t`;
+const DEFAULT_MODE = 'node';
 
 const DOC = `
-Adjusts the pre-version in \`package.json\` automatically.
+Adjusts the pre-version in your project file automatically (\`package.json\` for Node or \`*.csproj\` for C# .NET).
 
-Example:
+OPTIONS
+
+--allow-dirty-workdir   allows for a "dirty" Git workdir
+--dry                   performs a dry which does not changes any files
+--force                 overrides all plausibility checks and increments the pre-version
+--mode                  sets the package mode [dotnet, node] (default: node)
+
+EXAMPLES
 
 Your package.json's version field is
 
@@ -47,32 +56,35 @@ It then writes package.json, commits, tags and pushes it
 (when on one of the applicable branches).
 `;
 // DOC: see above
+
 export async function run(...args): Promise<boolean> {
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const allowDirtyWorkdir = args.indexOf('--allow-dirty-workdir') !== -1;
   const isDryRun = args.indexOf('--dry') !== -1;
   const isForced = process.env.CI_TOOLS_FORCE_PUBLISH === 'true' || args.indexOf('--force') !== -1;
+  const mode = argv.mode;
 
-  let nextVersion = getNextVersion();
+  let nextVersion = await getNextVersion(mode);
   let nextVersionTag = getVersionTag(nextVersion);
 
-  printInfo(nextVersion, isDryRun, isForced);
+  await printInfo(mode, nextVersion, isDryRun, isForced);
 
-  if (isRetryRunForPartiallySuccessfulBuild()) {
+  if (await isRetryRunForPartiallySuccessfulBuild(mode)) {
     console.error(chalk.yellow(`${BADGE}This seems to be a retry run for a partially successful build.`));
 
-    nextVersion = getPartiallySuccessfulBuildVersion();
+    nextVersion = await getPartiallySuccessfulBuildVersion(mode);
     nextVersionTag = getVersionTag(nextVersion);
 
     console.log('');
     console.log(`${BADGE}resetting nextVersionTag:`, nextVersionTag);
   }
 
-  abortIfRetryRun();
+  await abortIfRetryRun(mode);
   abortIfDirtyWorkdir(allowDirtyWorkdir, isForced);
-  abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag, isForced);
+  await abortIfTagAlreadyExistsAndIsNoRetryRun(mode, nextVersionTag, isForced);
   abortIfDryRun(nextVersion, isDryRun, isForced);
 
-  sh(`npm version ${nextVersion} --no-git-tag-version`);
+  setPackageVersion(mode, nextVersion);
 
   return true;
 }
@@ -82,14 +94,14 @@ export function getShortDoc(): string {
 }
 
 export function printHelp(): void {
-  console.log(`Usage: ci_tools ${COMMAND_NAME} [--dry] [--force]`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--allow-dirty-workdir] [--dry] [--force] [--mode <MODE>]`);
   console.log('');
   console.log(DOC.trim());
 }
 
-function abortIfRetryRun(): void {
-  if (isRedundantRunTriggeredBySystemUserPush()) {
-    const currentVersionTag = getPackageVersionTag();
+async function abortIfRetryRun(mode: string): Promise<void> {
+  if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
+    const currentVersionTag = await getPackageVersionTag(mode);
     console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 
@@ -115,8 +127,13 @@ function abortIfDirtyWorkdir(allowDirtyWorkdir: boolean, isForced: boolean): voi
   }
 }
 
-function abortIfTagAlreadyExistsAndIsNoRetryRun(nextVersionTag: string, isForced: boolean): void {
-  if (isExistingTag(nextVersionTag) && !isRetryRunForPartiallySuccessfulBuild()) {
+async function abortIfTagAlreadyExistsAndIsNoRetryRun(
+  mode: string,
+  nextVersionTag: string,
+  isForced: boolean
+): Promise<void> {
+  const isRetryRun = await isRetryRunForPartiallySuccessfulBuild(mode);
+  if (isExistingTag(nextVersionTag) && !isRetryRun) {
     console.error(chalk.red(`${BADGE}Sanity check failed!`));
     console.error(chalk.red(`${BADGE}Tag "${nextVersionTag}" already exists!`));
 
@@ -140,12 +157,12 @@ function abortIfDryRun(nextVersion: string, isDryRun: boolean, isForced: boolean
       console.error(chalk.yellow(`${BADGE}Even though --force was provided, --dry takes precedence.`));
     }
 
-    process.exit(1);
+    process.exit(0);
   }
 }
 
-function printInfo(nextVersion: string, isDryRun: boolean, isForced: boolean): void {
-  const packageVersion = getPackageVersion();
+async function printInfo(mode: string, nextVersion: string, isDryRun: boolean, isForced: boolean): Promise<void> {
+  const packageVersion = await getPackageVersion(mode);
   const packageVersionTag = getVersionTag(packageVersion);
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();

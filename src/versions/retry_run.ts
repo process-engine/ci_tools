@@ -3,21 +3,24 @@ import { getNextVersion, getVersionTag } from './git_helpers';
 import { getGitBranch, getGitCommitSha1, getGitTagList, isExistingTag } from '../git/git';
 import { getExpectedLatestVersion } from './increment_version';
 
-export function getPartiallySuccessfulBuildVersion(): string {
-  return getSuspectedPartiallySuccessfulBuildVersion();
+export async function getPartiallySuccessfulBuildVersion(mode: string): Promise<string> {
+  return getSuspectedPartiallySuccessfulBuildVersion(mode);
 }
 
-export function isRetryRunForPartiallySuccessfulBuild(): boolean {
-  const latestVersion = getSuspectedPartiallySuccessfulBuildVersion();
+export async function isRetryRunForPartiallySuccessfulBuild(mode: string): Promise<boolean> {
+  const latestVersion = await getSuspectedPartiallySuccessfulBuildVersion(mode);
+  if (latestVersion == null) {
+    return false;
+  }
   const latestVersionTag = getVersionTag(latestVersion);
   const latestVersionTagAlreadyExists = isExistingTag(latestVersionTag);
 
   return latestVersionTagAlreadyExists && currentCommitIsCommitBeforeTag(latestVersionTag);
 }
 
-export function isRedundantRunTriggeredBySystemUserPush(): boolean {
-  const currentVersionTag = getPackageVersionTag();
-  const nextVersion = getNextVersion();
+export async function isRedundantRunTriggeredBySystemUserPush(mode: string): Promise<boolean> {
+  const currentVersionTag = await getPackageVersionTag(mode);
+  const nextVersion = await getNextVersion(mode);
   const nextVersionTag = getVersionTag(nextVersion);
   const currentVersionReleaseChannel = getReleaseChannelFromTagOrVersion(currentVersionTag);
   const nextVersionReleaseChannel = getReleaseChannelFromTagOrVersion(nextVersionTag);
@@ -28,8 +31,8 @@ export function isRedundantRunTriggeredBySystemUserPush(): boolean {
   return result;
 }
 
-function getSuspectedPartiallySuccessfulBuildVersion(): string {
-  const packageVersion = getPackageVersion();
+async function getSuspectedPartiallySuccessfulBuildVersion(mode: string): Promise<string> {
+  const packageVersion = await getPackageVersion(mode);
   const branchName = getGitBranch();
   const gitTagList = getGitTagList();
   const latestVersion = getExpectedLatestVersion(packageVersion, branchName, gitTagList);
