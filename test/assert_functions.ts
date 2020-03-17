@@ -3,9 +3,14 @@ import * as assert from 'assert';
 import * as JSON5 from 'json5';
 
 import { shell } from './test_functions';
+import { readFileSync } from 'fs';
 
 export function assertNodePackageVersion(version: string): void {
   assert.strictEqual(getNodePackageVersion(), version);
+}
+
+export function assertDotnetPackageVersion(filename: string, version: string): void {
+  assert.strictEqual(getDotnetPackageVersion(filename), version);
 }
 
 export function assertTagCount(count: number): void {
@@ -45,6 +50,13 @@ export function assertNewTagCreated(tag: string, callback: () => void): void {
 function getNodePackageVersion(): string {
   const output = shell('npm version');
   return JSON5.parse(output)['@process-engine/ci_tools'];
+}
+
+function getDotnetPackageVersion(csprojFilename: string): string {
+  const contents = readFileSync(csprojFilename, { encoding: 'utf-8' });
+  const matches = contents.match(/(<Version>)([^<]+)</);
+
+  return matches == null ? null : matches[2];
 }
 
 function getGitTags(): string[] {
