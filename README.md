@@ -32,6 +32,8 @@ $ ci_tools --help
 
 ### Legacy Scripts
 
+**WICHTIG** Die Legacy Scripts sind nur bis v2 der ci_tools verfügabr!
+
 CI Tools wurden mit Version `2.0.0` komplett überarbeitet und neu ausgerichtet.
 
 Die folgenden "Legacy Scripts" wurden in ihrer Funktionalität erhalten:

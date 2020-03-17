@@ -2,22 +2,30 @@ import * as yargsParser from 'yargs-parser';
 import { getMajorPackageVersion, getPackageVersion } from '../versions/package_version';
 
 const COMMAND_NAME = 'get-version';
+const DEFAULT_MODE = 'node';
+
 const DOC = `
 Returns the package version.
+
+OPTIONS
+
+--mode    sets the package mode [dotnet, node] (default: node)
+
 `;
 
 export async function run(...args): Promise<boolean> {
-  const argv = yargsParser(args, { alias: { help: ['h'] } });
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const majorRequired = argv.major;
+  const mode = argv.mode;
 
   if (majorRequired) {
-    const majorVersion = getMajorPackageVersion();
+    const majorVersion = await getMajorPackageVersion(mode);
     console.log(majorVersion);
 
     return true;
   }
 
-  const packageVersion = getPackageVersion();
+  const packageVersion = await getPackageVersion(mode);
   console.log(packageVersion);
 
   return true;
@@ -28,7 +36,7 @@ export function getShortDoc(): string {
 }
 
 export function printHelp(): void {
-  console.log(`Usage: ci_tools ${COMMAND_NAME} [--major]`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--major] [--mode <MODE>]`);
   console.log('');
   console.log(DOC.trim());
 }

@@ -1,6 +1,6 @@
 {
   "name": "@process-engine/ci_tools",
-  "version": "2.5.0-beta.2",
+  "version": "3.0.0-alpha.12",
   "description": "CI tools for process-engine.io",
   "main": "dist/ci_tools.js",
   "scripts": {
@@ -8,13 +8,13 @@
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "prepare": "npm run build",
-    "lint": "eslint src/**/*.ts src/*.ts",
-    "test": "mocha -r ts-node/register src/**/*.test.ts"
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "npm run test:unit",
+    "test:unit": "mocha -r ts-node/register -r choma \"src/**/*.test.ts\"",
+    "test:integration": "mocha --slow 60000 --timeout 600000 -r ts-node/register -r choma \"test/integration/*.test.ts\""
   },
   "bin": {
-    "ci_tools": "./dist/ci_tools.js",
-    "create-github-release": "./dist/legacy/create-github-release.js",
-    "is-nuget-package-published": "./dist/legacy/is-nuget-package-published.js"
+    "ci_tools": "./dist/ci_tools.js"
   },
   "repository": {
     "type": "git",
@@ -26,22 +26,26 @@
     "@octokit/rest": "15.15.1",
     "chalk": "^2.4.2",
     "compare-versions": "^3.4.0",
-    "glob": "^7.1.4",
+    "glob": "^7.1.6",
     "mime-types": "^2.1.18",
     "moment": "^2.24.0",
     "node-fetch": "^2.6.0",
     "shelljs": "^0.8.3",
+    "xml2js": "^0.4.23",
     "yargs-parser": "^13.1.1"
   },
   "devDependencies": {
     "@essential-projects/eslint-config": "^1.2.3",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.9",
+    "choma": "^1.2.1",
     "eslint": "^5.16.0",
+    "fs-extra": "^8.1.0",
+    "json5": "^2.1.1",
     "mocha": "^6.1.4",
-    "prettier": "^1.18.2",
+    "prettier": "^1.19.1",
     "ts-node": "^8.1.0",
     "tsconfig": "^7.0.0",
-    "typescript": "^3.5.2"
+    "typescript": "^3.8.2"
   }
 }
