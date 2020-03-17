@@ -53,7 +53,7 @@ export async function run(...args): Promise<boolean> {
   const changelogText = await getChangelogText(mode, preVersionTag);
 
   if (isDryRun) {
-    console.log(`${BADGE}Would commit version ${packageVersion} and tag it that commit as "v${packageVersion}".`);
+    console.log(`${BADGE}Would commit version ${packageVersion} and tag the commit as "v${packageVersion}".`);
     console.log(`${BADGE}Skipping since this is a dry run!`);
     return true;
   }
