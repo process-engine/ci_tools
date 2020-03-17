@@ -157,7 +157,7 @@ function abortIfDryRun(nextVersion: string, isDryRun: boolean, isForced: boolean
       console.error(chalk.yellow(`${BADGE}Even though --force was provided, --dry takes precedence.`));
     }
 
-    process.exit(1);
+    process.exit(0);
   }
 }
 

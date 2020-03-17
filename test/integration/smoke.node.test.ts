@@ -8,7 +8,7 @@ function setNodePackageVersionAndCommit(version: string): void {
   shell(`git commit --message "Bump version to ${version}"`);
 }
 
-describe('ci_tools', () => {
+describe('prepare-version / commit-and-tag-version', () => {
   it('should work with mode: node', async () => {
     const gitTempWorkingCopy = setupGitWorkingCopyForTest();
     inDirSync(gitTempWorkingCopy, () => {
