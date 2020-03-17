@@ -14,7 +14,7 @@ export async function getPackageVersionDotnet(): Promise<string> {
     throw new Error(`Could not convert csproj to JSON: ${filename}`);
   }
   const propertyGroup = json?.Project?.PropertyGroup;
-  const version = Array.isArray(propertyGroup) ? propertyGroup[0]?.Version : null;
+  const version = Array.isArray(propertyGroup) ? propertyGroup[0]?.Version[0] : null;
   if (version == null) {
     throw new Error(`Could not read version from converted JSON: ${filename}\n\n${JSON.stringify(json, null, 2)}`);
   }

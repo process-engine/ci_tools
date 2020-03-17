@@ -1,8 +1,7 @@
 import { getPackageVersionDotnet, setPackageVersionDotnet } from './package_version/dotnet';
 import { getPackageVersionNode, setPackageVersionNode } from './package_version/node';
+import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE } from '../contracts/modes';
 
-const PACKAGE_MODE_DOTNET = 'dotnet';
-const PACKAGE_MODE_NODE = 'node';
 const versionRegex = /^(\d+)\.(\d+).(\d+)/;
 
 export async function getPackageVersion(mode: string): Promise<string> {

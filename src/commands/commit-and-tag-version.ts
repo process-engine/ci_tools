@@ -9,6 +9,7 @@ import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
 import { isRedundantRunTriggeredBySystemUserPush, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
+import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE } from '../contracts/modes';
 
 const COMMAND_NAME = 'commit-and-tag-version';
 const BADGE = `[${COMMAND_NAME}]\t`;
@@ -50,7 +51,7 @@ export async function run(...args): Promise<boolean> {
   const packageVersion = await getPackageVersion(mode);
   const preVersionTag = await getPrevVersionTag(mode);
   const changelogText = await getChangelogText(mode, preVersionTag);
-  const commitSuccessful = pushCommitAndTagCurrentVersion(packageVersion, changelogText);
+  const commitSuccessful = pushCommitAndTagCurrentVersion(mode, packageVersion, changelogText);
 
   if (commitSuccessful) {
     console.log(
@@ -95,14 +96,13 @@ async function printInfo(mode: string, isDryRun: boolean, isForced: boolean): Pr
   console.log('');
 }
 
-function pushCommitAndTagCurrentVersion(currentVersion: string, changelogText: string): boolean {
+function pushCommitAndTagCurrentVersion(mode: string, currentVersion: string, changelogText: string): boolean {
   const branchName = getGitBranch();
   const currentVersionTag = `v${currentVersion}`;
 
   sh(`git checkout ${branchName}`);
 
-  gitAdd('package.json');
-  gitAdd('package-lock.json');
+  addPackageFilesToGit(mode);
 
   sh('git status');
 
@@ -113,4 +113,18 @@ function pushCommitAndTagCurrentVersion(currentVersion: string, changelogText: s
 
   // TODO: we should check if these were successful!
   return true;
+}
+
+function addPackageFilesToGit(mode: string): void {
+  switch (mode) {
+    case PACKAGE_MODE_DOTNET:
+      gitAdd('*.csproj');
+      break;
+    case PACKAGE_MODE_NODE:
+      gitAdd('package.json');
+      gitAdd('package-lock.json');
+      break;
+    default:
+      throw new Error(`Unknown value for \`mode\`: ${mode}`);
+  }
 }
