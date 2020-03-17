@@ -51,13 +51,18 @@ export async function run(...args): Promise<boolean> {
   const packageVersion = await getPackageVersion(mode);
   const preVersionTag = await getPrevVersionTag(mode);
   const changelogText = await getChangelogText(mode, preVersionTag);
+
+  if (isDryRun) {
+    console.log(`${BADGE}Would commit version ${packageVersion} and tag it that commit as "v${packageVersion}".`);
+    console.log(`${BADGE}Skipping since this is a dry run!`);
+    return true;
+  }
+
   const commitSuccessful = pushCommitAndTagCurrentVersion(mode, packageVersion, changelogText);
 
   if (commitSuccessful) {
     console.log(
-      chalk.greenBright(
-        `${BADGE}Commited package.json with version ${packageVersion} and tagged that commit as "v${packageVersion}"`
-      )
+      chalk.greenBright(`${BADGE}Committed version ${packageVersion} and tagged that commit as "v${packageVersion}"`)
     );
   }
 
