@@ -18,6 +18,7 @@ import * as PublishReleasenotesOnSlack from './commands/publish-releasenotes-on-
 import * as GetVersion from './commands/get-version';
 import * as SetVersion from './commands/set-version';
 import * as IsNugetPackagePublished from './legacy/is-nuget-package-published';
+import * as ReplaceDistTagsWithRealVersions from './commands/replace-dist-tags-with-real-versions';
 
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
@@ -34,7 +35,8 @@ const COMMAND_HANDLERS = {
   'publish-releasenotes-on-slack': PublishReleasenotesOnSlack,
   'get-version': GetVersion,
   'set-version': SetVersion,
-  'is-nuget-package-published': IsNugetPackagePublished
+  'is-nuget-package-published': IsNugetPackagePublished,
+  'replace-dist-tags-with-real-versions': ReplaceDistTagsWithRealVersions,
 };
 
 // Internal commands are only used to develop ci_tools and are not intended for public consumption.
