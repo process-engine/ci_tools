@@ -16,6 +16,10 @@ const DOC = `
 Publishes the releasenotes for the current version on slack.
 
 To use this command, an incoming webhook for slack is required and must be configured as an environment variable named 'SLACK_WEBHOOK'.
+
+OPTIONS
+
+--mode    sets the package mode [dotnet, node, python] (default: node)
 `;
 // DOC: see above
 
@@ -41,7 +45,7 @@ export function getShortDoc(): string {
 }
 
 export function printHelp(): void {
-  console.log(`Usage: ci_tools ${COMMAND_NAME}`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--mode <MODE>]`);
   console.log('');
   console.log(DOC.trim());
 }
