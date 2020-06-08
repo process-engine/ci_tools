@@ -1,4 +1,4 @@
-import * as fs from 'fs-extra';
+import * as fs from 'fs';
 import * as yargsParser from 'yargs-parser';
 
 import { printMultiLineString } from '../cli/printMultiLineString';
@@ -57,7 +57,7 @@ export async function run(...args): Promise<boolean> {
   const packagePatternFilter = getPackagePatternFilter(packagePatterns);
   const distTagFilter = getDistTagFilter(distTagsToReplace);
 
-  const packageContentRaw = await fs.readFile('package.json', 'utf-8');
+  const packageContentRaw = fs.readFileSync('package.json', { encoding: 'utf-8' });
   const packageContent = JSON.parse(packageContentRaw);
 
   const dependencies = convertToDependencyArray(packageContent.dependencies ?? {})
