@@ -109,8 +109,8 @@ export function gitPushTags(): GitOperationResult {
   return output;
 }
 
-export function isDirty(): boolean {
-  return sh('git status --porcelain --untracked-files=no').trim() !== '';
+export function isDirty(...pathspec: string[]): boolean {
+  return sh(`git status --porcelain --untracked-files=no ${pathspec.join(' ')}`).trim() !== '';
 }
 
 export function isExistingTag(name: string): boolean {
