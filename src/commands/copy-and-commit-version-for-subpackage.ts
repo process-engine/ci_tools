@@ -16,6 +16,10 @@ const DEFAULT_MODE = 'node';
 
 const DOC = `
 Copies the version from the main package to a subpackage and commits the change.
+
+OPTIONS
+
+--mode    sets the package mode [dotnet, node, python] (default: node)
 `;
 // DOC: see above
 
@@ -53,7 +57,7 @@ export function getShortDoc(): string {
 }
 
 export function printHelp(): void {
-  console.log(`Usage: ci_tools ${COMMAND_NAME} <subpackageLocation> [--dry] [--force]`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} <subpackageLocation> [--dry] [--force] [--mode <MODE>]`);
   console.log('');
   console.log(DOC.trim());
 }

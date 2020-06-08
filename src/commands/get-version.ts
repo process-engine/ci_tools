@@ -9,8 +9,7 @@ Returns the package version.
 
 OPTIONS
 
---mode    sets the package mode [dotnet, node] (default: node)
-
+--mode    sets the package mode [dotnet, node, python] (default: node)
 `;
 
 export async function run(...args): Promise<boolean> {

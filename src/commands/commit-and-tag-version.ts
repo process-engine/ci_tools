@@ -9,7 +9,7 @@ import { setupGit } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
 import { isRedundantRunTriggeredBySystemUserPush, isRetryRunForPartiallySuccessfulBuild } from '../versions/retry_run';
 import { printMultiLineString } from '../cli/printMultiLineString';
-import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE } from '../contracts/modes';
+import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE, PACKAGE_MODE_PYTHON } from '../contracts/modes';
 
 const COMMAND_NAME = 'commit-and-tag-version';
 const BADGE = `[${COMMAND_NAME}]\t`;
@@ -128,6 +128,9 @@ function addPackageFilesToGit(mode: string): void {
     case PACKAGE_MODE_NODE:
       gitAdd('package.json');
       gitAdd('package-lock.json');
+      break;
+    case PACKAGE_MODE_PYTHON:
+      gitAdd('setup.py');
       break;
     default:
       throw new Error(`Unknown value for \`mode\`: ${mode}`);

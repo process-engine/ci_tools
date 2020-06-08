@@ -24,6 +24,10 @@ const DOC = `
 Updates or creates a GitHub release using the current version (or given \`--version-tag\`).
 
 Uploads all given \`--assets\`, resolving globs and updating existing assets on GitHub.
+
+OPTIONS
+
+--mode    sets the package mode [dotnet, node, python] (default: node)
 `;
 // DOC: see above
 
@@ -88,7 +92,8 @@ export function getShortDoc(): string {
 
 export function printHelp(): void {
   console.log(
-    `Usage: ci_tools ${COMMAND_NAME} [--use-title-and-text-from-git-tag | --title [--text]] [--assets <asset-name-or-glob> ...] [--version-tag] [--dry]`
+    `Usage: ci_tools ${COMMAND_NAME} [--use-title-and-text-from-git-tag | --title [--text]] [--assets <asset-name-or-glob> ...]
+                                      [--version-tag] [--dry] [--mode <MODE>]`
   );
   console.log('');
   console.log(DOC.trim());
