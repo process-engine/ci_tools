@@ -1,6 +1,7 @@
 import { getPackageVersionDotnet, setPackageVersionDotnet } from './package_version/dotnet';
 import { getPackageVersionNode, setPackageVersionNode } from './package_version/node';
-import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE } from '../contracts/modes';
+import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE, PACKAGE_MODE_PYTHON } from '../contracts/modes';
+import { getPackageVersionPython, setPackageVersionPython } from './package_version/python';
 
 const versionRegex = /^(\d+)\.(\d+).(\d+)/;
 
@@ -10,6 +11,8 @@ export async function getPackageVersion(mode: string): Promise<string> {
       return getPackageVersionDotnet();
     case PACKAGE_MODE_NODE:
       return getPackageVersionNode();
+    case PACKAGE_MODE_PYTHON:
+      return getPackageVersionPython();
     default:
       throw new Error(`Unknown value for \`mode\`: ${mode}`);
   }
@@ -32,6 +35,9 @@ export async function setPackageVersion(mode: string, version: string): Promise<
       return;
     case PACKAGE_MODE_NODE:
       setPackageVersionNode(version);
+      return;
+    case PACKAGE_MODE_PYTHON:
+      setPackageVersionPython(version);
       return;
     default:
       throw new Error(`Unknown value for \`mode\`: ${mode}`);
