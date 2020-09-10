@@ -18,5 +18,12 @@ describe('product_name.ts', async () => {
         assert.equal(productName, 'ProcessEngine.Client');
       });
     });
+
+    it('should return the product name for python', async () => {
+      await inDir('test/fixtures/python-simple', async () => {
+        const productName = await getProductName('python');
+        assert.equal(productName, 'process_engine');
+      });
+    });
   });
 });

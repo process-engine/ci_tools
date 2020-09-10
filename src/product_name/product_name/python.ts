@@ -1,13 +1,40 @@
-import { StdioOptions, execSync } from 'child_process';
+import * as fs from 'fs';
+import * as glob from 'glob';
+
+const CSPROJ_FILE_NAME='setup.py'
+const NAME_REGEX = /name='(.*)'/;
 
 /**
  * Internal: Used by product_name.ts
  */
-export function getProductNamePython(): string {
-  const stdioOptions: StdioOptions = ['pipe', 'pipe', 'inherit'];
+export async function getProductNamePython(): Promise<string> {
+  const filename = getSetupFilePath();
+  const setupFileContent = await getSetupFileAsObject(filename);
+  if (!setupFileContent) {
+    throw new Error(`Could not read setup file: ${filename}`);
+  }
 
-  const nameRaw = execSync('python3 setup.py --name', { encoding: 'utf-8', stdio: stdioOptions });
-  const name = nameRaw.trim();
+  const regexResult: RegExpExecArray = NAME_REGEX.exec(setupFileContent);
 
-  return name;
+  if (regexResult && regexResult.length > 0) {
+    const name: string = regexResult[1];
+
+    return name;
+  }
+
+  throw new Error(`Unable to parse name from setup file: ${setupFileContent}. Please ensure name is set.`)
+}
+
+function getSetupFileAsObject(filePath: string): string {
+  return fs.readFileSync(filePath, { encoding: 'utf8' });
+}
+
+function getSetupFilePath(): string {
+  const paths = glob.sync(CSPROJ_FILE_NAME);
+
+  if (paths.length > 1) {
+    throw new Error(`More than one setup.py file found: ${paths.join('\n')}`);
+  }
+
+  return paths[0];
 }
