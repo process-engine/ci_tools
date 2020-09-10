@@ -57,7 +57,6 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
     process.exit(3);
   }
 
-
   printInfo(startRef, startDate, endRef, nextVersion, nextVersionTag);
 
   const mergedPullRequestsSince = await getMergedPullRequests(startDate);
