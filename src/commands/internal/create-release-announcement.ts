@@ -72,7 +72,7 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
     })
     .join('\n');
 
-  const productName = getProductName(mode);
+  const productName = await getProductName(mode);
 
   const changelogText = `
 *${productName} ${nextVersionTag} was released!*
