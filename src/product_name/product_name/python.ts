@@ -9,7 +9,7 @@ const NAME_REGEX = /name='(.*)'/;
  */
 export async function getProductNamePython(): Promise<string> {
   const filename = getSetupFilePath();
-  const setupFileContent = await getSetupFileAsObject(filename);
+  const setupFileContent = fs.readFileSync(filename, { encoding: 'utf8' });
   if (!setupFileContent) {
     throw new Error(`Could not read setup file: ${filename}`);
   }
@@ -23,10 +23,6 @@ export async function getProductNamePython(): Promise<string> {
   }
 
   throw new Error(`Unable to parse name from setup file: ${setupFileContent}. Please ensure name is set.`)
-}
-
-function getSetupFileAsObject(filePath: string): string {
-  return fs.readFileSync(filePath, { encoding: 'utf8' });
 }
 
 function getSetupFilePath(): string {
