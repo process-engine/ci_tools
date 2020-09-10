@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
 
-import { readFileSync } from 'fs';
+import { getProductName } from '../../names/product_name';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
 import { getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
@@ -72,7 +72,7 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
     })
     .join('\n');
 
-  const productName = getPackageName();
+  const productName = getProductName(mode);
 
   const changelogText = `
 *${productName} ${nextVersionTag} was released!*
@@ -94,13 +94,6 @@ async function getCommitFromApi(ref: string): Promise<CommitFromApi> {
   const response = await fetch(url);
 
   return response.json();
-}
-
-function getPackageName(): string {
-  const content = readFileSync('package.json').toString();
-  const json = JSON.parse(content);
-
-  return json.name;
 }
 
 function printInfo(
