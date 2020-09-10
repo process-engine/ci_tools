@@ -27,6 +27,16 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  */
 export async function getReleaseAnnouncement(mode: string): Promise<string> {
   const startRef: string = await getPrevVersionTag(mode);
+  const nextVersion = await getPackageVersion(mode);
+  const nextVersionTag = getVersionTag(nextVersion);
+  const productName = await getProductName(mode);
+
+  const releaseHeadline = `*${productName} ${nextVersionTag} was released!*`;
+
+  if (startRef == null) {
+    return releaseHeadline;
+  }
+
   const apiResponse = await getCommitFromApi(startRef);
 
   if (apiResponse.commit === undefined) {
@@ -42,13 +52,11 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
 
   const endRef = 'HEAD';
 
-  const nextVersion = await getPackageVersion(mode);
   if (nextVersion == null) {
     console.error(chalk.red(`${BADGE}Could not determine nextVersion!`));
     process.exit(3);
   }
 
-  const nextVersionTag = getVersionTag(nextVersion);
 
   printInfo(startRef, startDate, endRef, nextVersion, nextVersionTag);
 
@@ -72,10 +80,8 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
     })
     .join('\n');
 
-  const productName = await getProductName(mode);
-
   const changelogText = `
-*${productName} ${nextVersionTag} was released!*
+${releaseHeadline}
 
 The new version includes the following changes:
 
