@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
 
-import { getProductName } from '../../names/product_name';
+import { getProductName } from '../../product_name/product_name';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
 import { getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
