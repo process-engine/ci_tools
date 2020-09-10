@@ -1,7 +1,7 @@
-import { getProductNameDotnet } from './product_name/dotnet';
-import { getProductNameNode } from './product_name/node';
+import { getProductNameDotnet } from './package_product_name/dotnet';
+import { getProductNameNode } from './package_product_name/node';
 import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE, PACKAGE_MODE_PYTHON } from '../contracts/modes';
-import { getProductNamePython } from './product_name/python';
+import { getProductNamePython } from './package_product_name/python';
 
 export async function getProductName(mode: string): Promise<string> {
   switch (mode) {
