@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
 
-import { readFileSync } from 'fs';
+import { getProductName } from '../../product_name/product_name';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
 import { getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
@@ -27,6 +27,16 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  */
 export async function getReleaseAnnouncement(mode: string): Promise<string> {
   const startRef: string = await getPrevVersionTag(mode);
+  const nextVersion = await getPackageVersion(mode);
+  const nextVersionTag = getVersionTag(nextVersion);
+  const productName = await getProductName(mode);
+
+  const releaseHeadline = `*${productName} ${nextVersionTag} was released!*`;
+
+  if (startRef == null) {
+    return releaseHeadline;
+  }
+
   const apiResponse = await getCommitFromApi(startRef);
 
   if (apiResponse.commit === undefined) {
@@ -42,13 +52,10 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
 
   const endRef = 'HEAD';
 
-  const nextVersion = await getPackageVersion(mode);
   if (nextVersion == null) {
     console.error(chalk.red(`${BADGE}Could not determine nextVersion!`));
     process.exit(3);
   }
-
-  const nextVersionTag = getVersionTag(nextVersion);
 
   printInfo(startRef, startDate, endRef, nextVersion, nextVersionTag);
 
@@ -72,10 +79,8 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
     })
     .join('\n');
 
-  const productName = getPackageName();
-
   const changelogText = `
-*${productName} ${nextVersionTag} was released!*
+${releaseHeadline}
 
 The new version includes the following changes:
 
@@ -94,13 +99,6 @@ async function getCommitFromApi(ref: string): Promise<CommitFromApi> {
   const response = await fetch(url);
 
   return response.json();
-}
-
-function getPackageName(): string {
-  const content = readFileSync('package.json').toString();
-  const json = JSON.parse(content);
-
-  return json.name;
 }
 
 function printInfo(
