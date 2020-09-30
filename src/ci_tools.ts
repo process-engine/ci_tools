@@ -18,9 +18,11 @@ import * as PublishReleasenotesOnSlack from './commands/publish-releasenotes-on-
 import * as GetVersion from './commands/get-version';
 import * as SetVersion from './commands/set-version';
 import * as IsNugetPackagePublished from './legacy/is-nuget-package-published';
+import * as ReplaceDistTagsWithRealVersions from './commands/replace-dist-tags-with-real-versions';
 
 import { getGitBranch } from './git/git';
 import { PRIMARY_BRANCHES } from './versions/increment_version';
+import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE, PACKAGE_MODE_PYTHON } from './contracts/modes';
 
 const COMMAND_HANDLERS = {
   'commit-and-tag-version': CommitAndTagVersion,
@@ -34,7 +36,8 @@ const COMMAND_HANDLERS = {
   'publish-releasenotes-on-slack': PublishReleasenotesOnSlack,
   'get-version': GetVersion,
   'set-version': SetVersion,
-  'is-nuget-package-published': IsNugetPackagePublished
+  'is-nuget-package-published': IsNugetPackagePublished,
+  'replace-dist-tags-with-real-versions': ReplaceDistTagsWithRealVersions,
 };
 
 // Internal commands are only used to develop ci_tools and are not intended for public consumption.
@@ -45,7 +48,7 @@ const INTERNAL_COMMAND_HANDLERS = {
   'setup-git-and-npm-connections': SetupGitAndNpmConnections
 };
 
-const DEFAULT_MODE = 'node';
+const DEFAULT_MODE = PACKAGE_MODE_NODE;
 
 async function run(originalArgv: string[]): Promise<void> {
   const [, , ...args] = originalArgv;
@@ -57,8 +60,8 @@ async function run(originalArgv: string[]): Promise<void> {
     process.exit(1);
   }
 
-  if (mode !== 'dotnet' && mode !== DEFAULT_MODE) {
-    console.error('Mode must be set to `dotnet` or `node`. \nDefault is `node`');
+  if (mode !== PACKAGE_MODE_NODE && mode !== PACKAGE_MODE_DOTNET && mode !== PACKAGE_MODE_PYTHON) {
+    console.error('Mode must be set to `dotnet`, `node` or `python`. \nDefault is `node`');
     process.exit(1);
   }
 

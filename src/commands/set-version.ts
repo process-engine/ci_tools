@@ -9,7 +9,7 @@ Sets the package version.
 
 OPTIONS
 
---mode      sets the package mode [dotnet, node] (default: node)
+--mode      sets the package mode [dotnet, node, python] (default: node)
 --version   the version to be set
 `;
 

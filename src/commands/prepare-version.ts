@@ -17,14 +17,15 @@ const BADGE = `[${COMMAND_NAME}]\t`;
 const DEFAULT_MODE = 'node';
 
 const DOC = `
-Adjusts the pre-version in your project file automatically (\`package.json\` for Node or \`*.csproj\` for C# .NET).
+Adjusts the pre-version in your project file automatically (\`package.json\` for Node, \`*.csproj\` for C# .NET
+or \`setup.py\` for Python).
 
 OPTIONS
 
 --allow-dirty-workdir   allows for a "dirty" Git workdir
 --dry                   performs a dry which does not changes any files
 --force                 overrides all plausibility checks and increments the pre-version
---mode                  sets the package mode [dotnet, node] (default: node)
+--mode                  sets the package mode [dotnet, node, python] (default: node)
 
 EXAMPLES
 
