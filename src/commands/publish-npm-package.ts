@@ -96,8 +96,8 @@ async function ensureVersionIsAvailable(packageName: string, packageVersion: str
   let packageVersionFound = false;
 
   // TODO: It is certainly debatable on what the best settings would be here.
-  // For now, a window of 30 seconds is granted, before the publishing is regarded as failure.
-  const maxNumberOfRetries = 60;
+  // For now, a window of 30 minutes is granted, before the publishing is regarded as failure.
+  const maxNumberOfRetries = 3600;
   const timeoutBetweenRetriesInMs = 500;
   let currentTry = 0;
 
@@ -108,7 +108,7 @@ async function ensureVersionIsAvailable(packageName: string, packageVersion: str
     if (packageVersionFound) {
       break;
     } else {
-      console.log(chalk.yellow(`${BADGE}Version '${packageVersion}' not found. Retrying in 500ms...`));
+      console.log(chalk.yellow(`${BADGE}Version '${packageVersion}' not found. Retrying in ${timeoutBetweenRetriesInMs}ms...`));
       currentTry++;
       await new Promise((resolve): any => setTimeout(resolve, timeoutBetweenRetriesInMs));
     }
