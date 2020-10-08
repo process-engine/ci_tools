@@ -20,12 +20,18 @@ To use this command, an incoming webhook for slack is required and must be confi
 OPTIONS
 
 --mode    sets the package mode [dotnet, node, python] (default: node)
+--addVersionChange    adds version changes to the changelog, it can be used several times
 `;
 // DOC: see above
 
 export async function run(...args): Promise<boolean> {
   const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
   const mode = argv.mode;
+  let additionalVersionChanges;
+  if (argv.addVersionChange != null) {
+    additionalVersionChanges = Array.isArray(argv.addVersionChange) ? argv.addVersionChange : [argv.addVersionChange];
+  }
+
   setupGit();
 
   await printInfo(mode);
@@ -33,7 +39,7 @@ export async function run(...args): Promise<boolean> {
   annotatedSh('git config user.name');
   annotatedSh('git config user.email');
 
-  const releasenotes = await getReleaseAnnouncement(mode);
+  const releasenotes = await getReleaseAnnouncement(mode, additionalVersionChanges);
 
   await sendSlackMessage(releasenotes);
 
@@ -46,6 +52,10 @@ export function getShortDoc(): string {
 
 export function printHelp(): void {
   console.log(`Usage: ci_tools ${COMMAND_NAME} [--mode <MODE>]`);
+  console.log(`Usage: ci_tools ${COMMAND_NAME} [--addVersionChange <NPM_PACKAGE_NAME>]`);
+  console.log(
+    `Usage: ci_tools ${COMMAND_NAME} [--addVersionChange <NPM_PACKAGE_NAME>] [--addVersionChange <NPM_PACKAGE_NAME>] ...`
+  );
   console.log('');
   console.log(DOC.trim());
 }
