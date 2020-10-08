@@ -4,7 +4,14 @@ import * as moment from 'moment';
 
 import { getProductName } from '../../product_name/product_name';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
-import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
+import {
+  getCurrentApiBaseUrlWithAuth,
+  getCurrentRepoNameWithOwner,
+  getDiffFromStartToCurrentHead,
+  getGitBranch,
+  getGitCommitListSince,
+  getStartCommit
+} from '../../git/git';
 import { getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
 import { getPackageVersion } from '../../versions/package_version';
 
@@ -25,7 +32,7 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  * - Git: latest commits and tags
  * - GitHub: PRs
  */
-export async function getReleaseAnnouncement(mode: string): Promise<string> {
+export async function getReleaseAnnouncement(mode: string, additionalVersionAnnouncements?: string[]): Promise<string> {
   const startRef: string = await getPrevVersionTag(mode);
   const nextVersion = await getPackageVersion(mode);
   const nextVersionTag = getVersionTag(nextVersion);
@@ -79,12 +86,35 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
     })
     .join('\n');
 
+  const packageVersionChangeArray = [];
+  if (additionalVersionAnnouncements != null) {
+    const startCommit = getStartCommit(startDate, getGitBranch());
+    const diff = getDiffFromStartToCurrentHead(startCommit, 'package.json').split('\n');
+
+    additionalVersionAnnouncements.forEach((packageName: string) => {
+      const filteredByPackage = diff.filter((diffEntry) => diffEntry.includes(`"${packageName}":`));
+      const entryStartsWithMinus = filteredByPackage.some((entry) => entry.trim().startsWith('-'));
+      const entryStartsWithPlus = filteredByPackage.some((entry) => entry.trim().startsWith('+'));
+
+      if (filteredByPackage.length === 2 && entryStartsWithMinus && entryStartsWithPlus) {
+        const packageVersionObject = getPackageVersionObject(filteredByPackage, packageName);
+        packageVersionChangeArray.push(packageVersionObject);
+      }
+    });
+  }
+
   const changelogText = `
 ${releaseHeadline}
 
 The new version includes the following changes:
 
 ${mergedPullRequestsText}
+
+${packageVersionChangeArray.length !== 0 ? 'The following dependencies were updated:' : ''}
+
+${packageVersionChangeArray.map((packageWithVersionChanges) => {
+  return `- ${packageWithVersionChanges.package} was updated from ${packageWithVersionChanges.versionChange.previousVersion} to ${packageWithVersionChanges.versionChange.currentVersion} \n`;
+})}
 
 *For a more detailed changelog have a look at:* http://github.com/${getCurrentRepoNameWithOwner()}/releases/tag/${nextVersionTag}
   `
@@ -144,4 +174,40 @@ function filterPullRequestsForBranch(
   );
 
   return filteredPrs;
+}
+
+function getPackageVersionObject(versionChanges: string[], packageName: string): any {
+  const previous = versionChanges.find((change) => change.trim().startsWith('-'));
+  let previousVersion = previous
+    .replace('-', '')
+    .trim()
+    .replace(`"${packageName}":`, '');
+  const indexOfFirstDoubleQuoteForPreviousVersion = previousVersion.indexOf('"');
+  const indexOfLastDoubleQuoteForPreviousVersion = previousVersion.lastIndexOf('"');
+
+  previousVersion = previousVersion.substring(
+    indexOfFirstDoubleQuoteForPreviousVersion + 1,
+    indexOfLastDoubleQuoteForPreviousVersion
+  );
+
+  const current = versionChanges.find((change) => change.trim().startsWith('+'));
+  let currentVersion = current
+    .replace('+', '')
+    .trim()
+    .replace(`"${packageName}":`, '');
+  const indexOfFirstDoubleQuoteForCurrentVersion = currentVersion.indexOf('"');
+  const indexOfLastDoubleQuoteForCurrentVersion = currentVersion.lastIndexOf('"');
+
+  currentVersion = currentVersion.substring(
+    indexOfFirstDoubleQuoteForCurrentVersion + 1,
+    indexOfLastDoubleQuoteForCurrentVersion
+  );
+
+  return {
+    package: packageName,
+    versionChange: {
+      previousVersion: previousVersion,
+      currentVersion: currentVersion
+    }
+  };
 }
