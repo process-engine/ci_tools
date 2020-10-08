@@ -128,6 +128,18 @@ export function isGitHubRemote(): boolean {
   return matchData != null;
 }
 
+export function getStartCommit(startDate: string, branch: string): string {
+  const commitHash = sh(`git rev-list -1 --before="${startDate}" "${branch}"`);
+
+  return commitHash.trim();
+}
+
+export function getDiffFromStartToCurrentHead(startCommit: string, filename: string): string {
+  const diff = sh(`git diff ${startCommit} HEAD -- "${filename}"`);
+
+  return diff.trim();
+}
+
 function getGitBranchFromGit(): string {
   const outputLines = sh('git branch')
     .trim()
