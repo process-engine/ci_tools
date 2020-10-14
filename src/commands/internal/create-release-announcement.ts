@@ -30,9 +30,19 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
   const nextVersionTag = getVersionTag(nextVersion);
 
   const releaseHeadline = `*${nextVersionTag} was released!*`;
+  const releaseTagLinkFooter = `*For a more detailed changelog have a look at:* http://github.com/${getCurrentRepoNameWithOwner()}/releases/tag/${nextVersionTag}`;
 
   if (startRef == null) {
-    return releaseHeadline;
+
+    const changelogText = `
+${releaseHeadline}
+
+${releaseTagLinkFooter}
+  `
+    .replace('`', "'")
+    .trim();
+
+    return changelogText;
   }
 
   const apiResponse = await getCommitFromApi(startRef);
@@ -84,7 +94,7 @@ The new version includes the following changes:
 
 ${mergedPullRequestsText}
 
-*For a more detailed changelog have a look at:* http://github.com/${getCurrentRepoNameWithOwner()}/releases/tag/${nextVersionTag}
+${releaseTagLinkFooter}
   `
     .replace('`', "'")
     .trim();
