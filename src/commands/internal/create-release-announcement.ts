@@ -32,7 +32,16 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
   const releaseHeadline = `*${nextVersionTag} was released!*`;
 
   if (startRef == null) {
-    return releaseHeadline;
+
+    const changelogText = `
+    ${releaseHeadline}
+
+    *For a more detailed changelog have a look at:* http://github.com/${getCurrentRepoNameWithOwner()}/releases/tag/${nextVersionTag}
+      `
+    .replace('`', "'")
+    .trim();
+
+    return changelogText;
   }
 
   const apiResponse = await getCommitFromApi(startRef);
