@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
 
-import { getProductName } from '../../product_name/product_name';
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
 import { getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
@@ -29,9 +28,8 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
   const startRef: string = await getPrevVersionTag(mode);
   const nextVersion = await getPackageVersion(mode);
   const nextVersionTag = getVersionTag(nextVersion);
-  const productName = await getProductName(mode);
 
-  const releaseHeadline = `*${productName} ${nextVersionTag} was released!*`;
+  const releaseHeadline = `*${nextVersionTag} was released!*`;
 
   if (startRef == null) {
     return releaseHeadline;
