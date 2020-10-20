@@ -11,6 +11,7 @@ export type PullRequest = {
   headSha: string;
   mergeCommitSha: string;
   mergedAt: string;
+  isBreakingChange: boolean;
 };
 
 const PULL_REQUEST_INDEX_API_URI = getCurrentApiBaseUrlWithAuth('/pulls?state=closed');
@@ -27,13 +28,18 @@ async function fetchPullRequests(since: string): Promise<PullRequest[]> {
 
   return pullRequestsSince.map(
     (pr: PullRequestFromApi): PullRequest => {
+      const isBreakingChange = pr.labels.find(
+        (label: any): boolean => label.name.toLowerCase().includes('breaking')
+      );
+
       return {
         number: pr.number,
         title: pr.title,
         closedIssueNumbers: findIssueNumbers(pr.body),
         mergeCommitSha: pr.merge_commit_sha,
         headSha: pr.head.sha,
-        mergedAt: pr.merged_at
+        mergedAt: pr.merged_at,
+        isBreakingChange: isBreakingChange,
       };
     }
   );
