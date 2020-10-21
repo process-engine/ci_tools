@@ -83,6 +83,10 @@ ${releaseTagLinkFooter}
     .map((pr: PullRequest): string => {
       const title = ensureSpaceAfterLeadingEmoji(pr.title);
 
+      if (pr.isBreakingChange) {
+        return `- BREAKING: ${title}`;
+      }
+
       return `- ${title}`;
     })
     .join('\n');

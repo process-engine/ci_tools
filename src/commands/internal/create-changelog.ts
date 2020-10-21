@@ -106,6 +106,10 @@ export async function getChangelogText(mode: string, startRef: string): Promise<
       const mergedAt = moment(pr.mergedAt).format('YYYY-MM-DD');
       const title = ensureSpaceAfterLeadingEmoji(pr.title);
 
+      if (pr.isBreakingChange) {
+        return `- #${pr.number} BREAKING: ${title} (merged ${mergedAt})`;
+      }
+
       return `- #${pr.number} ${title} (merged ${mergedAt})`;
     })
     .join('\n');
