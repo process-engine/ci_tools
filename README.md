@@ -46,7 +46,7 @@ Zum anderen vermeiden wir, uns bei den kritischsten Vorgängen unseres Release-K
 
 **Prinzip 2: So wenig Kommandos wie möglich, so viele wie nötig**
 
-Die Kommandos der CI Tools beschreiben zusammenhängende Vorgänge, die sich über unsere Repos gleichen.
+Die Kommandos der CI Tools beschreiben zusammenhängende Vorgänge, die sich über unsere Repositorys gleichen.
 
 Beispiele:
 
