@@ -4,7 +4,7 @@ Allgemeines Tooling, welches im Rahmen unseres Release-Prozesses verwendet wird.
 
 ## Was sind die Ziele dieses Projekts?
 
-Automatisierung.
+Belastbare Automatisierung kritischer CI-Workflows.
 
 ## Wie kann ich das Projekt aufsetzen?
 
@@ -30,54 +30,35 @@ $ npm install @process-engine/ci_tools
 $ ci_tools --help
 ```
 
-### Legacy Scripts
+### Philosophie
 
-**WICHTIG** Die Legacy Scripts sind nur bis v2 der ci_tools verfügabr!
+Die `ci_tools` automatisieren Teilschritte unseres Release-Prozesses, welche andernfalls manuell ausgeführt werden müssten.
 
-CI Tools wurden mit Version `2.0.0` komplett überarbeitet und neu ausgerichtet.
+**Prinzip 1: Es gibt keine Abkürzungen**
 
-Die folgenden "Legacy Scripts" wurden in ihrer Funktionalität erhalten:
+Die Automatisierung nimmt keine "Abkürzungen", sondern erledigt eine Aufgabe in der gleichen Art und Weise, wie die manuelle Erledigung durch einen unserer Entwickler ablaufen würde.
 
-#### Create GitHub Release
+Das bedeudet, dass die `ci_tools` bspw. genau so mit Git committen, Releases taggen und GitHub-Releases editieren wie ein Mensch das sinnvollerweise tun würde.
 
-This script interfaces with the GitHub API to create new releases on the
-repository page.
+Hierdurch wird zum einen ermöglicht, dass bei einem Totalausfall der CI-Pipeline die entsprechenden Befehle auch an einem anderem Ort, zur Not einem Entwicklerrechner ausführbar sind.
 
-**Synopsis**
+**Prinzip 2: So wenig Kommandos wie möglich, so viele wie nötig**
 
-```
-create-github-release <github namespace> <github repository> <version to release> <target commit> <is draft> <is prerelease> [files to upload...]
-```
+Die Kommandos der CI Tools beschreiben zusammenhängende Vorgänge, die sich über unsere Repos gleichen.
 
-**Example usage:**
+Beispiele:
 
-```bash
-RELEASE_GH_TOKEN="InsertGitHubTokenHere" create-github-release process-engine bpmn-studio 3.0.0 master false true dist/bpmn-studio.dmg CHANGELOG.md
-```
+- Version gemäß Release-Prozess-Konzept hochziehen
+- aktuelle Version committen, taggen und pushen (mit Changelog als Body des Commits/Tags, danach einmal das GitHub-Release öffnen und speichern, um den Markdown-Formatter von GitHub zu aktivieren)
 
-This will create a new release for the tag `v3.0.0` in the repository
-`process-engine/bpmn-studio`. The files `dist/bpmn-studio.dmg` and
-`CHANGELOG.md` will be attached to the release.
+Wir stellen mit den CI Tools sicher, dass bei diesen Vorgängen bestimmte Vorbedingungen erfüllt sind und
 
-#### Is NuGet Package Published
+**Wichtig:** Es werden keine Shell-Befehle gewrappt/abstrahiert, die genauso gut "flach" im jeweiligen CI-Workflow stehen könnten, insbesondere, wenn es sich um projekt-/programmiersprachen-spezifische Einzeiler handelt.
 
-This script uses the NuGet API to check if a specified version of a given
-package is published.
+Wir wollen an dieser Stelle vermeiden, dass wir Dinge abstrahieren, die auch gut ohne Abstraktion funktioneren.
 
-It will return either `true` or `false`. A non zero exit code indicates an
-error occurred.
+So gibt es bspw. bewusst *kein* magisches Build- oder Test-Kommando in den CI Tools, welches für verschiedene Programmiersprachen automatisch den *"richtigen"* Build- oder Test-Befehl ausführt, da die Entwickler innerhalb eines Projekts am Besten wissen, mit welchen Befehlen/Tools/Parametern sie am *passendsten* bauen/testen.
 
-**Synopsis**
+# Wen kann ich auf das Projekt ansprechen?
 
-```
-is-nuget-package-published <NuGet V3 feed URL> <package> <version>
-```
-
-**Example usage:**
-
-```bash
-NUGET_ACCESS_TOKEN="NuGetAPITokenHere" is-nuget-packet-published https://5minds.myget.org/F/process_engine_public/api/v3/index.json ProcessEngine.Runtime 3.8.2-pre1
-```
-
-This will check if the package `ProcessEngine.Runtime`, version `3.8.2-pre1` is
-published on the feed `process_engine_public`.
+* René Föhring
