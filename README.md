@@ -40,7 +40,7 @@ Die Automatisierung nimmt keine "Abkürzungen", sondern erledigt eine Aufgabe in
 
 Das bedeudet, dass die `ci_tools` bspw. genau so mit Git committen, Releases taggen und GitHub-Releases editieren wie ein Mensch das sinnvollerweise tun würde.
 
-Hierdurch wird zum einen ermöglicht, dass bei einem Totalausfall der CI-Pipeline die entsprechenden Befehle auch an einem anderem Ort, zur Not einem Entwicklerrechner ausführbar sind.
+Hierdurch wird zum einen ermöglicht, dass bei einem Totalausfall der CI-Pipeline die entsprechenden Befehle auch an einem anderem Ort, zur Not einem Entwicklerrechner, ausführbar sind.
 
 Zum anderen vermeiden wir, uns bei den kritischsten Vorgängen unseres Release-Konzepts unfreiwillig von CI-spezifischen Plugins und deren Möglichkeiten abhängig zu machen.
 
