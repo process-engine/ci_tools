@@ -40,18 +40,21 @@ Die Automatisierung nimmt keine "Abkürzungen", sondern erledigt eine Aufgabe in
 
 Das bedeudet, dass die `ci_tools` bspw. genau so mit Git committen, Releases taggen und GitHub-Releases editieren wie ein Mensch das sinnvollerweise tun würde.
 
-Hierdurch wird zum einen ermöglicht, dass bei einem Totalausfall der CI-Pipeline die entsprechenden Befehle auch an einem anderem Ort, zur Not einem Entwicklerrechner ausführbar sind.
+Hierdurch wird zum einen ermöglicht, dass bei einem Totalausfall der CI-Pipeline die entsprechenden Befehle auch an einem anderem Ort, zur Not einem Entwicklerrechner, ausführbar sind.
+
+Zum anderen vermeiden wir, uns bei den kritischsten Vorgängen unseres Release-Konzepts unfreiwillig von CI-spezifischen Plugins und deren Möglichkeiten abhängig zu machen.
 
 **Prinzip 2: So wenig Kommandos wie möglich, so viele wie nötig**
 
-Die Kommandos der CI Tools beschreiben zusammenhängende Vorgänge, die sich über unsere Repos gleichen.
+Die Kommandos der CI Tools beschreiben zusammenhängende Vorgänge, die sich über unsere Repositorys gleichen.
 
 Beispiele:
 
 - Version gemäß Release-Prozess-Konzept hochziehen
 - aktuelle Version committen, taggen und pushen (mit Changelog als Body des Commits/Tags, danach einmal das GitHub-Release öffnen und speichern, um den Markdown-Formatter von GitHub zu aktivieren)
 
-Wir stellen mit den CI Tools sicher, dass bei diesen Vorgängen bestimmte Vorbedingungen erfüllt sind und
+Wir stellen mit den CI Tools sicher, dass bei diesen Vorgängen bestimmte Vorbedingungen erfüllt sind.
+In einigen Fällen prüfen wir auch den erreichten Zustand eines Vorgangs (unabhängig vom "exit status" des letzten Shell-Befehls).
 
 **Wichtig:** Es werden keine Shell-Befehle gewrappt/abstrahiert, die genauso gut "flach" im jeweiligen CI-Workflow stehen könnten, insbesondere, wenn es sich um projekt-/programmiersprachen-spezifische Einzeiler handelt.
 
