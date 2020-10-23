@@ -104,10 +104,10 @@ export async function getChangelogText(mode: string, startRef: string): Promise<
   const mergedPullRequestsText = mergedPullRequests
     .map((pr: PullRequest): string => {
       const mergedAt = moment(pr.mergedAt).format('YYYY-MM-DD');
-      const title = ensureSpaceAfterLeadingEmoji(pr.title);
 
-      if (pr.isBreakingChange) {
-        return `- #${pr.number} BREAKING: ${title} (merged ${mergedAt})`;
+      let title = ensureSpaceAfterLeadingEmoji(pr.title);
+      if (pr.isBreakingChange && !title.toLowerCase().includes('breaking')) {
+        title = `**BREAKING CHANGE:** ${title}`;
       }
 
       return `- #${pr.number} ${title} (merged ${mergedAt})`;
@@ -115,7 +115,10 @@ export async function getChangelogText(mode: string, startRef: string): Promise<
     .join('\n');
   const issuesClosedByPullRequestText = issuesClosedByPullRequest
     .map((issue: IssueFromApi): string => {
-      const title = ensureSpaceAfterLeadingEmoji(issue.title);
+      let title = ensureSpaceAfterLeadingEmoji(issue.title);
+      if (issue.isBreakingChange && !title.toLowerCase().includes('breaking')) {
+        title = `**BREAKING CHANGE:** ${title}`;
+      }
 
       return `- #${issue.number} ${title}`;
     })
@@ -152,7 +155,18 @@ async function getClosedIssuesFromApi(since: string, page: number = 1): Promise<
   const url = ISSUES_API_URI.replace(':since', since).replace(':page', page.toString());
   const response = await fetch(url);
   const issues = await response.json();
-  const relevantIssues = issues.filter((issue: IssueFromApi): boolean => !issue.pull_request);
+  const relevantIssues = issues
+    .filter((issue: IssueFromApi): boolean => !issue.pull_request)
+    .map((issue: IssueFromApi) => {
+      const isBreakingChange = issue.labels.find((label: any): boolean =>
+        label.name.toLowerCase().includes('breaking')
+      );
+
+      return {
+        ...issue,
+        isBreakingChange
+      };
+    });
 
   if (relevantIssues.length > 0) {
     const nextPageIssues = await getClosedIssuesFromApi(since, page + 1);

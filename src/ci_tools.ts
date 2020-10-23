@@ -7,6 +7,7 @@ import * as AutoPublishIfApplicable from './commands/internal/auto-publish-if-ap
 import * as CommitAndTagVersion from './commands/commit-and-tag-version';
 import * as CopyAndCommitVersionForSubpackage from './commands/copy-and-commit-version-for-subpackage';
 import * as CreateChangelog from './commands/internal/create-changelog';
+import * as CreateReleaseAnnouncement from './commands/internal/create-release-announcement';
 import * as FailOnPreVersionDependencies from './commands/fail-on-pre-version-dependencies';
 import * as NpmInstallOnly from './commands/npm-install-only';
 import * as PrepareVersion from './commands/prepare-version';
@@ -37,13 +38,14 @@ const COMMAND_HANDLERS = {
   'get-version': GetVersion,
   'set-version': SetVersion,
   'is-nuget-package-published': IsNugetPackagePublished,
-  'replace-dist-tags-with-real-versions': ReplaceDistTagsWithRealVersions,
+  'replace-dist-tags-with-real-versions': ReplaceDistTagsWithRealVersions
 };
 
 // Internal commands are only used to develop ci_tools and are not intended for public consumption.
 const INTERNAL_COMMAND_HANDLERS = {
   'auto-publish-if-applicable': AutoPublishIfApplicable,
   'create-changelog': CreateChangelog,
+  'create-release-announcement': CreateReleaseAnnouncement,
   'update-github-release': UpdateGithubRelease,
   'setup-git-and-npm-connections': SetupGitAndNpmConnections
 };
