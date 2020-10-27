@@ -4,11 +4,22 @@ import * as moment from 'moment';
 import * as yargsParser from 'yargs-parser';
 
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
-import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
+import {
+  getCurrentApiBaseUrlWithAuth,
+  getCurrentRepoNameWithOwner,
+  getGitCommitListSince,
+  getGitTagDate,
+  getGitTagList
+} from '../../git/git';
 import { getNextVersion, getPrevVersionTag, getVersionTag } from '../../versions/git_helpers';
+import { parseVersion } from '../../versions/parse_version';
 
 type CommitFromApi = any;
 type IssueFromApi = any;
+type PreviousPreVersion = {
+  tag: string;
+  date: Date;
+};
 
 const GITHUB_REPO = getCurrentRepoNameWithOwner();
 const COMMIT_API_URI = getCurrentApiBaseUrlWithAuth('/commits/:commit_sha');
@@ -101,26 +112,51 @@ export async function getChangelogText(mode: string, startRef: string): Promise<
     process.exit(2);
   }
 
+  const previousPreVersions = getPreviousPreVersionsInReleaseChannel(nextVersion);
+  const shouldShowPreviousPreVersions = previousPreVersions.length > 0;
+  let currentPreviousPreVersion = shouldShowPreviousPreVersions ? { tag: nextVersion, date: new Date() } : null;
+  let currentPreviousPreVersionIndex = -1;
+
   const mergedPullRequestsText = mergedPullRequests
     .map((pr: PullRequest): string => {
-      const mergedAt = moment(pr.mergedAt).format('YYYY-MM-DD');
+      let text = '';
+      const mergedAtDate = moment(pr.mergedAt);
+      const mergedAtString = mergedAtDate.format('YYYY-MM-DD');
+      const introducedInCurrentPreviousPreVersion =
+        currentPreviousPreVersion != null && mergedAtDate.isBefore(currentPreviousPreVersion.date);
 
-      let title = ensureSpaceAfterLeadingEmoji(pr.title);
-      if (pr.isBreakingChange && !title.toLowerCase().includes('breaking')) {
-        title = `**BREAKING CHANGE:** ${title}`;
+      if (introducedInCurrentPreviousPreVersion) {
+        const header =
+          currentPreviousPreVersionIndex === -1
+            ? `${currentPreviousPreVersion.tag} (this release)`
+            : `[${currentPreviousPreVersion.tag}](https://github.com/${GITHUB_REPO}/releases/tag/${currentPreviousPreVersion.tag})`;
+
+        currentPreviousPreVersionIndex += 1;
+        currentPreviousPreVersion = previousPreVersions[currentPreviousPreVersionIndex];
+
+        text += `\n**${header}**\n\n`;
       }
 
-      return `- #${pr.number} ${title} (merged ${mergedAt})`;
+      const title = ensureSpaceAfterLeadingEmoji(pr.title);
+      let breakingPrefix = '';
+      if (pr.isBreakingChange && !title.toLowerCase().includes('breaking')) {
+        breakingPrefix = `**BREAKING CHANGE:** `;
+      }
+
+      text += `- ${breakingPrefix}#${pr.number} ${title} (merged ${mergedAtString})`;
+
+      return text;
     })
     .join('\n');
   const issuesClosedByPullRequestText = issuesClosedByPullRequest
     .map((issue: IssueFromApi): string => {
-      let title = ensureSpaceAfterLeadingEmoji(issue.title);
+      const title = ensureSpaceAfterLeadingEmoji(issue.title);
+      let breakingPrefix = '';
       if (issue.isBreakingChange && !title.toLowerCase().includes('breaking')) {
-        title = `**BREAKING CHANGE:** ${title}`;
+        breakingPrefix = `**BREAKING CHANGE:** `;
       }
 
-      return `- #${issue.number} ${title}`;
+      return `- ${breakingPrefix}#${issue.number} ${title}`;
     })
     .join('\n');
 
@@ -143,6 +179,29 @@ ${issuesClosedByPullRequestText || '- none'}
   `.trim();
 
   return changelogText;
+}
+
+function getPreviousPreVersionsInReleaseChannel(nextVersion: string): PreviousPreVersion[] {
+  const nextVersionParsed = parseVersion(nextVersion);
+  const addPreviousBetaVersions = nextVersionParsed.releaseChannelName === 'beta';
+  let previousPreVersions = [];
+
+  if (addPreviousBetaVersions) {
+    const nextVersionTag = getVersionTag(nextVersion);
+    const versionWithoutReleaseChannelNumber = nextVersionTag.replace(/\d$/, '');
+    const gitTagList = getGitTagList();
+    previousPreVersions = gitTagList
+      .split('\n')
+      .filter((line: string): boolean => line.startsWith(versionWithoutReleaseChannelNumber))
+      .map((tag) => {
+        return {
+          tag: tag,
+          date: moment(getGitTagDate(tag)).toDate()
+        };
+      });
+  }
+
+  return previousPreVersions;
 }
 
 async function getCommitFromApi(ref: string): Promise<CommitFromApi> {
