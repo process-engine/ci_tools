@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fetch from 'node-fetch';
 import * as moment from 'moment';
+import * as yargsParser from 'yargs-parser';
 
 import { PullRequest, getMergedPullRequests } from '../../github/pull_requests';
 import { getCurrentApiBaseUrlWithAuth, getCurrentRepoNameWithOwner, getGitCommitListSince } from '../../git/git';
@@ -13,6 +14,8 @@ const COMMIT_API_URI = getCurrentApiBaseUrlWithAuth('/commits/:commit_sha');
 
 const BADGE = '[create-changelog-announcement]\t';
 
+const DEFAULT_MODE = 'node';
+
 const MERGED_PULL_REQUEST_LENGTH_THRESHOLD = 100;
 
 // two weeks for feature-freeze period plus one week buffer for late releases
@@ -24,23 +27,34 @@ const CONSIDER_PULL_REQUESTS_WEEKS_BACK = 3;
  * - Git: latest commits and tags
  * - GitHub: PRs
  */
+export async function run(...args): Promise<boolean> {
+  const argv = yargsParser(args, { alias: { help: ['h'] }, default: { mode: DEFAULT_MODE } });
+  const mode = argv.mode;
+  const text = await getReleaseAnnouncement(mode);
+
+  console.log(text);
+  return true;
+}
+
 export async function getReleaseAnnouncement(mode: string): Promise<string> {
   const startRef: string = await getPrevVersionTag(mode);
   const nextVersion = await getPackageVersion(mode);
   const nextVersionTag = getVersionTag(nextVersion);
+  const repoUrl = `http://github.com/${getCurrentRepoNameWithOwner()}`;
+  const releaseTagUrl = `${repoUrl}/releases/tag/${nextVersionTag}`;
+  const getPrUrl = (number: number): string => `${repoUrl}/pulls/${number}`;
 
-  const releaseHeadline = `*${nextVersionTag} was released!*`;
-  const releaseTagLinkFooter = `*For a more detailed changelog have a look at:* http://github.com/${getCurrentRepoNameWithOwner()}/releases/tag/${nextVersionTag}`;
+  const releaseHeadline = `*${nextVersionTag}* was released!`;
+  const releaseTagLinkFooter = `Please see the <${releaseTagUrl}|full CHANGELOG> for details.`;
 
   if (startRef == null) {
-
     const changelogText = `
 ${releaseHeadline}
 
 ${releaseTagLinkFooter}
   `
-    .replace('`', "'")
-    .trim();
+      .replace('`', "'")
+      .trim();
 
     return changelogText;
   }
@@ -48,7 +62,7 @@ ${releaseTagLinkFooter}
   const apiResponse = await getCommitFromApi(startRef);
 
   if (apiResponse.commit === undefined) {
-    console.error(chalk.red(`${BADGE}${apiResponse.message}`));
+    console.error(chalk.red(`${BADGE}API responded with: ${apiResponse.message}`));
 
     process.exit(3);
   }
@@ -79,22 +93,26 @@ ${releaseTagLinkFooter}
     process.exit(2);
   }
 
+  const hasBreakingChanges = mergedPullRequests.some((pr) => pr.isBreakingChange);
+  const breakingChangesHint = hasBreakingChanges
+    ? 'Please note there are *BREAKING CHANGES*:'
+    : 'The new version includes the following changes:';
+
   const mergedPullRequestsText = mergedPullRequests
     .map((pr: PullRequest): string => {
-      const title = ensureSpaceAfterLeadingEmoji(pr.title);
-
+      let title = ensureSpaceAfterLeadingEmoji(pr.title);
       if (pr.isBreakingChange) {
-        return `- BREAKING: ${title}`;
+        title = `*BREAKING CHANGE:* ${title}`;
       }
 
-      return `- ${title}`;
+      return `- <${getPrUrl(pr.number)}|#${pr.number}> ${title}`;
     })
     .join('\n');
 
   const changelogText = `
 ${releaseHeadline}
 
-The new version includes the following changes:
+${breakingChangesHint}
 
 ${mergedPullRequestsText}
 
