@@ -114,7 +114,7 @@ export async function getChangelogText(mode: string, startRef: string): Promise<
 
   const previousPreVersions = getPreviousPreVersionsInReleaseChannel(nextVersion);
   const shouldShowPreviousPreVersions = previousPreVersions.length > 0;
-  let currentPreviousPreVersion = shouldShowPreviousPreVersions ? { tag: nextVersion, date: new Date() } : null;
+  let currentPreviousPreVersion = shouldShowPreviousPreVersions ? { tag: nextVersionTag, date: new Date() } : null;
   let currentPreviousPreVersionIndex = -1;
 
   const mergedPullRequestsText = mergedPullRequests
