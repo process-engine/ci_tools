@@ -42,7 +42,7 @@ export async function getReleaseAnnouncement(mode: string): Promise<string> {
   const nextVersionTag = getVersionTag(nextVersion);
   const repoUrl = `http://github.com/${getCurrentRepoNameWithOwner()}`;
   const releaseTagUrl = `${repoUrl}/releases/tag/${nextVersionTag}`;
-  const getPrUrl = (number: number): string => `${repoUrl}/pulls/${number}`;
+  const getPrUrl = (number: number): string => `${repoUrl}/pull/${number}`;
 
   const releaseHeadline = `*${nextVersionTag}* was released!`;
   const releaseTagLinkFooter = `Please see the <${releaseTagUrl}|full CHANGELOG> for details.`;
