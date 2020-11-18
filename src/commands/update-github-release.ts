@@ -221,7 +221,7 @@ async function createNewRelease(
   if (success) {
     const releaseId = response.data.id;
 
-    return await updateExistingRelease(octokit, repo, releaseId, null, null, assets);
+    return await updateExistingRelease(octokit, repo, releaseId, title, text, assets);
   }
 
   return success;
