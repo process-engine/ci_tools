@@ -217,7 +217,7 @@ async function createNewRelease(
     prerelease: isPrerelease
   });
 
-  const success = response.status === 200;
+  const success = response.status === 201;
   if (success) {
     const releaseId = response.data.id;
 
