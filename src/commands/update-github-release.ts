@@ -218,7 +218,6 @@ async function createNewRelease(
   });
 
   const success = response.status === 200;
-  console.log('CI Tools createReleaseResponsee: ', JSON.stringify(response, null, 2));
   if (success) {
     const releaseId = response.data.id;
 
