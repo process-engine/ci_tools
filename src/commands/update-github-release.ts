@@ -217,11 +217,11 @@ async function createNewRelease(
     prerelease: isPrerelease
   });
 
-  const success = response.status === 200;
+  const success = response.status === 201;
   if (success) {
     const releaseId = response.data.id;
 
-    await updateExistingRelease(octokit, repo, releaseId, null, null, assets);
+    return updateExistingRelease(octokit, repo, releaseId, title, text, assets);
   }
 
   return success;
