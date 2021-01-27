@@ -2,13 +2,14 @@ import * as yargsParser from 'yargs-parser';
 import { readFileSync } from 'fs';
 import chalk from 'chalk';
 
-import { getGitBranch } from '../git/git';
+import { getGitBranch, mapReleaseChannelNameToBranch } from '../git/git';
 import { getNpmTag } from '../npm/tag';
 import { getPackageVersion } from '../versions/package_version';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { setupNpm } from './internal/setup-git-and-npm-connections';
 import { sh } from '../cli/shell';
 import { isRedundantRunTriggeredBySystemUserPush } from '../versions/retry_run';
+import { parseVersion } from '../versions/parse_version';
 
 const COMMAND_NAME = 'publish-npm-package';
 const BADGE = `[${COMMAND_NAME}]\t`;
@@ -29,7 +30,7 @@ export async function run(...args): Promise<boolean> {
   const packageName = getPackageName();
   const packageVersion = await getPackageVersion(mode);
 
-  const npmPublishShellCommand = getNpmPublishShellCommand(createTagFromBranchName, isDryRun);
+  const npmPublishShellCommand = getNpmPublishShellCommand(createTagFromBranchName, isDryRun, packageVersion);
 
   setupNpm();
 
@@ -68,9 +69,13 @@ export function printHelp(): void {
   console.log(DOC.trim());
 }
 
-function getNpmPublishShellCommand(useBranchForTag: boolean, isDryRun: boolean): string {
+function getNpmPublishShellCommand(useBranchForTag: boolean, isDryRun: boolean, packageVersion: string): string {
   const dryRun = isDryRun ? '--dry-run ' : '';
-  const npmTag = getNpmTag(getGitBranch());
+  const gitBranch = getGitBranch();
+  const parsedVersion = parseVersion(packageVersion);
+  const branchName = gitBranch || mapReleaseChannelNameToBranch(parsedVersion.releaseChannelName);
+
+  const npmTag = getNpmTag(branchName);
   const tag = useBranchForTag && npmTag ? `--tag ${npmTag} ` : '';
 
   return `npm publish ${dryRun}${tag}`.trim();
@@ -108,7 +113,9 @@ async function ensureVersionIsAvailable(packageName: string, packageVersion: str
     if (packageVersionFound) {
       break;
     } else {
-      console.log(chalk.yellow(`${BADGE}Version '${packageVersion}' not found. Retrying in ${timeoutBetweenRetriesInMs}ms...`));
+      console.log(
+        chalk.yellow(`${BADGE}Version '${packageVersion}' not found. Retrying in ${timeoutBetweenRetriesInMs}ms...`)
+      );
       currentTry++;
       await new Promise((resolve): any => setTimeout(resolve, timeoutBetweenRetriesInMs));
     }
