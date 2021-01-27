@@ -1,12 +1,12 @@
 import chalk from 'chalk';
+import * as fs from 'fs';
 
 import { existsSync } from 'fs';
 import * as yargsParser from 'yargs-parser';
 
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, gitAdd, gitCommit, gitPush } from '../git/git';
 import { getVersionTag } from '../versions/git_helpers';
-import { getPackageVersion, getPackageVersionTag } from '../versions/package_version';
-import { isRedundantRunTriggeredBySystemUserPush } from '../versions/retry_run';
+import { getPackageVersion } from '../versions/package_version';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
 
@@ -34,7 +34,8 @@ export async function run(...args): Promise<boolean> {
 
   await printInfo(mode, mainPackageVersion, isDryRun, isForced);
 
-  await abortIfRetryRun(mode);
+  const subpackageLocationWithSlash = subpackageLocation.endsWith('/') ? subpackageLocation : `${subpackageLocation}/`;
+  abortIfRetryRun(mainPackageVersion, subpackageLocationWithSlash);
   abortIfSubpackageLocationIsMissing(subpackageLocation);
   abortIfDryRun(mainPackageVersion, isDryRun, isForced);
 
@@ -42,11 +43,12 @@ export async function run(...args): Promise<boolean> {
 
   const branchName = getGitBranch();
 
-  gitAdd('package.json');
+  gitAdd(`${subpackageLocationWithSlash}package.json`);
 
   sh('git status');
 
-  gitCommit(`Update Types to v${mainPackageVersion}\n\n[skip ci]`);
+  const subpackageName = getSubpackageName(subpackageLocationWithSlash);
+  gitCommit(`Update ${subpackageName} version to v${mainPackageVersion}\n\n[skip ci]`);
   gitPush('origin', branchName);
 
   return true;
@@ -62,14 +64,29 @@ export function printHelp(): void {
   console.log(DOC.trim());
 }
 
-async function abortIfRetryRun(mode: string): Promise<void> {
-  if (await isRedundantRunTriggeredBySystemUserPush(mode)) {
-    const currentVersionTag = await getPackageVersionTag(mode);
-    console.error(chalk.yellow(`${BADGE}Current commit is tagged with "${currentVersionTag}".`));
+function abortIfRetryRun(mainPackageVersion: string, subpackageLocation: string): void {
+  const subpackageVersion = getSubpackageVersion(subpackageLocation);
+  if (subpackageVersion === mainPackageVersion) {
+    console.error(chalk.yellow(`${BADGE}Subpackage version is already "${mainPackageVersion}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
 
     process.exit(0);
   }
+}
+
+function getSubpackageVersion(subpackageLocation: string): string {
+  return getSubpackageJson(subpackageLocation).version;
+}
+
+function getSubpackageName(subpackageLocation: string): string {
+  return getSubpackageJson(subpackageLocation).name;
+}
+
+function getSubpackageJson(subpackageLocation: string): any {
+  const rawdata = fs.readFileSync(`${subpackageLocation}package.json`).toString();
+  const packageJson = JSON.parse(rawdata);
+
+  return packageJson;
 }
 
 function getSubpackageLocationFromArgs(args): string | undefined {
