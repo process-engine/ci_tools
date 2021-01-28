@@ -1,6 +1,13 @@
 import { escapeForShell, sh } from '../cli/shell';
+import { parseVersion } from '../versions/parse_version';
 
 const CURRENT_BRANCH_MARKER = /^\* /;
+
+const RELEASE_CHANNEL_NAME_TO_BRANCH_MAP = {
+  alpha: 'develop',
+  beta: 'beta',
+  stable: 'master'
+};
 
 type GitCommitMessage = {
   subject: string;
@@ -27,6 +34,10 @@ export function getGitCommitSha1(ref: string = 'HEAD'): string {
 export function getGitBranch(): string {
   const gitRef = process.env.GIT_BRANCH || process.env.GITHUB_REF;
   if (gitRef != null) {
+    const gitRefIsTagReference = gitRef.startsWith('refs/tags/');
+    if (gitRefIsTagReference) {
+      return getBranchFromRefTag(gitRef);
+    }
     return gitRef.replace(/^refs\/heads\//, '');
   }
 
@@ -130,6 +141,21 @@ export function isGitHubRemote(): boolean {
   const matchData = url.match(/github.com[:/](.+)$/m);
 
   return matchData != null;
+}
+
+export function mapReleaseChannelNameToBranch(releaseChannelName: string): string {
+  return RELEASE_CHANNEL_NAME_TO_BRANCH_MAP[releaseChannelName];
+}
+
+export function getBranchFromRefTag(gitRef: string): string | null {
+  const adjustedGitRef = gitRef.replace(/^refs\/tags\//, '').replace(/^v/, '');
+  const versionFromGitRef = parseVersion(adjustedGitRef);
+
+  if (versionFromGitRef == null) {
+    return null;
+  }
+
+  return mapReleaseChannelNameToBranch(versionFromGitRef.releaseChannelName);
 }
 
 function getGitBranchFromGit(): string {
