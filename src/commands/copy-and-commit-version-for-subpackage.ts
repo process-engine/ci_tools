@@ -47,8 +47,8 @@ export async function run(...args): Promise<boolean> {
   process.chdir(cwd);
 
   const branchName = getGitBranch();
-
-  gitAdd(`${subpackageLocationWithSlash}package.json`);
+  const filename = getSubpackageFilename(mode, subpackageLocationWithSlash);
+  gitAdd(`${subpackageLocationWithSlash}${filename}`);
 
   sh('git status');
 
@@ -143,6 +143,24 @@ async function getSubpackageDotnet(subpackageLocation: string): Promise<any> {
   }
 
   return json;
+}
+
+function getSubpackageFilename(mode: string, subpackageLocation: string): string {
+  switch (mode) {
+    case PACKAGE_MODE_DOTNET:
+      const cwd = process.cwd();
+      process.chdir(subpackageLocation);
+      const filename = getCsprojPath();
+      process.chdir(cwd);
+
+      return filename;
+    case PACKAGE_MODE_NODE:
+      return 'package.json';
+    case PACKAGE_MODE_PYTHON:
+      return 'setup.py';
+    default:
+      break;
+  }
 }
 
 function getSubpackageLocationFromArgs(args): string | undefined {
