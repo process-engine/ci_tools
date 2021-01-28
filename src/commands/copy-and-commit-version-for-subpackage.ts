@@ -6,9 +6,11 @@ import * as yargsParser from 'yargs-parser';
 
 import { getGitBranch, getGitTagList, getGitTagsFromCommit, gitAdd, gitCommit, gitPush } from '../git/git';
 import { getVersionTag } from '../versions/git_helpers';
-import { getPackageVersion } from '../versions/package_version';
+import { getPackageVersion, setPackageVersion } from '../versions/package_version';
 import { printMultiLineString } from '../cli/printMultiLineString';
 import { sh } from '../cli/shell';
+import { PACKAGE_MODE_DOTNET, PACKAGE_MODE_NODE, PACKAGE_MODE_PYTHON } from '../contracts/modes';
+import { getCsprojAsObject, getCsprojPath } from '../versions/package_version/dotnet';
 
 const COMMAND_NAME = 'copy-and-commit-version-for-subpackage';
 const BADGE = `[${COMMAND_NAME}]\t`;
@@ -35,11 +37,14 @@ export async function run(...args): Promise<boolean> {
   await printInfo(mode, mainPackageVersion, isDryRun, isForced);
 
   const subpackageLocationWithSlash = subpackageLocation.endsWith('/') ? subpackageLocation : `${subpackageLocation}/`;
-  abortIfRetryRun(mainPackageVersion, subpackageLocationWithSlash);
+  await abortIfRetryRun(mode, mainPackageVersion, subpackageLocationWithSlash);
   abortIfSubpackageLocationIsMissing(subpackageLocation);
   abortIfDryRun(mainPackageVersion, isDryRun, isForced);
 
-  sh(`( cd ${subpackageLocation} && npm version ${mainPackageVersion} --no-git-tag-version )`);
+  const cwd = process.cwd();
+  process.chdir(subpackageLocationWithSlash);
+  await setPackageVersion(mode, mainPackageVersion);
+  process.chdir(cwd);
 
   const branchName = getGitBranch();
 
@@ -47,7 +52,7 @@ export async function run(...args): Promise<boolean> {
 
   sh('git status');
 
-  const subpackageName = getSubpackageName(subpackageLocationWithSlash);
+  const subpackageName = await getSubpackageName(mode, subpackageLocationWithSlash);
   gitCommit(`Update ${subpackageName} version to v${mainPackageVersion}\n\n[skip ci]`);
   gitPush('origin', branchName);
 
@@ -64,8 +69,8 @@ export function printHelp(): void {
   console.log(DOC.trim());
 }
 
-function abortIfRetryRun(mainPackageVersion: string, subpackageLocation: string): void {
-  const subpackageVersion = getSubpackageVersion(subpackageLocation);
+async function abortIfRetryRun(mode: string, mainPackageVersion: string, subpackageLocation: string): Promise<void> {
+  const subpackageVersion = await getSubpackageVersion(mode, subpackageLocation);
   if (subpackageVersion === mainPackageVersion) {
     console.error(chalk.yellow(`${BADGE}Subpackage version is already "${mainPackageVersion}".`));
     console.error(chalk.yellowBright(`${BADGE}Nothing to do here, since this is the current package version!`));
@@ -74,19 +79,70 @@ function abortIfRetryRun(mainPackageVersion: string, subpackageLocation: string)
   }
 }
 
-function getSubpackageVersion(subpackageLocation: string): string {
-  return getSubpackageJson(subpackageLocation).version;
+async function getSubpackageVersion(mode: string, subpackageLocation: string): Promise<string> {
+  const cwd = process.cwd();
+  process.chdir(subpackageLocation);
+  const subpackageVersion = await getPackageVersion(mode);
+  process.chdir(cwd);
+
+  return subpackageVersion;
 }
 
-function getSubpackageName(subpackageLocation: string): string {
-  return getSubpackageJson(subpackageLocation).name;
+async function getSubpackageName(mode: string, subpackageLocation: string): Promise<string> {
+  const subpackage = await getSubpackage(mode, subpackageLocation);
+  switch (mode) {
+    case PACKAGE_MODE_DOTNET:
+      const propertyGroup = subpackage?.Project?.PropertyGroup;
+      const name = Array.isArray(propertyGroup) ? propertyGroup[0]?.Product[0] : null;
+
+      if (name == null) {
+        return subpackageLocation;
+      }
+
+      return name;
+    case PACKAGE_MODE_NODE:
+      return subpackage.name;
+    case PACKAGE_MODE_PYTHON:
+      return subpackageLocation;
+    default:
+      break;
+  }
 }
 
-function getSubpackageJson(subpackageLocation: string): any {
+async function getSubpackage(mode: string, subpackageLocation: string): Promise<any> {
+  switch (mode) {
+    case PACKAGE_MODE_DOTNET:
+      return getSubpackageDotnet(subpackageLocation);
+    case PACKAGE_MODE_NODE:
+      return getSubpackageNode(subpackageLocation);
+    case PACKAGE_MODE_PYTHON:
+      return null;
+    default:
+      throw new Error(`Unknown value for \`mode\`: ${mode}`);
+  }
+}
+
+function getSubpackageNode(subpackageLocation: string): any {
   const rawdata = fs.readFileSync(`${subpackageLocation}package.json`).toString();
   const packageJson = JSON.parse(rawdata);
 
   return packageJson;
+}
+
+async function getSubpackageDotnet(subpackageLocation: string): Promise<any> {
+  const cwd = process.cwd();
+  process.chdir(subpackageLocation);
+
+  const filename = getCsprojPath();
+  const json = await getCsprojAsObject(filename);
+
+  process.chdir(cwd);
+
+  if (json == null) {
+    throw new Error(`Could not convert csproj to JSON: ${filename}`);
+  }
+
+  return json;
 }
 
 function getSubpackageLocationFromArgs(args): string | undefined {
