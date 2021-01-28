@@ -50,6 +50,10 @@ function getCsprojAsObject(filePath: string): Promise<any> {
 function getCsprojPath(): string {
   const paths = glob.sync(CSPROJ_FILE_GLOB);
 
+  if (paths.length === 0) {
+    throw new Error('No csproj file found.');
+  }
+
   if (paths.length > 1) {
     throw new Error(`More than one .csproj file found: ${paths.join('\n')}`);
   }
